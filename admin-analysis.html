@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Post Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="belfed-auth.js"></script>
+<script>
+  // Auth gate: show "Sign in required" overlay if not signed in
+  (function() {
+    function showGate() {
+      document.body.style.visibility = 'hidden';
+      var msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Courier Prime,monospace;visibility:visible;z-index:99999';
+      msg.innerHTML = '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:14px">// Members area</div><h1 style="font-size:24px;margin-bottom:14px">Sign in required</h1><p style="font-size:13px;color:#555;margin-bottom:24px;max-width:420px;text-align:center;line-height:1.7">Live trade tracker is available to registered members. Start your 14-day free trial — no credit card required.</p><a href="/members.html" style="background:#111;color:#fff;padding:12px 24px;text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase">Sign in / Register</a>';
+      document.body.appendChild(msg);
+    }
+    window.addEventListener('load', function () {
+      function check() {
+        if (!window.supaClient) { setTimeout(check, 100); return; }
+        window.supaClient.auth.getSession().then(function(r) {
+          if (!r.data.session) showGate();
+          else document.body.style.visibility = 'visible';
+        });
+      }
+      document.body.style.visibility = 'hidden';
+      check();
+    });
+  })();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#0a0a0a;--white:#f5f5f0;--gray:#888;--border:#d0d0ca;--green:#1a6b3a;--red:#8b1a1a;--font:'Courier Prime','Courier New',monospace}
+body{font-family:var(--font);background:var(--white);color:var(--black);font-size:15px;line-height:1.6;padding:40px}
+h1{font-size:28px;margin-bottom:8px}
+h2{font-size:20px;margin:40px 0 16px;padding-top:24px;border-top:2px solid var(--black)}
+.subtitle{color:var(--gray);font-size:13px;margin-bottom:32px}
+.login-form,.post-form{max-width:600px}
+label{display:block;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;margin-top:16px}
+input,select,textarea{width:100%;font-family:var(--font);font-size:14px;padding:10px 12px;border:1px solid var(--border);background:var(--white);color:var(--black)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--black)}
+textarea{min-height:100px;resize:vertical}
+button{font-family:var(--font);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;padding:12px 24px;border:1px solid var(--black);background:var(--black);color:var(--white);cursor:pointer;margin-top:20px;transition:opacity 0.2s}
+button:hover{opacity:0.8}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.msg{margin-top:16px;padding:12px;font-size:13px}
+.msg.ok{background:#e8f5e9;color:var(--green);border:1px solid var(--green)}
+.msg.err{background:#fde;color:var(--red);border:1px solid var(--red)}
+#post-section{display:none}
+.back{font-size:13px;color:var(--gray);text-decoration:none;display:inline-block;margin-bottom:20px}
+.back:hover{color:var(--black)}
+.upload-area{border:2px dashed var(--border);padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-top:4px}
+.upload-area:hover{border-color:var(--black)}
+.upload-area.dragover{border-color:var(--green);background:#f0f8f0}
+.upload-area img{max-width:100%;max-height:200px;margin-top:12px;border:1px solid var(--border)}
+.upload-area .placeholder{color:var(--gray);font-size:12px;letter-spacing:0.1em;text-transform:uppercase}
+.upload-area input[type="file"]{display:none}
+.upload-progress{font-size:11px;color:var(--gray);margin-top:8px;text-transform:uppercase;letter-spacing:0.1em}
+.remove-img{font-size:11px;color:var(--red);cursor:pointer;margin-top:8px;text-transform:uppercase;letter-spacing:0.1em;background:none;border:none;padding:0;font-family:var(--font)}
+.remove-img:hover{opacity:0.7}
+.manage-list{max-width:800px}
+.manage-item{border:1px solid var(--border);padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.manage-item:hover{border-color:var(--black)}
+.manage-info{flex:1}
+.manage-ticker{font-size:18px;font-weight:700}
+.manage-title{font-size:13px;color:#555;margin-top:2px}
+.manage-meta{font-size:10px;color:var(--gray);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em}
+.manage-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-edit{background:var(--white);color:var(--black);border:1px solid var(--black);padding:8px 16px;margin-top:0;font-size:11px}
+.btn-delete{background:var(--red);color:var(--white);border:1px solid var(--red);padding:8px 16px;margin-top:0;font-size:11px}
+.btn-cancel{background:var(--white);color:var(--gray);border:1px solid var(--border);padding:8px 16px;margin-top:0;font-size:11px}
+.editing-banner{background:#fff3cd;border:1px solid #ffc107;padding:12px;font-size:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.editing-banner span{font-weight:700;text-transform:uppercase;letter-spacing:0.1em}
+</style>
+</head>
+<body>
+<a href="/stock-analysis.html" class="back">← Back to Analysis</a>
+<h1>Post Stock Analysis</h1>
+<p class="subtitle">Admin only — sign in to publish new analysis</p>
+
+<div id="login-section" class="login-form">
+  <label>Email</label>
+  <input type="email" id="email" placeholder="admin@belfed.com">
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Sign In</button>
+  <div id="login-msg"></div>
+</div>
+
+<div id="post-section" class="post-form">
+  <p style="color:var(--green);font-size:12px;margin-bottom:16px">✓ Signed in — ready to publish</p>
+
+  <div id="editing-banner" class="editing-banner" style="display:none">
+    <span>Editing: <span id="editing-ticker"></span></span>
+    <button class="btn-cancel" onclick="cancelEdit()">Cancel Edit</button>
+  </div>
+
+  <div class="row">
+    <div><label>Ticker</label><input id="ticker" placeholder="AAPL"></div>
+    <div><label>Direction</label>
+      <select id="direction">
+        <option value="LONG">LONG</option>
+        <option value="SHORT">SHORT</option>
+        <option value="NEUTRAL">NEUTRAL</option>
+      </select>
+    </div>
+  </div>
+  <label>Title</label>
+  <input id="title" placeholder="Apple – Breakout Above Resistance">
+  <label>Summary</label>
+  <textarea id="summary" placeholder="Brief analysis summary..."></textarea>
+
+  <label>Chart Image</label>
+  <div class="upload-area" id="upload-area" onclick="document.getElementById('chart-file').click()">
+    <input type="file" id="chart-file" accept="image/*" onchange="handleFileSelect(event)">
+    <div class="placeholder" id="upload-placeholder">Click or drag & drop chart image here<br>(PNG, JPG, WebP — max 5MB)</div>
+    <div id="upload-preview"></div>
+  </div>
+  <div class="upload-progress" id="upload-progress"></div>
+
+  <label>Chart Link (TradingView)</label>
+  <input id="chart_link" placeholder="https://www.tradingview.com/x/...">
+
+  <div class="row">
+    <div><label>Entry Zone</label><input id="entry_zone" placeholder="$192-195"></div>
+    <div><label>Target</label><input id="target" placeholder="$210"></div>
+  </div>
+  <div class="row">
+    <div><label>Stop Loss</label><input id="stop_loss" placeholder="$185"></div>
+    <div><label>Timeframe</label><input id="timeframe" placeholder="Swing (1-3 weeks)"></div>
+  </div>
+  <div class="row">
+    <div><label>Status</label>
+      <select id="status">
+        <option value="active">Active</option>
+        <option value="idea">Idea</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+    <div><label>Sector</label><input id="sector" placeholder="Technology"></div>
+  </div>
+  <button id="publish-btn" onclick="publish()">Publish Analysis</button>
+  <div id="post-msg"></div>
+
+  <h2>Manage Existing</h2>
+  <div id="manage-list" class="manage-list">
+    <div style="color:var(--gray);font-size:12px;text-transform:uppercase;letter-spacing:0.1em">Loading...</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let selectedFile = null;
+let editingId = null;
+
+const uploadArea = document.getElementById('upload-area');
+uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) { setPreview(file); }
+});
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setPreview(file);
+}
+
+function setPreview(file) {
+  if (file.size > 5 * 1024 * 1024) {
+    document.getElementById('upload-progress').innerHTML = '<span style="color:var(--red)">File too large (max 5MB)</span>';
+    return;
+  }
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('upload-preview').innerHTML =
+      '<img src="' + e.target.result + '" alt="Chart preview">' +
+      '<br><button type="button" class="remove-img" onclick="removeImage(event)">✕ Remove image</button>';
+  };
+  reader.readAsDataURL(file);
+  document.getElementById('upload-progress').textContent = 'Image selected: ' + file.name;
+}
+
+function removeImage(e) {
+  e.stopPropagation();
+  selectedFile = null;
+  document.getElementById('chart-file').value = '';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('upload-preview').innerHTML = '';
+  document.getElementById('upload-progress').textContent = '';
+}
+
+async function login() {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    document.getElementById('login-msg').innerHTML = '<div class="msg err">' + error.message + '</div>';
+    return;
+  }
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('post-section').style.display = 'block';
+  loadExisting();
+}
+
+async function uploadChart(ticker) {
+  if (!selectedFile) return null;
+  const ext = selectedFile.name.split('.').pop().toLowerCase();
+  const fileName = ticker.toLowerCase() + '-' + Date.now() + '.' + ext;
+  const { data, error } = await sb.storage.from('charts').upload(fileName, selectedFile, {
+    cacheControl: '3600',
+    upsert: false
+  });
+  if (error) throw new Error('Upload failed: ' + error.message);
+  const { data: urlData } = sb.storage.from('charts').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+async function publish() {
+  const btn = document.getElementById('publish-btn');
+  const el = document.getElementById('post-msg');
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { alert('Not signed in'); return; }
+
+  const ticker = document.getElementById('ticker').value.toUpperCase();
+  if (!ticker) { el.innerHTML = '<div class="msg err">Ticker is required</div>'; return; }
+
+  btn.disabled = true;
+  btn.textContent = editingId ? 'Updating...' : 'Publishing...';
+
+  try {
+    let imageUrl = null;
+    if (selectedFile) {
+      document.getElementById('upload-progress').textContent = 'Uploading chart image...';
+      imageUrl = await uploadChart(ticker);
+      document.getElementById('upload-progress').textContent = 'Image uploaded ✓';
+    }
+
+    const row = {
+      ticker: ticker,
+      direction: document.getElementById('direction').value,
+      title: document.getElementById('title').value,
+      summary: document.getElementById('summary').value,
+      entry_zone: document.getElementById('entry_zone').value,
+      target: document.getElementById('target').value,
+      stop_loss: document.getElementById('stop_loss').value,
+      timeframe: document.getElementById('timeframe').value,
+      status: document.getElementById('status').value,
+      sector: document.getElementById('sector').value,
+      analysis_url: document.getElementById('chart_link').value
+    };
+    if (imageUrl) row.image_url = imageUrl;
+
+    let error;
+    if (editingId) {
+      ({ error } = await sb.from('stock_analysis').update(row).eq('id', editingId));
+    } else {
+      row.published_at = new Date().toISOString();
+      ({ error } = await sb.from('stock_analysis').insert([row]));
+    }
+    if (error) throw new Error(error.message);
+
+    el.innerHTML = '<div class="msg ok">' + (editingId ? 'Updated' : 'Published') + '! ' + row.ticker + ' analysis is now live.</div>';
+    cancelEdit();
+    loadExisting();
+  } catch (err) {
+    el.innerHTML = '<div class="msg err">Error: ' + err.message + '</div>';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Publish Analysis';
+}
+
+function cancelEdit() {
+  editingId = null;
+  document.getElementById('editing-banner').style.display = 'none';
+  document.getElementById('publish-btn').textContent = 'Publish Analysis';
+  ['ticker','title','summary','entry_zone','target','stop_loss','timeframe','sector','chart_link'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('direction').value = 'LONG';
+  document.getElementById('status').value = 'active';
+  removeImage(new Event('click'));
+  document.getElementById('post-msg').innerHTML = '';
+}
+
+async function loadExisting() {
+  const { data, error } = await sb.from('stock_analysis').select('*').order('published_at', { ascending: false });
+  const el = document.getElementById('manage-list');
+  if (error || !data || data.length === 0) {
+    el.innerHTML = '<div style="color:var(--gray);font-size:12px;text-transform:uppercase;letter-spacing:0.1em">No analyses found.</div>';
+    return;
+  }
+  el.innerHTML = data.map(r => {
+    const dir = (r.direction || '').toUpperCase();
+    const status = (r.status || '').toUpperCase();
+    const date = new Date(r.published_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+    return '<div class="manage-item">' +
+      '<div class="manage-info">' +
+        '<div class="manage-ticker">' + (r.ticker || '') + ' <span style="font-size:11px;font-weight:400;color:var(--gray)">' + dir + ' / ' + status + '</span></div>' +
+        '<div class="manage-title">' + (r.title || '') + '</div>' +
+        '<div class="manage-meta">Published ' + date + '</div>' +
+      '</div>' +
+      '<div class="manage-actions">' +
+        '<button class="btn-edit" onclick="editAnalysis(' + r.id + ')">Edit</button>' +
+        '<button class="btn-delete" onclick="deleteAnalysis(' + r.id + ', \'' + (r.ticker || '').replace(/'/g, '') + '\''+ ')">Delete</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function editAnalysis(id) {
+  const { data, error } = await sb.from('stock_analysis').select('*').eq('id', id).single();
+  if (error || !data) { alert('Could not load analysis'); return; }
+  editingId = id;
+  document.getElementById('ticker').value = data.ticker || '';
+  document.getElementById('direction').value = data.direction || 'LONG';
+  document.getElementById('title').value = data.title || '';
+  document.getElementById('summary').value = data.summary || '';
+  document.getElementById('entry_zone').value = data.entry_zone || '';
+  document.getElementById('target').value = data.target || '';
+  document.getElementById('stop_loss').value = data.stop_loss || '';
+  document.getElementById('timeframe').value = data.timeframe || '';
+  document.getElementById('status').value = data.status || 'active';
+  document.getElementById('sector').value = data.sector || '';
+  document.getElementById('chart_link').value = data.analysis_url || '';
+  document.getElementById('editing-banner').style.display = 'flex';
+  document.getElementById('editing-ticker').textContent = data.ticker;
+  document.getElementById('publish-btn').textContent = 'Update Analysis';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function deleteAnalysis(id, ticker) {
+  if (!confirm('Delete ' + ticker + ' analysis? This cannot be undone.')) return;
+  const { error } = await sb.from('stock_analysis').delete().eq('id', id);
+  if (error) { alert('Delete failed: ' + error.message); return; }
+  loadExisting();
+}
+</script>
+</body>
+</html>
