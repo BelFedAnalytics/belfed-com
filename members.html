@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co; img-src 'self'; frame-src 'none';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Area — BelFed Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f5f0;
+      --gray: #888;
+      --light-gray: #e8e8e3;
+      --border: #d0d0ca;
+      --green: #1a6b3a;
+      --red: #8b1a1a;
+      --gold: #b8860b;
+      --font: 'Courier Prime', 'Courier New', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font); background: var(--white);
+      color: var(--black); font-size: 15px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--white); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 56px;
+    }
+    .nav-logo { font-size: 17px; font-weight: 700; letter-spacing: 0.05em; text-decoration: none; color: var(--black); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      text-decoration: none; color: var(--black); transition: opacity 0.2s;
+    }
+    .nav-links a:hover { opacity: 0.5; }
+    .nav-cta {
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      text-decoration: none; color: var(--black); background: transparent;
+      padding: 10px 20px; border: 1px solid var(--black); cursor: pointer;
+      font-family: var(--font); transition: background 0.2s, color 0.2s;
+    }
+    .nav-cta:hover { background: var(--black); color: var(--white); }
+    main { padding-top: 56px; }
+    .members-hero { padding: 80px 40px 40px; max-width: 900px; }
+    .members-hero .tag {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 20px;
+    }
+    .members-hero h1 {
+      font-size: clamp(28px, 5vw, 48px); font-weight: 700;
+      line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 16px;
+    }
+    .members-hero p { font-size: 15px; color: #555; max-width: 580px; margin-bottom: 32px; }
+
+    .members-grid {
+      padding: 0 40px 60px; max-width: 1100px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+    }
+    .member-card {
+      background: var(--white); border: 1px solid var(--border);
+      padding: 32px; transition: border-color 0.2s;
+      text-decoration: none; color: var(--black); display: block; cursor: pointer;
+    }
+    .member-card:hover { border-color: var(--black); }
+    .member-card .card-label {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 12px;
+    }
+    .member-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .member-card p { font-size: 13px; color: #555; line-height: 1.6; }
+    .member-card .card-arrow {
+      margin-top: 16px; font-size: 13px; color: var(--gray); letter-spacing: 0.1em;
+    }
+
+    .account-section {
+      border-top: 1px solid var(--border); padding: 40px; max-width: 700px;
+    }
+    .account-section h2 {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 20px;
+    }
+    .account-info { font-size: 13px; margin-bottom: 12px; }
+    .account-info span { color: var(--gray); }
+    .status-badge {
+      display: inline-block; font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 4px 10px;
+      border: 1px solid var(--green); color: var(--green);
+    }
+    .status-badge.expired { border-color: var(--red); color: var(--red); }
+    .status-badge.trial { border-color: var(--gold); color: var(--gold); }
+
+    #loginScreen {
+      display: flex; justify-content: center; align-items: center;
+      min-height: 80vh; padding-top: 56px;
+    }
+    .login-box {
+      background: var(--white); border: 1px solid var(--border);
+      padding: 48px; max-width: 420px; width: 100%; text-align: center;
+    }
+    .login-box h2 { font-size: 18px; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .login-box .login-sub {
+      font-size: 11px; color: var(--gray); margin-bottom: 28px; letter-spacing: 0.08em;
+    }
+    .login-box input[type=email],
+    .login-box input[type=password] {
+      font-family: var(--font); width: 100%; padding: 12px 16px;
+      font-size: 13px; border: 1px solid var(--border); background: var(--white);
+      margin-bottom: 12px; outline: none;
+    }
+    .login-box input:focus { border-color: var(--black); }
+    .login-box .login-btn {
+      font-family: var(--font); width: 100%; padding: 14px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; background: var(--black); color: var(--white);
+      border: 1px solid var(--black); cursor: pointer; margin-top: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .login-box .login-btn:hover { background: transparent; color: var(--black); }
+    .login-box .login-btn:disabled { background: var(--gray); border-color: var(--gray); cursor: not-allowed; }
+    .login-error { color: var(--red); font-size: 12px; margin-top: 12px; display: none; }
+    .login-msg { color: var(--green); font-size: 12px; margin-top: 12px; display: none; }
+    .auth-tabs { display: flex; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .auth-tab {
+      flex: 1; font-family: var(--font); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; padding: 10px;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; cursor: pointer; color: var(--gray);
+    }
+    .auth-tab.active { color: var(--black); border-bottom-color: var(--black); }
+    .auth-tab:hover { color: var(--black); }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 24px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: var(--gray); flex-wrap: wrap; gap: 12px;
+    }
+    footer a { color: var(--gray); text-decoration: none; }
+    footer a:hover { color: var(--black); }
+    .footer-links { display: flex; gap: 20px; }
+
+    .dev-notice {
+      margin: 0 40px 32px; padding: 24px 32px;
+      border: 1px solid var(--border); border-left: 4px solid var(--gold);
+      background: var(--light-gray); max-width: 1060px;
+    }
+    .dev-notice .notice-tag {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 10px; font-weight: 700;
+    }
+    .dev-notice h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--black); }
+    .dev-notice p { font-size: 14px; color: #444; line-height: 1.7; margin-bottom: 8px; }
+    .dev-notice a { color: var(--black); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+    .dev-notice a:hover { opacity: 0.6; }
+
+    /* Subscription panel — international waitlist */
+    .bf-section { padding: 40px; max-width: 1060px; border-top: 1px solid var(--border); }
+    .bf-section > h2 {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 20px;
+    }
+    .bf-card {
+      border: 1px solid var(--border); padding: 28px 32px;
+      background: var(--white); margin-bottom: 16px; max-width: 720px;
+    }
+    .bf-status {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--border); color: var(--gold);
+    }
+    .bf-status--ok { color: var(--green); }
+    .bf-status--trial { color: var(--gold); }
+    .bf-row { font-size: 14px; margin-bottom: 8px; line-height: 1.5; color: #333; }
+    .bf-row b { font-weight: 700; color: var(--black); }
+    .bf-muted { color: var(--gray); font-size: 13px; margin-top: 12px; line-height: 1.6; }
+    .bf-trial-banner {
+      background: var(--light-gray); border: 1px solid var(--border);
+      border-left: 4px solid var(--gold); padding: 18px 24px;
+      margin: 0 40px 24px; max-width: 1060px; font-size: 14px; line-height: 1.5;
+    }
+    .bf-trial-banner b { font-weight: 700; }
+    .bf-trial-banner .bf-trial-badge {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-right: 8px;
+    }
+    .waitlist-card {
+      border: 1px solid var(--border); padding: 28px 32px;
+      background: var(--white); max-width: 720px;
+    }
+    .waitlist-card .tag {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-bottom: 10px;
+    }
+    .waitlist-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+    .waitlist-card p { font-size: 14px; color: #333; line-height: 1.7; margin-bottom: 8px; }
+
+    #membersContent { display: none; }
+
+    @media(max-width:700px) {
+      nav { padding: 0 20px; }
+      .members-hero { padding: 60px 20px 30px; }
+      .members-grid { padding: 0 20px 40px; grid-template-columns: 1fr; }
+      .account-section { padding: 30px 20px; }
+      .bf-section { padding: 28px 20px; }
+      .dev-notice, .bf-trial-banner { margin: 0 20px 20px; padding: 18px 20px; }
+      footer { padding: 20px; }
+      .login-box { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">BELFED_</a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/products.html">Products</a></li>
+      <li><a href="/about.html">About</a></li>
+    </ul>
+    <button class="nav-cta" id="navAuthBtn" onclick="handleLogout()" style="display:none">Sign out</button>
+  </nav>
+
+  <div id="loginScreen">
+    <div class="login-box">
+      <h2>MEMBER AREA</h2>
+      <div class="login-sub">Sign in to access trade ideas &amp; research</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="showAuthTab('signin')">Sign in</button>
+        <button class="auth-tab" onclick="showAuthTab('signup')">Register</button>
+      </div>
+      <div id="signinForm">
+        <input type="email" id="siEmail" placeholder="Email">
+        <input type="password" id="siPassword" placeholder="Password">
+        <button class="login-btn" onclick="handleSignIn()">Sign in</button>
+        <div style="margin-top:12px">
+          <a id="forgotPasswordLink" href="#" onclick="document.getElementById('forgotPasswordBlock').style.display='block';this.style.display='none';return false;" style="font-size:11px;color:var(--gray)">Forgot password?</a>
+        </div>
+        <div id="forgotPasswordBlock" style="display:none;margin-top:16px">
+          <input type="email" id="resetEmail" placeholder="Your email">
+          <button class="login-btn" onclick="handleForgotPassword()">Send reset link</button>
+          <div id="resetStatus" style="font-size:12px;margin-top:8px;display:none"></div>
+        </div>
+      </div>
+      <div id="signupForm" style="display:none">
+        <input type="email" id="suEmail" placeholder="Email">
+        <input type="password" id="suPassword" placeholder="Password (min 6 characters)">
+        <input type="password" id="suPassword2" placeholder="Repeat password">
+        <button class="login-btn" onclick="handleSignUp()">Start 14-day free trial</button>
+        <div style="font-size:10px;color:var(--gray);margin-top:14px;letter-spacing:0.05em">14 days full access &bull; No card required</div>
+      </div>
+      <div id="loginError" class="login-error"></div>
+      <div id="loginMsg" class="login-msg"></div>
+    </div>
+  </div>
+
+  <div id="membersContent">
+    <main>
+      <div class="members-hero">
+        <div class="tag">// Member area</div>
+        <h1>Welcome<span id="memberName"></span></h1>
+        <p>Access trade ideas, market research, performance tracking, and your account settings.</p>
+      </div>
+
+      <div class="dev-notice">
+        <p class="notice-tag">// Member area in development</p>
+        <h4>Access is open via simple email registration — no card required</h4>
+        <p>Trade ideas, analytics, and market commentary are currently published in our Telegram channel and bot. The web member area is in active rollout — features will appear here over the coming weeks.</p>
+      </div>
+
+      <div class="members-grid">
+        <div class="member-card" onclick="alert('Trade ideas, performance and weekly notes will appear here. They are currently distributed via Telegram. Email us if you want early access to the channel.')">
+          <div class="card-label">// Features</div>
+          <h3>Trades &amp; performance</h3>
+          <p>Open positions, real-time P&amp;L, closed trades, and weekly/yearly statistics for stocks and crypto.</p>
+          <div class="card-arrow">&rarr; Coming soon</div>
+        </div>
+
+        <div class="member-card" onclick="alert('Account settings — manage email, password, and profile — will appear here soon.')">
+          <div class="card-label">// Account</div>
+          <h3>Settings</h3>
+          <p>Manage your subscription, email, password, and integrations.</p>
+          <div class="card-arrow">&rarr; Coming soon</div>
+        </div>
+      </div>
+
+      <!-- Trial banner (shown only during trial) -->
+      <div id="trialBanner" class="bf-trial-banner" style="display:none">
+        <span class="bf-trial-badge">&#127873; Trial access</span>
+        You have <b id="trialDaysLeft">14</b> days of full access. No card on file — your trial ends automatically.
+      </div>
+
+      <!-- Subscription / international waitlist -->
+      <div class="bf-section">
+        <h2>// My subscription</h2>
+        <div class="waitlist-card">
+          <div class="tag">// Status</div>
+          <h3>International payments coming soon</h3>
+          <p>Right now BelFed Analytics is in early access for international users. Your 14-day free trial is fully active — when paid plans go live globally, you'll be the first to know via email.</p>
+          <p style="color:var(--gray);font-size:13px;margin-top:14px">Just registering puts you on the waitlist — no further action needed.</p>
+        </div>
+      </div>
+
+      <!-- Account Info -->
+      <div class="account-section">
+        <h2>// Account</h2>
+        <div class="account-info"><span>Email:</span> <span id="acctEmail">&mdash;</span></div>
+        <div class="account-info"><span>Status:</span> <span id="acctStatus" class="status-badge">&mdash;</span></div>
+        <div class="account-info"><span>Member since:</span> <span id="acctSince">&mdash;</span></div>
+        <div class="account-info" id="acctTrialRow" style="display:none"><span>Trial ends:</span> <span id="acctTrialEnd">&mdash;</span></div>
+      </div>
+    </main>
+
+    <footer>
+      <span>&copy; 2025&ndash;2026 BelFed Analytics. All rights reserved.</span>
+      <div class="footer-links">
+        <a href="/disclaimer.html">Disclaimer</a>
+        <span>Not financial advice.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="belfed-auth.js"></script>
+  <script>
+    // --- Members page callbacks ---
+    function onAuthReady(profile, session, entitlement) {
+      try {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('membersContent').style.display = 'block';
+        var navAuth = document.getElementById('navAuthBtn');
+        if (navAuth) navAuth.style.display = 'block';
+        if (session && session.user) {
+          document.getElementById('acctEmail').textContent = session.user.email;
+          var created = new Date(session.user.created_at);
+          document.getElementById('acctSince').textContent = created.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+        if (profile) {
+          var st = entitlement.status;
+          var badge = document.getElementById('acctStatus');
+          var stEn = ({active:'Active', trial:'Trial', expired:'Expired', none:'None', admin:'Admin'})[st] || (st || '').toUpperCase();
+          badge.textContent = stEn;
+          badge.className = 'status-badge';
+          if (st === 'expired' || st === 'none') badge.classList.add('expired');
+          if (st === 'trial') badge.classList.add('trial');
+          if (st === 'trial' && profile.trial_end) {
+            var row = document.getElementById('acctTrialRow');
+            if (row) row.style.display = 'block';
+            var te = new Date(profile.trial_end);
+            document.getElementById('acctTrialEnd').textContent = te.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            var banner = document.getElementById('trialBanner');
+            if (banner) {
+              var days = Math.max(0, Math.ceil((te - new Date()) / 86400000));
+              var dEl = document.getElementById('trialDaysLeft');
+              if (dEl) dEl.textContent = days;
+              banner.style.display = 'block';
+            }
+          }
+        }
+      } catch(e) {
+        console.error('onAuthReady error:', e);
+        var errEl = document.getElementById('loginError');
+        if (errEl) { errEl.textContent = 'Error: ' + e.message; errEl.style.display = 'block'; }
+      }
+    }
+    function onAuthSignedOut() {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('membersContent').style.display = 'none';
+      var navAuth = document.getElementById('navAuthBtn');
+      if (navAuth) navAuth.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

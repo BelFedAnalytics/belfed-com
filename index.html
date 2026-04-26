@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BelFed Analytics — Research-Driven Trading Intelligence</title>
+  <meta name="description" content="Institutional-grade trading signals, market research, and weekly performance tracking for stocks and crypto. 14-day free trial — no card required.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f5f0;
+      --gray: #888;
+      --light-gray: #e8e8e3;
+      --border: #d0d0ca;
+      --green: #1a6b3a;
+      --red: #8b1a1a;
+      --gold: #b8860b;
+      --font: 'Courier Prime', 'Courier New', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--black);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--white); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 56px;
+    }
+    .nav-logo { font-size: 17px; font-weight: 700; letter-spacing: 0.05em; text-decoration: none; color: var(--black); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; color: var(--black); transition: opacity 0.2s; }
+    .nav-links a:hover { opacity: 0.5; }
+    .nav-cta {
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      text-decoration: none; color: var(--white); background: var(--black);
+      padding: 10px 20px; border: 1px solid var(--black);
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-cta:hover { background: transparent; color: var(--black); }
+    main { padding-top: 56px; }
+    .hero { padding: 80px 40px 60px; max-width: 900px; }
+    .hero-tag {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 32px;
+    }
+    .hero-tag span { margin: 0 8px; }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 72px); font-weight: 700;
+      line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 28px;
+    }
+    .hero h1 .cursor {
+      display: inline-block; width: 3px; height: 0.85em;
+      background: var(--black); margin-left: 4px; vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .hero-desc {
+      font-size: 16px; line-height: 1.7; max-width: 580px;
+      color: #333; margin-bottom: 36px;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      font-family: var(--font); font-size: 11px; letter-spacing: 0.12em;
+      text-transform: uppercase; text-decoration: none; color: var(--white);
+      background: var(--black); padding: 14px 28px; border: 1px solid var(--black);
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+    }
+    .btn-primary:hover { background: transparent; color: var(--black); }
+    .btn-secondary {
+      font-family: var(--font); font-size: 11px; letter-spacing: 0.12em;
+      text-transform: uppercase; text-decoration: none; color: var(--black);
+      background: transparent; padding: 14px 28px; border: 1px solid var(--border);
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--black); }
+    .trial-note { font-size: 11px; color: var(--gray); margin-top: 18px; letter-spacing: 0.05em; }
+    .stats-columns {
+      border-top: 1px solid var(--border); display: flex; padding: 0;
+    }
+    .stats-column { flex: 1; padding: 40px; }
+    .stats-column:first-child { border-right: 1px solid var(--border); }
+    .stats-column-header {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 24px;
+    }
+    .stats-column-items { display: flex; gap: 48px; flex-wrap: wrap; }
+    .stat-item .stat-value {
+      font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;
+    }
+    .stat-item .stat-label {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-top: 6px;
+    }
+    .features {
+      border-top: 1px solid var(--border); padding: 60px 40px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 40px; max-width: 1200px;
+    }
+    .feature-tag {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 12px;
+    }
+    .feature h3 {
+      font-size: 16px; font-weight: 700; margin-bottom: 10px;
+    }
+    .feature p { font-size: 14px; color: #444; line-height: 1.7; }
+
+    .cta-section {
+      border-top: 1px solid var(--border);
+      padding: 80px 40px;
+      max-width: 760px;
+    }
+    .cta-section .tag {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-bottom: 18px;
+    }
+    .cta-section h2 {
+      font-size: clamp(24px, 3.5vw, 36px); font-weight: 700;
+      line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 16px;
+    }
+    .cta-section p {
+      font-size: 15px; color: #333; line-height: 1.7;
+      margin-bottom: 28px; max-width: 580px;
+    }
+    .cta-list {
+      list-style: none; padding: 0; margin: 0 0 32px;
+      font-size: 14px; color: #333;
+    }
+    .cta-list li { padding: 6px 0; }
+    .cta-list li::before { content: "→ "; color: var(--gray); margin-right: 4px; }
+
+    .disclaimer-link {
+      color: #aaa; padding: 16px 40px 0;
+      font-family: var(--font); line-height: 1.9; font-size: 13px;
+    }
+    .disclaimer-link a { color: var(--gray); text-decoration: underline; text-underline-offset: 2px; }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 24px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: var(--gray); flex-wrap: wrap; gap: 12px;
+    }
+    footer a { color: var(--gray); text-decoration: none; }
+    footer a:hover { color: var(--black); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 60px 20px 40px; }
+      .stats-columns { flex-direction: column; }
+      .stats-column:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+      .features { padding: 40px 20px; }
+      .cta-section { padding: 60px 20px; }
+      footer { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">BELFED_</a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/products.html">Products</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="https://belfed.ru" target="_blank">RU</a></li>
+    </ul>
+    <a href="/members.html" class="nav-cta">Member Login</a>
+  </nav>
+  <main>
+    <section class="hero">
+      <p class="hero-tag">// BELFED ANALYTICS <span>&middot;</span> EST. 2025</p>
+      <h1>Research-Driven<br>Trading Int<span class="cursor"></span></h1>
+      <p class="hero-desc">Institutional-grade trading ideas, market research, and transparent performance tracking for global stocks and crypto markets — engineered for serious investors.</p>
+      <div class="hero-actions">
+        <a href="/members.html" class="btn-primary">Try free for 14 days</a>
+        <a href="#track-record" class="btn-secondary">Track Record &darr;</a>
+      </div>
+      <p class="trial-note">14 days full access &bull; No credit card required &bull; Sign up with email</p>
+    </section>
+
+    <section class="stats-columns" id="track-record">
+      <div class="stats-column">
+        <div class="stats-column-header">// 2025 Equities</div>
+        <div class="stats-column-items">
+          <div class="stat-item">
+            <div class="stat-value">+85.96R</div>
+            <div class="stat-label">Return</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">47.89%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">71</div>
+            <div class="stat-label">Closed Trades</div>
+          </div>
+        </div>
+      </div>
+      <div class="stats-column">
+        <div class="stats-column-header">// 2025 Crypto</div>
+        <div class="stats-column-items">
+          <div class="stat-item">
+            <div class="stat-value">+90.39R</div>
+            <div class="stat-label">Return</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">75%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">12</div>
+            <div class="stat-label">Closed Trades</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="disclaimer-link">Performance is reported in R-multiples (risk units). Methodology and risk disclosures are available in the <a href="/disclaimer.html">full disclaimer</a>.</p>
+
+    <section class="features">
+      <div class="feature">
+        <div class="feature-tag">// Trade Ideas</div>
+        <h3>Actionable setups, not noise</h3>
+        <p>High-conviction long and short ideas across US equities and major crypto. Each idea is published with entry, stop, target, and the thesis behind it.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-tag">// Market Research</div>
+        <h3>Macro &amp; sector context</h3>
+        <p>Weekly market commentary covering positioning, liquidity, and what actually moves prices. No clickbait, no horoscopes — just signal.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-tag">// Performance Tracking</div>
+        <h3>Every trade, on the record</h3>
+        <p>Open positions, real-time P&amp;L, closed trades, weekly and yearly statistics for stocks and crypto. Full transparency — wins and losses both published.</p>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="tag">// Get early access</div>
+      <h2>Start your 14-day free trial</h2>
+      <p>Create an account with your email and get instant access to ideas and research. We'll email you when international payment options go live — until then, the trial is fully open and the service is in active rollout.</p>
+      <ul class="cta-list">
+        <li>Full access to trade ideas and research during the trial</li>
+        <li>No credit card required to register</li>
+        <li>Email-based magic-link sign in</li>
+        <li>You'll be notified when paid plans launch internationally</li>
+      </ul>
+      <div class="hero-actions">
+        <a href="/members.html" class="btn-primary">Get early access</a>
+        <a href="/about.html" class="btn-secondary">Learn more</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>&copy; 2025&ndash;2026 BelFed Analytics. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="/disclaimer.html">Disclaimer</a>
+      <a href="https://belfed.ru" target="_blank">RU site</a>
+      <span>Not financial advice.</span>
+    </div>
+  </footer>
+
+  <script>
+    // Typing animation for hero headline
+    var target = 'elligence.';
+    var cursor = document.querySelector('.hero h1 .cursor');
+    var i = 0;
+    function typeNext() {
+      if (i < target.length) {
+        cursor.insertAdjacentText('beforebegin', target[i]);
+        i++;
+        setTimeout(typeNext, 80 + Math.random() * 60);
+      }
+    }
+    setTimeout(typeNext, 600);
+  </script>
+</body>
+</html>
