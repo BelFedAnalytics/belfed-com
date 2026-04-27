@@ -202,6 +202,27 @@
     }
     .disclaimer-link a { color: var(--gray); text-decoration: underline; text-underline-offset: 2px; }
 
+    .track-record-cta {
+      border-top: 1px solid var(--border);
+      padding: 28px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 24px; flex-wrap: wrap;
+    }
+    .track-record-cta .trc-text {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray);
+    }
+    .track-record-cta .trc-link {
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      text-decoration: none; color: var(--black);
+      border: 1px solid var(--black); padding: 12px 22px;
+      transition: background 0.2s, color 0.2s;
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .track-record-cta .trc-link .arrow { transition: transform 0.2s; }
+    .track-record-cta .trc-link:hover { background: var(--black); color: var(--white); }
+    .track-record-cta .trc-link:hover .arrow { transform: translateX(4px); }
+
     footer {
       border-top: 1px solid var(--border); padding: 24px 40px;
       display: flex; justify-content: space-between; align-items: center;
@@ -212,6 +233,9 @@
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
 
     @media (max-width: 700px) {
+      .track-record-cta { padding: 22px 20px; flex-direction: column; align-items: flex-start; gap: 14px; }
+      .track-record-cta .trc-link { width: 100%; justify-content: center; }
+
       nav { padding: 0 20px; }
       .nav-links { display: none; }
       .nav-actions { display: none; }
@@ -325,6 +349,11 @@
         </div>
       </div>
     </section>
+
+    <div class="track-record-cta">
+      <span class="trc-text">// Full closed-trade history &middot; every entry, exit and result</span>
+      <a href="/trades.html" class="trc-link">View track record <span class="arrow">&rarr;</span></a>
+    </div>
 
     <p class="disclaimer-link">Performance is reported in R-multiples (risk units). Methodology and risk disclosures are available in the <a href="/disclaimer.html">full disclaimer</a>.</p>
 
