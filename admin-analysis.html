@@ -200,12 +200,26 @@ function removeImage(e) {
   document.getElementById('upload-progress').textContent = '';
 }
 
+async function checkAdminRole() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return false;
+  const { data, error } = await sb.from('profiles').select('subscription_status').eq('id', user.id).maybeSingle();
+  if (error) return false;
+  return data && data.subscription_status === 'admin';
+}
+
 async function login() {
   const email = document.getElementById('email').value;
   const pass = document.getElementById('password').value;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   if (error) {
     document.getElementById('login-msg').innerHTML = '<div class="msg err">' + error.message + '</div>';
+    return;
+  }
+  const isAdmin = await checkAdminRole();
+  if (!isAdmin) {
+    await sb.auth.signOut();
+    document.getElementById('login-msg').innerHTML = '<div class="msg err">Access denied. Admin role required.</div>';
     return;
   }
   document.getElementById('login-section').style.display = 'none';
@@ -343,6 +357,20 @@ async function deleteAnalysis(id, ticker) {
   if (error) { alert('Delete failed: ' + error.message); return; }
   loadExisting();
 }
+
+// On page load: if already signed in, verify admin role
+window.addEventListener('load', async function () {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const isAdmin = await checkAdminRole();
+  if (!isAdmin) {
+    await sb.auth.signOut();
+    return;
+  }
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('post-section').style.display = 'block';
+  loadExisting();
+});
 </script>
 </body>
 </html>
