@@ -47,6 +47,14 @@
       transition: background 0.2s, color 0.2s;
     }
     .nav-cta:hover { background: transparent; color: var(--black); }
+    .nav-actions { display: flex; align-items: center; gap: 16px; }
+    .nav-secondary {
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      text-decoration: none; color: var(--black); border: 1px solid var(--black);
+      padding: 9px 18px; background: transparent;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-secondary:hover { background: var(--black); color: var(--white); }
     main { padding-top: 56px; }
     .hero { padding: 80px 40px 60px; max-width: 900px; }
     .hero-tag {
@@ -157,6 +165,9 @@
     @media (max-width: 700px) {
       nav { padding: 0 20px; }
       .nav-links { display: none; }
+      .nav-actions { gap: 8px; }
+      .nav-secondary { padding: 7px 12px; font-size: 10px; }
+      .nav-cta { padding: 8px 14px; font-size: 10px; }
       .hero { padding: 60px 20px 40px; }
       .stats-columns { flex-direction: column; }
       .stats-column:first-child { border-right: none; border-bottom: 1px solid var(--border); }
@@ -174,10 +185,12 @@
       <li><a href="/trades.html">Track record</a></li>
       <li><a href="/products.html">Products</a></li>
       <li><a href="/about.html">About</a></li>
-      <li><a href="/members.html">Member login</a></li>
       <li><a href="https://belfed.ru" target="_blank">RU</a></li>
     </ul>
-    <a href="https://t.me/BelfedBot?start=trial_home_nav_en" class="nav-cta">Open in Telegram</a>
+    <div class="nav-actions">
+      <a href="/members.html" class="nav-secondary">Member login</a>
+      <a href="https://t.me/BelfedBot?start=trial_home_nav_en" class="nav-cta">Open in Telegram</a>
+    </div>
   </nav>
   <main>
     <section class="hero">

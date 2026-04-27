@@ -18,6 +18,9 @@
     .nav-links a:hover { opacity: 0.5; }
     .nav-cta { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; text-decoration:none; color: var(--white); background: var(--black); padding: 10px 20px; border:1px solid var(--black); transition: background 0.2s, color 0.2s; }
     .nav-cta:hover { background: transparent; color: var(--black); }
+    .nav-actions { display:flex; align-items:center; gap:16px; }
+    .nav-secondary { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; text-decoration:none; color: var(--black); border:1px solid var(--black); padding:9px 18px; background:transparent; transition: background 0.2s, color 0.2s; }
+    .nav-secondary:hover { background: var(--black); color: var(--white); }
     main { padding-top: 56px; }
     .products-hero { padding: 80px 40px 40px; max-width: 900px; }
     .products-hero .tag { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 24px; }
@@ -42,7 +45,7 @@
     footer a { color: var(--gray); text-decoration: none; }
     footer a:hover { color: var(--black); }
     .footer-links { display: flex; gap: 20px; }
-    @media (max-width: 700px) { nav { padding: 0 20px; } .nav-links { display: none; } .products-hero, .pricing { padding-left: 20px; padding-right: 20px; } .product-grid { padding: 20px; } footer { padding: 20px; } }
+    @media (max-width: 700px) { nav { padding: 0 20px; } .nav-links { display: none; } .nav-actions { gap: 8px; } .nav-secondary { padding: 7px 12px; font-size: 10px; } .nav-cta { padding: 8px 14px; font-size: 10px; } .products-hero, .pricing { padding-left: 20px; padding-right: 20px; } .product-grid { padding: 20px; } footer { padding: 20px; } }
   </style>
 </head>
 <body>
@@ -53,10 +56,12 @@
       <li><a href="/trades.html">Track record</a></li>
       <li><a href="/products.html">Products</a></li>
       <li><a href="/about.html">About</a></li>
-      <li><a href="/members.html">Member login</a></li>
       <li><a href="https://belfed.ru" target="_blank">RU</a></li>
     </ul>
-    <a href="https://t.me/BelfedBot?start=trial_products_nav_en" class="nav-cta">Open in Telegram</a>
+    <div class="nav-actions">
+      <a href="/members.html" class="nav-secondary">Member login</a>
+      <a href="https://t.me/BelfedBot?start=trial_products_nav_en" class="nav-cta">Open in Telegram</a>
+    </div>
   </nav>
   <main>
     <section class="products-hero">
