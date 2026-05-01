@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>BelFed — Signing you in</title>
+<style>
+  body{margin:0;background:#f5f2eb;color:#111;font-family:'Courier Prime',Courier,monospace;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+  .box{background:#fff;border:2px solid #000;padding:36px 28px;max-width:380px;width:100%;text-align:center}
+  .pre{font-size:11px;letter-spacing:2px;color:#888;text-transform:uppercase;margin-bottom:10px}
+  h1{font-size:18px;letter-spacing:3px;margin:0 0 10px}
+  p{font-size:13px;color:#555;margin:8px 0;line-height:1.6}
+  .err{color:#c50000;margin-top:14px;display:none}
+  .spinner{width:28px;height:28px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite;margin:18px auto 6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  a.btn{display:inline-block;margin-top:16px;background:#000;color:#f5f2eb;padding:10px 20px;text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="pre">// Member access</div>
+  <h1>BELFED</h1>
+  <p id="msg">Verifying your session…</p>
+  <div class="spinner" id="spinner"></div>
+  <div class="err" id="err">
+    <p id="errMsg">Couldn't sign you in.</p>
+    <a class="btn" href="https://t.me/BelfedBot?start=auth">Get a fresh link</a>
+  </div>
+</div>
+
+<script>
+(async function () {
+  var SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
+  var EXCHANGE_URL = SUPABASE_URL + '/functions/v1/auth-exchange';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+
+  function showError(message) {
+    document.getElementById('msg').style.display = 'none';
+    document.getElementById('spinner').style.display = 'none';
+    var err = document.getElementById('err');
+    document.getElementById('errMsg').textContent = message;
+    err.style.display = 'block';
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('t');
+  if (!token) {
+    showError('No token in link. Try again from Telegram.');
+    return;
+  }
+
+  try {
+    var res = await fetch(EXCHANGE_URL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'content-type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ token: token })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.ok) {
+      var msgs = {
+        invalid:  'Link is invalid or already used.',
+        expired:  'Link expired (valid 5 min). Tap the bot button again.',
+        used:     'Link was already used. Tap the bot button again.',
+        revoked:  'Session was revoked. Tap the bot button again.'
+      };
+      showError(msgs[data.error] || 'Sign-in failed. Try again from Telegram.');
+      return;
+    }
+    var lang = data.lang || 'en';
+    // Redirect to dashboard with lang param
+    window.location.replace('/dashboard.html?lang=' + encodeURIComponent(lang));
+  } catch (e) {
+    showError('Network error. Check connection and try again.');
+  }
+})();
+</script>
+</body>
+</html>

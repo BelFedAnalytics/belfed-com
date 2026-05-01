@@ -269,10 +269,21 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
     }
     window.addEventListener('load', function () {
       function check() {
+        // Bypass gate if TG cookie session or legacy ?access= token granted access
+        if (window.tokenAccess) { document.body.style.visibility = 'visible'; return; }
         if (!window.supaClient) { setTimeout(check, 100); return; }
         window.supaClient.auth.getSession().then(function(r) {
-          if (!r.data.session) showGate();
-          else document.body.style.visibility = 'visible';
+          // Re-check tokenAccess in case TG verify finished while we were awaiting Supabase
+          if (window.tokenAccess) { document.body.style.visibility = 'visible'; return; }
+          if (!r.data.session) {
+            // Give TG cookie verify up to 1.2s to complete before showing gate
+            setTimeout(function() {
+              if (window.tokenAccess) { document.body.style.visibility = 'visible'; return; }
+              showGate();
+            }, 1200);
+          } else {
+            document.body.style.visibility = 'visible';
+          }
         });
       }
       document.body.style.visibility = 'hidden';
@@ -281,17 +292,47 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
   })();
 </script>
 <script>
-  // --- Shared access token (for Telegram group pinned link) ---
+  // --- TG-direct cookie session (preferred path) ---
+  var TG_VERIFY_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co/functions/v1/auth-verify';
+  var TG_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+  window.tgSession = null;       // { tg_id, lang } when authed via TG
+  window.tokenAccess = false;    // legacy ?access= or new TG cookie — both bypass Supabase auth
+
+  // --- Shared access token (legacy, kept as transitional fallback) ---
   var ACCESS_TOKEN = 'Bfd2026Live';
-  var tokenAccess = false;
   (function() {
     var params = new URLSearchParams(window.location.search);
     if (params.get('access') === ACCESS_TOKEN) {
-      tokenAccess = true;
+      window.tokenAccess = true;
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboardContainer').style.display = 'block';
       init();
     }
+  })();
+
+  // Try cookie-based TG session
+  (function() {
+    fetch(TG_VERIFY_URL, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'apikey': TG_ANON, 'authorization': 'Bearer ' + TG_ANON }
+    }).then(function(r) { return r.json().then(function(j) { return { status: r.status, body: j }; }); })
+      .then(function(res) {
+        if (res.status === 200 && res.body && res.body.ok) {
+          window.tgSession = { tg_id: res.body.tg_id, lang: res.body.lang || 'en' };
+          window.tokenAccess = true;  // bypass Supabase auth gate
+          // Apply lang from session (or URL ?lang= override)
+          var urlLang = new URLSearchParams(window.location.search).get('lang');
+          var pageLang = (urlLang === 'ru' || urlLang === 'en') ? urlLang : window.tgSession.lang;
+          if (window.applyDashboardLang) { window.applyDashboardLang(pageLang); }
+          var ls = document.getElementById('loginScreen'); if (ls) ls.style.display = 'none';
+          var ds = document.getElementById('dashboardContainer'); if (ds) ds.style.display = 'block';
+          if (typeof init === 'function') init();
+          // Hide the body-visibility gate so dashboard renders
+          document.body.style.visibility = 'visible';
+        }
+      })
+      .catch(function() { /* silent — fall back to Supabase auth */ });
   })();
 
   // --- Dashboard page callbacks ---
@@ -300,7 +341,7 @@ function onAuthReady(profile, session, entitlement) {
   else { showExpired(); }
 }
 function onAuthSignedOut() {
-      if (tokenAccess) return;
+      if (window.tokenAccess) return;
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('dashboardContainer').style.display='none';
   document.getElementById('expiredScreen').style.display='none';
