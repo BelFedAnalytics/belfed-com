@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BELFED ANALYTICS — АДМИН: РЕДАКТОР</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background-color:#f5f2eb;font-family:'Courier New',Courier,monospace;color:#000;padding:24px 20px;line-height:1.6;font-size:14px;visibility:hidden}
+body.ready{visibility:visible}
+.container{max-width:1200px;margin:0 auto}
+header{position:relative;text-align:center;margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid #000}
+header h2{font-size:14px;letter-spacing:4px;font-weight:bold;margin-bottom:8px}
+header h2 a{color:#000;text-decoration:none}
+header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
+.admin-badge{display:inline-block;background:#c50000;color:#fff;padding:2px 10px;font-size:10px;letter-spacing:2px;margin-left:8px}
+
+#loginScreen{position:fixed;inset:0;background:#f5f2eb;display:flex;align-items:center;justify-content:center;z-index:10}
+.login-box{background:#fff;border:1px solid #000;padding:30px;width:340px}
+.login-box h3{font-size:13px;letter-spacing:3px;margin-bottom:20px;text-align:center}
+.login-box input{width:100%;font-family:'Courier New',monospace;padding:10px;border:1px solid #000;background:#f5f2eb;font-size:13px;margin-bottom:10px}
+.login-box button{width:100%;font-family:'Courier New',monospace;padding:10px;border:1px solid #000;background:#000;color:#f5f2eb;cursor:pointer;font-size:12px;letter-spacing:2px}
+
+.toolbar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.btn{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;padding:8px 16px;border:1px solid #000;background:#fff;cursor:pointer;color:#000;text-decoration:none;display:inline-block}
+.btn:hover{background:#f0ede4}
+.btn.primary{background:#000;color:#f5f2eb}
+.btn.primary:hover{background:#222}
+.btn.danger{background:#c50000;color:#fff;border-color:#c50000}
+.btn.success{background:#1a7a1a;color:#fff;border-color:#1a7a1a}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+
+.layout{display:grid;grid-template-columns:1fr 360px;gap:20px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+.editor{background:#fff;border:1px solid #000;padding:0}
+.lang-tabs{display:flex;border-bottom:1px solid #000}
+.lang-tabs button{flex:1;font-family:'Courier New',monospace;font-size:12px;letter-spacing:2px;padding:10px;background:none;border:none;border-right:1px solid #000;cursor:pointer;font-weight:bold}
+.lang-tabs button:last-child{border-right:none}
+.lang-tabs button.active{background:#000;color:#f5f2eb}
+.editor-pad{padding:20px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:10px;letter-spacing:2px;opacity:0.7;margin-bottom:4px}
+.field input,.field textarea,.field select{font-family:'Courier New',monospace;width:100%;padding:8px 12px;font-size:13px;border:1px solid #000;background:#f5f2eb;outline:none}
+.field input:focus,.field textarea:focus{background:#fff}
+.field textarea{resize:vertical;min-height:64px}
+
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.row-2,.row-3{grid-template-columns:1fr}}
+
+.tag-input{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px;border:1px solid #000;background:#f5f2eb;min-height:36px}
+.tag-pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1px;padding:3px 8px;background:#000;color:#f5f2eb;text-transform:uppercase}
+.tag-pill .x{cursor:pointer;opacity:0.7}
+.tag-input input{flex:1;border:none;background:transparent;outline:none;font-family:'Courier New',monospace;font-size:12px;min-width:120px}
+
+.section-block{border-top:1px dashed #999;padding-top:18px;margin-top:18px;position:relative}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-head .label{font-size:11px;letter-spacing:3px;opacity:0.6;font-weight:bold}
+.section-actions{display:flex;gap:6px}
+.icon-btn{font-family:'Courier New',monospace;font-size:10px;padding:4px 8px;border:1px solid #000;background:#fff;cursor:pointer}
+.icon-btn:hover{background:#f0ede4}
+.icon-btn:disabled{opacity:0.3;cursor:not-allowed}
+
+.dropzone{border:2px dashed #000;background:#f5f2eb;padding:30px 18px;text-align:center;cursor:pointer;transition:background 0.15s;position:relative}
+.dropzone:hover{background:#fff}
+.dropzone.dragover{background:#fff;border-color:#1a7a1a}
+.dropzone.has-file{padding:0;border-style:solid;background:#0a0a0a}
+.dropzone .dz-icon{font-size:24px;margin-bottom:6px;opacity:0.5}
+.dropzone .dz-text{font-size:11px;letter-spacing:2px;opacity:0.7}
+.dropzone .dz-sub{font-size:10px;letter-spacing:1px;opacity:0.5;margin-top:4px}
+.dropzone img{width:100%;display:block;max-height:300px;object-fit:contain;background:#000}
+.dropzone .dz-replace{position:absolute;top:8px;right:8px;background:#000;color:#fff;padding:4px 10px;font-size:10px;letter-spacing:1px;cursor:pointer;z-index:2}
+.dropzone .dz-progress{position:absolute;left:0;right:0;bottom:0;background:#1a7a1a;color:#fff;font-size:10px;padding:4px;text-align:center;letter-spacing:1px}
+
+.add-section{display:flex;justify-content:center;margin-top:20px}
+.add-section button{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;padding:10px 24px;border:1px dashed #000;background:#f5f2eb;cursor:pointer}
+.add-section button:hover{background:#fff;border-style:solid}
+
+.sidebar{position:sticky;top:24px;align-self:start;display:flex;flex-direction:column;gap:14px}
+@media(max-width:900px){.sidebar{position:static}}
+.sidebar-card{background:#fff;border:1px solid #000;padding:16px}
+.sidebar-card h3{font-size:11px;letter-spacing:3px;margin-bottom:10px;border-bottom:1px solid #000;padding-bottom:6px}
+.sidebar-card .row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;gap:10px}
+.sidebar-card .row span:first-child{opacity:0.6}
+.status-pill{display:inline-block;font-size:10px;letter-spacing:1px;padding:2px 8px;border:1px solid #000}
+.status-pill.draft{background:#f5f2eb}
+.status-pill.published{background:#1a7a1a;color:#fff;border-color:#1a7a1a}
+
+.help{font-size:10px;line-height:1.5;opacity:0.6;margin-top:6px;font-style:italic}
+.char-counter{font-size:10px;letter-spacing:1px;opacity:0.6;text-align:right;margin-top:2px}
+.char-counter.warn{color:#e6a800}
+.char-counter.over{color:#c50000;font-weight:bold}
+
+.msg{padding:10px 12px;font-size:11px;letter-spacing:1px;border:1px solid #000;margin:10px 0}
+.msg.ok{background:#1a7a1a;color:#fff;border-color:#1a7a1a}
+.msg.err{background:#c50000;color:#fff;border-color:#c50000}
+.msg.info{background:#fffbe5;color:#000}
+
+.lang-pane{display:none}
+.lang-pane.active{display:block}
+
+/* read-only when published */
+.published-lock input,.published-lock textarea,.published-lock select,.published-lock .dropzone{pointer-events:none;opacity:0.7}
+.published-lock .toolbar .btn.unlock{opacity:1;pointer-events:auto}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <h3>// ADMIN LOGIN</h3>
+    <input type="email" id="login-email" placeholder="admin@belfed.com">
+    <input type="password" id="login-password" placeholder="password">
+    <button onclick="signIn()">[ ВОЙТИ ]</button>
+    <div id="login-msg"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+<div class="container">
+
+<header>
+  <h2><a href="/">— BELFED_ ADMIN <span class="admin-badge">ADMIN</span> —</a></h2>
+  <h1 id="page-title">— НОВЫЙ ОТЧЁТ АНАЛИТИКИ —</h1>
+</header>
+
+<div class="toolbar">
+  <a class="btn" href="/admin-analytics-list.html">[ ← К СПИСКУ ]</a>
+  <button class="btn" onclick="signOut()">[ ВЫЙТИ ]</button>
+  <span id="status-indicator"></span>
+  <button class="btn" id="btn-save"     onclick="onSaveDraft()">[ СОХРАНИТЬ ]</button>
+  <button class="btn primary" id="btn-publish" onclick="onPublish()">[ ОПУБЛИКОВАТЬ ]</button>
+</div>
+
+<div id="top-msg"></div>
+
+<div class="layout">
+
+<div class="editor">
+
+  <div class="lang-tabs">
+    <button id="tab-ru" class="active" onclick="switchLang('ru')">// RU</button>
+    <button id="tab-en" onclick="switchLang('en')">// EN</button>
+  </div>
+
+  <div class="editor-pad">
+
+    <div class="row-2">
+      <div class="field">
+        <label>// ДАТА ОТЧЁТА</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field">
+        <label>// ТИП</label>
+        <select id="f-type">
+          <option value="daily">DAILY (ежедневный)</option>
+          <option value="weekly">WEEKLY (еженедельный)</option>
+          <option value="flash">FLASH (срочный)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- RU pane -->
+    <div class="lang-pane active" id="pane-ru">
+      <div class="field">
+        <label>// ЗАГОЛОВОК · RU</label>
+        <input type="text" id="f-title-ru" placeholder="Например, Перезагрузка позиций">
+      </div>
+      <div class="field">
+        <label>// ПОДЗАГОЛОВОК · RU</label>
+        <textarea id="f-subtitle-ru"></textarea>
+      </div>
+    </div>
+
+    <!-- EN pane -->
+    <div class="lang-pane" id="pane-en">
+      <div class="field">
+        <label>// TITLE · EN</label>
+        <input type="text" id="f-title-en" placeholder="e.g. Positioning reset">
+      </div>
+      <div class="field">
+        <label>// SUBTITLE · EN</label>
+        <textarea id="f-subtitle-en"></textarea>
+      </div>
+    </div>
+
+    <div class="row-3">
+      <div class="field">
+        <label>// КЛАССЫ АКТИВОВ</label>
+        <div class="tag-input" id="ti-asset">
+          <input placeholder="+ добавить" data-target="asset_classes">
+        </div>
+      </div>
+      <div class="field">
+        <label>// СЕКТОРЫ</label>
+        <div class="tag-input" id="ti-sector">
+          <input placeholder="+ добавить" data-target="sectors">
+        </div>
+      </div>
+      <div class="field">
+        <label>// ТЕГИ</label>
+        <div class="tag-input" id="ti-tag">
+          <input placeholder="+ добавить" data-target="tags">
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>// COVER (опционально, для превью на сайте)</label>
+      <div class="dropzone" id="dz-cover">
+        <div class="dz-icon">⬆</div>
+        <div class="dz-text">[ ПЕРЕТАЩИТЕ ИЛИ КЛИКНИТЕ ]</div>
+        <div class="dz-sub">PNG, JPG, WEBP · до 5 MB</div>
+      </div>
+      <div class="help">Если не загружен — на ленте показывается стилизованный fallback с заголовком.</div>
+    </div>
+
+    <div id="sections-host"></div>
+
+    <div class="add-section">
+      <button onclick="addSection()">[ + ДОБАВИТЬ СЕКЦИЮ ]</button>
+    </div>
+
+    <!-- CONCLUSION -->
+    <div class="section-block" style="margin-top:30px;border-top:2px solid #000;padding-top:24px">
+      <div class="section-head">
+        <span class="label" style="color:#000;opacity:1">// ГЛАВНЫЙ ВЫВОД (обязательная финальная секция)</span>
+      </div>
+
+      <div class="lang-pane active" data-lang="ru">
+        <div class="field">
+          <label>ЗАГОЛОВОК · RU</label>
+          <input type="text" id="conc-headline-ru" placeholder="Что важно знать сейчас">
+        </div>
+        <div class="field">
+          <label>ТЕКСТ · RU</label>
+          <textarea id="conc-body-ru" rows="5"></textarea>
+        </div>
+      </div>
+      <div class="lang-pane" data-lang="en">
+        <div class="field">
+          <label>HEADLINE · EN</label>
+          <input type="text" id="conc-headline-en" placeholder="Key takeaway">
+        </div>
+        <div class="field">
+          <label>BODY · EN</label>
+          <textarea id="conc-body-en" rows="5"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h3>// СТАТУС</h3>
+    <div class="row"><span>Статус</span><span id="st-status" class="status-pill draft">ЧЕРНОВИК</span></div>
+    <div class="row"><span>ID</span><span id="st-id" style="font-size:10px">—</span></div>
+    <div class="row"><span>Slug</span><span id="st-slug" style="font-size:10px;word-break:break-all;text-align:right">—</span></div>
+    <div class="row"><span>Создан</span><span id="st-created">—</span></div>
+    <div class="row"><span>Изменён</span><span id="st-updated">—</span></div>
+    <div class="row"><span>Секций</span><span id="st-sections">0</span></div>
+    <div class="row"><span>Языки</span><span id="st-langs">RU ✗  EN ✗</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>// ПУБЛИКАЦИЯ</h3>
+    <div class="row"><span>RU канал</span><span>📊 Аналитика</span></div>
+    <div class="row"><span>EN канал</span><span>📊 Analytics</span></div>
+    <div class="help">При нажатии «Опубликовать» статус сменится на published, серия RU+EN уйдёт в каждый канал. Тестовый режим = только в личку Артёма.</div>
+    <div style="margin-top:12px">
+      <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="cb-test-mode" checked>
+        <span>TEST MODE (в личку Артёма)</span>
+      </label>
+    </div>
+    <div style="margin-top:8px">
+      <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="cb-skip-tg">
+        <span>SKIP TG (только сайт)</span>
+      </label>
+    </div>
+    <button class="btn" style="width:100%;margin-top:10px" onclick="onDryRun()">[ DRY-RUN PREVIEW ]</button>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>// ПРЕДПРОСМОТР</h3>
+    <a id="preview-link" class="btn" target="_blank" style="display:block;text-align:center;width:100%">[ ОТКРЫТЬ НА САЙТЕ ]</a>
+    <div class="help">Доступно после первого сохранения. Черновики видны только админу.</div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>// ОПАСНАЯ ЗОНА</h3>
+    <button class="btn danger" id="btn-delete" style="width:100%" onclick="onDelete()">[ УДАЛИТЬ ОТЧЁТ ]</button>
+    <div class="help">Удаление возможно только пока статус «Черновик».</div>
+  </div>
+
+</aside>
+
+</div>
+</div>
+</div>
+
+<script>
+// ============== Constants ==============
+const SUPABASE_URL  = 'https://obujqvqqmyfcfflhqvud.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ============== State ==============
+const state = {
+  id: null,
+  slug: null,
+  status: 'draft',
+  cover_image_url: null,
+  asset_classes: [],
+  sectors: [],
+  tags: [],
+  sections: [],     // editable user sections (excluding conclusion)
+  conclusion: { id:null, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_image_url:null, chart_caption_ru:'', chart_caption_en:'' },
+  lang: 'ru',
+  created_at: null,
+  updated_at: null,
+};
+
+// ============== Auth ==============
+async function signIn() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const msg = document.getElementById('login-msg');
+  msg.innerHTML = '';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { msg.innerHTML = '<div class="msg err">' + error.message + '</div>'; return; }
+  await checkAdminAndShow();
+}
+async function signOut() { await sb.auth.signOut(); location.reload(); }
+
+async function checkAdminAndShow() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    return;
+  }
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('subscription_status,email')
+    .eq('id', session.user.id)
+    .maybeSingle();
+  if (!profile || profile.subscription_status !== 'admin') {
+    document.getElementById('login-msg').innerHTML =
+      '<div class="msg err">Access denied — your account is not an admin.</div>';
+    return;
+  }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // load existing report if id in URL
+  const url = new URL(location.href);
+  const editId = url.searchParams.get('id');
+  if (editId) await loadReport(editId);
+  else        initBlank();
+
+  renderAll();
+}
+
+// ============== Admin Action ==============
+async function adminAction(payload) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return { ok:false, error:'no_session' };
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/analytics-admin-action`, {
+      method:'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}` },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } catch (e) {
+    return { ok:false, error:String(e) };
+  }
+}
+
+// ============== Init ==============
+function todayISO() {
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function initBlank() {
+  state.id = null;
+  state.slug = null;
+  state.status = 'draft';
+  state.created_at = null;
+  state.updated_at = null;
+  state.sections = [ blankSection(0) ];
+  state.conclusion = { id:null, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_image_url:null, chart_caption_ru:'', chart_caption_en:'' };
+  state.cover_image_url = null;
+  state.asset_classes = [];
+  state.sectors = [];
+  state.tags = [];
+
+  document.getElementById('f-date').value = todayISO();
+  document.getElementById('f-type').value = 'daily';
+}
+
+function blankSection(pos) {
+  return {
+    id:null, position:pos, is_conclusion:false,
+    section_label_ru:`0${pos+1}  `, section_label_en:`0${pos+1}  `,
+    headline_ru:'', headline_en:'',
+    body_ru:'',     body_en:'',
+    chart_image_url:null,
+    chart_caption_ru:'', chart_caption_en:'',
+  };
+}
+
+async function loadReport(id) {
+  const r = await adminAction({ action:'get', id });
+  if (!r.ok || !r.data?.report) {
+    showTopMsg('Не удалось загрузить отчёт: ' + (r.data?.error || r.status), 'err');
+    initBlank();
+    return;
+  }
+  const rep = r.data.report;
+  const secs = (r.data.sections || []).slice().sort((a,b)=>a.position-b.position);
+  state.id = rep.id;
+  state.slug = rep.slug;
+  state.status = rep.status;
+  state.cover_image_url = rep.cover_image_url || null;
+  state.asset_classes = rep.asset_classes || [];
+  state.sectors = rep.sectors || [];
+  state.tags = rep.tags || [];
+  state.created_at = rep.created_at;
+  state.updated_at = rep.updated_at;
+
+  document.getElementById('f-date').value     = (rep.report_date || todayISO()).slice(0,10);
+  document.getElementById('f-type').value     = rep.report_type || 'daily';
+  document.getElementById('f-title-ru').value    = rep.title_ru || '';
+  document.getElementById('f-title-en').value    = rep.title_en || '';
+  document.getElementById('f-subtitle-ru').value = rep.subtitle_ru || '';
+  document.getElementById('f-subtitle-en').value = rep.subtitle_en || '';
+
+  // split body sections vs conclusion
+  state.sections = secs.filter(s => !s.is_conclusion).map((s,i)=>({...s, position:i}));
+  if (state.sections.length === 0) state.sections = [ blankSection(0) ];
+
+  const conc = secs.find(s => s.is_conclusion);
+  if (conc) {
+    state.conclusion = {
+      id: conc.id,
+      headline_ru: conc.headline_ru || '',
+      headline_en: conc.headline_en || '',
+      body_ru:     conc.body_ru || '',
+      body_en:     conc.body_en || '',
+      chart_image_url: conc.chart_image_url || null,
+      chart_caption_ru: conc.chart_caption_ru || '',
+      chart_caption_en: conc.chart_caption_en || '',
+    };
+  }
+  document.getElementById('conc-headline-ru').value = state.conclusion.headline_ru;
+  document.getElementById('conc-headline-en').value = state.conclusion.headline_en;
+  document.getElementById('conc-body-ru').value     = state.conclusion.body_ru;
+  document.getElementById('conc-body-en').value     = state.conclusion.body_en;
+
+  document.getElementById('page-title').textContent = `— РЕДАКТИРОВАНИЕ: ${rep.title_ru || rep.title_en || '(без названия)'} —`;
+}
+
+// ============== Render ==============
+function renderAll() {
+  renderTags('ti-asset', state.asset_classes);
+  renderTags('ti-sector', state.sectors);
+  renderTags('ti-tag', state.tags);
+  renderCover();
+  renderSections();
+  renderStatus();
+  document.body.classList.add('ready');
+}
+
+function renderStatus() {
+  const pill = document.getElementById('st-status');
+  pill.className = 'status-pill ' + state.status;
+  pill.textContent = state.status === 'published' ? 'ОПУБЛИКОВАН' : 'ЧЕРНОВИК';
+  document.getElementById('st-id').textContent       = state.id || '—';
+  document.getElementById('st-slug').textContent     = state.slug || '—';
+  document.getElementById('st-created').textContent  = state.created_at ? fmtTs(state.created_at) : '—';
+  document.getElementById('st-updated').textContent  = state.updated_at ? fmtTs(state.updated_at) : '—';
+  document.getElementById('st-sections').textContent = state.sections.length + ' + ВЫВОД';
+  const ruOK = !!document.getElementById('f-title-ru').value.trim();
+  const enOK = !!document.getElementById('f-title-en').value.trim();
+  document.getElementById('st-langs').textContent = `RU ${ruOK?'✓':'✗'}   EN ${enOK?'✓':'✗'}`;
+
+  // preview link
+  const link = document.getElementById('preview-link');
+  if (state.slug) {
+    link.href = `/analytics-view.html?slug=${encodeURIComponent(state.slug)}&lang=${state.lang}`;
+    link.style.opacity = '1';
+    link.style.pointerEvents = 'auto';
+  } else {
+    link.href = '#';
+    link.style.opacity = '0.4';
+    link.style.pointerEvents = 'none';
+  }
+
+  document.getElementById('btn-delete').disabled = !state.id || state.status === 'published';
+}
+
+function fmtTs(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderTags(hostId, list) {
+  const host = document.getElementById(hostId);
+  host.querySelectorAll('.tag-pill').forEach(n => n.remove());
+  const input = host.querySelector('input');
+  list.forEach(tag => {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.innerHTML = `${escapeHtml(tag)} <span class="x">×</span>`;
+    pill.querySelector('.x').onclick = () => {
+      const arr = state[input.dataset.target];
+      const i = arr.indexOf(tag);
+      if (i >= 0) arr.splice(i, 1);
+      renderTags(hostId, arr);
+      renderStatus();
+    };
+    host.insertBefore(pill, input);
+  });
+}
+
+function setupTagInputs() {
+  document.querySelectorAll('.tag-input input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const v = inp.value.trim().replace(/,$/, '');
+        if (!v) return;
+        const arr = state[inp.dataset.target];
+        if (!arr.includes(v)) arr.push(v);
+        inp.value = '';
+        renderTags(inp.parentElement.id, arr);
+        renderStatus();
+      }
+    });
+  });
+}
+
+// ============== Cover ==============
+function renderCover() {
+  const dz = document.getElementById('dz-cover');
+  if (state.cover_image_url) {
+    dz.classList.add('has-file');
+    dz.innerHTML = `
+      <img src="${state.cover_image_url}" alt="">
+      <div class="dz-replace">[ ЗАМЕНИТЬ ]</div>
+    `;
+  } else {
+    dz.classList.remove('has-file');
+    dz.innerHTML = `
+      <div class="dz-icon">⬆</div>
+      <div class="dz-text">[ ПЕРЕТАЩИТЕ ИЛИ КЛИКНИТЕ ]</div>
+      <div class="dz-sub">PNG, JPG, WEBP · до 5 MB</div>
+    `;
+  }
+  attachDz(dz, async (file) => {
+    const url = await uploadImage(file, dz);
+    if (url) { state.cover_image_url = url; renderCover(); }
+  });
+}
+
+// ============== Sections ==============
+function renderSections() {
+  const host = document.getElementById('sections-host');
+  host.innerHTML = '';
+  state.sections.forEach((sec, i) => {
+    sec.position = i;
+    host.appendChild(renderSectionBlock(sec, i));
+  });
+}
+
+function renderSectionBlock(sec, idx) {
+  const div = document.createElement('div');
+  div.className = 'section-block';
+  div.innerHTML = `
+    <div class="section-head">
+      <span class="label">// СЕКЦИЯ ${String(idx+1).padStart(2,'0')}</span>
+      <div class="section-actions">
+        <button class="icon-btn" data-act="up"   ${idx===0 ? 'disabled' : ''}>↑</button>
+        <button class="icon-btn" data-act="down" ${idx===state.sections.length-1 ? 'disabled' : ''}>↓</button>
+        <button class="icon-btn" data-act="del">УДАЛИТЬ</button>
+      </div>
+    </div>
+
+    <div class="lang-pane ${state.lang==='ru'?'active':''}" data-lang="ru">
+      <div class="row-2">
+        <div class="field"><label>МЕТКА · RU</label>
+          <input type="text" data-bind="section_label_ru" value="${escapeAttr(sec.section_label_ru||'')}"></div>
+        <div class="field"><label>ЗАГОЛОВОК · RU</label>
+          <input type="text" data-bind="headline_ru" value="${escapeAttr(sec.headline_ru||'')}"></div>
+      </div>
+      <div class="field"><label>ТЕКСТ · RU</label>
+        <textarea data-bind="body_ru" rows="4">${escapeHtml(sec.body_ru||'')}</textarea>
+        <div class="char-counter" data-counter="body_ru">0 / 1024</div>
+      </div>
+    </div>
+
+    <div class="lang-pane ${state.lang==='en'?'active':''}" data-lang="en">
+      <div class="row-2">
+        <div class="field"><label>LABEL · EN</label>
+          <input type="text" data-bind="section_label_en" value="${escapeAttr(sec.section_label_en||'')}"></div>
+        <div class="field"><label>HEADLINE · EN</label>
+          <input type="text" data-bind="headline_en" value="${escapeAttr(sec.headline_en||'')}"></div>
+      </div>
+      <div class="field"><label>BODY · EN</label>
+        <textarea data-bind="body_en" rows="4">${escapeHtml(sec.body_en||'')}</textarea>
+        <div class="char-counter" data-counter="body_en">0 / 1024</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>// ГРАФИК (опционально)</label>
+      <div class="dropzone ${sec.chart_image_url ? 'has-file' : ''}" data-dz>
+        ${sec.chart_image_url
+          ? `<img src="${sec.chart_image_url}"><div class="dz-replace">[ ЗАМЕНИТЬ ]</div>`
+          : `<div class="dz-icon">⬆</div><div class="dz-text">[ DROP CHART HERE ]</div><div class="dz-sub">PNG, JPG · до 5 MB</div>`}
+      </div>
+      <div class="row-2" style="margin-top:10px">
+        <div class="field"><label>ПОДПИСЬ · RU</label>
+          <input type="text" data-bind="chart_caption_ru" value="${escapeAttr(sec.chart_caption_ru||'')}" placeholder="// ГРАФИК: ..."></div>
+        <div class="field"><label>CAPTION · EN</label>
+          <input type="text" data-bind="chart_caption_en" value="${escapeAttr(sec.chart_caption_en||'')}" placeholder="// CHART: ..."></div>
+      </div>
+    </div>
+  `;
+
+  // wire bindings
+  div.querySelectorAll('[data-bind]').forEach(el => {
+    const k = el.dataset.bind;
+    el.addEventListener('input', () => { sec[k] = el.value; updateCounters(div, sec); renderStatus(); });
+  });
+
+  // counters
+  updateCounters(div, sec);
+
+  // actions
+  div.querySelector('[data-act="up"]').onclick   = () => moveSection(idx, -1);
+  div.querySelector('[data-act="down"]').onclick = () => moveSection(idx,  1);
+  div.querySelector('[data-act="del"]').onclick  = () => deleteSection(idx);
+
+  // dropzone
+  const dz = div.querySelector('[data-dz]');
+  attachDz(dz, async (file) => {
+    const url = await uploadImage(file, dz);
+    if (url) { sec.chart_image_url = url; renderSections(); }
+  });
+
+  return div;
+}
+
+function updateCounters(el, sec) {
+  el.querySelectorAll('[data-counter]').forEach(cnt => {
+    const k = cnt.dataset.counter;
+    const len = (sec[k]||'').length;
+    cnt.textContent = `${len} / 1024 символов (TG caption)`;
+    cnt.className = 'char-counter' + (len > 1024 ? ' over' : (len > 900 ? ' warn' : ''));
+  });
+}
+
+function moveSection(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= state.sections.length) return;
+  const tmp = state.sections[i];
+  state.sections[i] = state.sections[j];
+  state.sections[j] = tmp;
+  renderSections();
+}
+
+function deleteSection(i) {
+  if (state.sections.length <= 1) { showTopMsg('Должна остаться хотя бы одна секция.', 'err'); return; }
+  state.sections.splice(i, 1);
+  renderSections();
+}
+
+function addSection() {
+  state.sections.push(blankSection(state.sections.length));
+  renderSections();
+}
+
+// ============== Lang switch ==============
+function switchLang(lang) {
+  state.lang = lang;
+  document.getElementById('tab-ru').classList.toggle('active', lang==='ru');
+  document.getElementById('tab-en').classList.toggle('active', lang==='en');
+  document.querySelectorAll('.lang-pane').forEach(p => {
+    p.classList.toggle('active', p.dataset.lang === lang || (!p.dataset.lang && p.id === 'pane-'+lang));
+  });
+  renderSections();
+  renderStatus();
+}
+
+// ============== Upload ==============
+async function uploadImage(file, dz) {
+  if (!file) return null;
+  if (file.size > 5 * 1024 * 1024) { showTopMsg('Файл больше 5MB.', 'err'); return null; }
+  const ct = file.type || 'image/png';
+  if (!/^image\/(png|jpe?g|webp|gif)$/.test(ct)) { showTopMsg('Только PNG, JPG, WEBP, GIF.', 'err'); return null; }
+
+  // 1. ask backend for signed url
+  const r = await adminAction({ action:'upload', filename:file.name, content_type:ct });
+  if (!r.ok || !r.data?.signed_url) {
+    showTopMsg('Upload init failed: ' + (r.data?.error || r.status), 'err');
+    return null;
+  }
+
+  // 2. PUT to signed url
+  showProgress(dz, 'UPLOADING…');
+  try {
+    const put = await fetch(r.data.signed_url, {
+      method:'PUT',
+      headers: { 'Content-Type': ct },
+      body: file,
+    });
+    if (!put.ok) {
+      const t = await put.text().catch(()=>'');
+      showProgress(dz, null);
+      showTopMsg('PUT failed ' + put.status + ' ' + t.slice(0,100), 'err');
+      return null;
+    }
+  } catch (e) {
+    showProgress(dz, null);
+    showTopMsg('PUT error: ' + e.message, 'err');
+    return null;
+  }
+  showProgress(dz, null);
+  return r.data.public_url;
+}
+
+function showProgress(dz, txt) {
+  let p = dz.querySelector('.dz-progress');
+  if (txt) {
+    if (!p) { p = document.createElement('div'); p.className='dz-progress'; dz.appendChild(p); }
+    p.textContent = txt;
+  } else if (p) {
+    p.remove();
+  }
+}
+
+function attachDz(dz, handler) {
+  dz.addEventListener('click', () => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/png,image/jpeg,image/webp,image/gif';
+    inp.onchange = () => { if (inp.files[0]) handler(inp.files[0]); };
+    inp.click();
+  });
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handler(e.dataTransfer.files[0]);
+  });
+}
+
+// ============== Save / Publish ==============
+function buildPayload(status) {
+  const date_ru = document.getElementById('f-date').value;
+  const sections = state.sections.map((s, i) => ({
+    position: i,
+    is_conclusion: false,
+    section_label_ru: s.section_label_ru || `0${i+1}`,
+    section_label_en: s.section_label_en || `0${i+1}`,
+    headline_ru: s.headline_ru || '',
+    headline_en: s.headline_en || '',
+    body_ru:     s.body_ru || '',
+    body_en:     s.body_en || '',
+    chart_image_url:  s.chart_image_url || null,
+    chart_caption_ru: s.chart_caption_ru || '',
+    chart_caption_en: s.chart_caption_en || '',
+  }));
+  // conclusion as last section
+  state.conclusion.headline_ru = document.getElementById('conc-headline-ru').value;
+  state.conclusion.headline_en = document.getElementById('conc-headline-en').value;
+  state.conclusion.body_ru     = document.getElementById('conc-body-ru').value;
+  state.conclusion.body_en     = document.getElementById('conc-body-en').value;
+  sections.push({
+    position: sections.length,
+    is_conclusion: true,
+    section_label_ru: 'ГЛАВНЫЙ ВЫВОД',
+    section_label_en: 'KEY TAKEAWAY',
+    headline_ru: state.conclusion.headline_ru,
+    headline_en: state.conclusion.headline_en,
+    body_ru:     state.conclusion.body_ru,
+    body_en:     state.conclusion.body_en,
+    chart_image_url:  state.conclusion.chart_image_url || null,
+    chart_caption_ru: state.conclusion.chart_caption_ru || '',
+    chart_caption_en: state.conclusion.chart_caption_en || '',
+  });
+
+  const payload = {
+    action: 'save',
+    id: state.id || undefined,
+    slug: state.slug || undefined,
+    report_date: date_ru,
+    report_type: document.getElementById('f-type').value,
+    title_ru:    document.getElementById('f-title-ru').value,
+    title_en:    document.getElementById('f-title-en').value,
+    subtitle_ru: document.getElementById('f-subtitle-ru').value,
+    subtitle_en: document.getElementById('f-subtitle-en').value,
+    asset_classes: state.asset_classes,
+    sectors:       state.sectors,
+    tags:          state.tags,
+    cover_image_url: state.cover_image_url || null,
+    status,
+    sections,
+  };
+  return payload;
+}
+
+async function onSaveDraft() {
+  document.getElementById('btn-save').disabled = true;
+  showTopMsg('Сохранение…', 'info');
+  const r = await adminAction(buildPayload(state.status === 'published' ? 'published' : 'draft'));
+  document.getElementById('btn-save').disabled = false;
+  if (!r.ok || !r.data?.report_id) {
+    showTopMsg('Сохранение не удалось: ' + (r.data?.error || r.status), 'err');
+    return;
+  }
+  await syncFromBackend(r.data.report_id);
+  showTopMsg('Сохранено ✓', 'ok');
+}
+
+async function onPublish() {
+  if (!confirm('Опубликовать отчёт?\n• Статус сменится на published\n• ' + (document.getElementById('cb-skip-tg').checked ? 'TG отправка пропущена' : 'Серия RU+EN уйдёт в TG' + (document.getElementById('cb-test-mode').checked ? ' (test)' : ' (PROD)')))) return;
+
+  document.getElementById('btn-publish').disabled = true;
+  showTopMsg('Сохранение…', 'info');
+  const saveR = await adminAction(buildPayload('published'));
+  if (!saveR.ok || !saveR.data?.report_id) {
+    document.getElementById('btn-publish').disabled = false;
+    showTopMsg('Сохранение не удалось: ' + (saveR.data?.error || saveR.status), 'err');
+    return;
+  }
+  await syncFromBackend(saveR.data.report_id);
+
+  if (document.getElementById('cb-skip-tg').checked) {
+    showTopMsg('Сохранено и опубликовано на сайте. TG пропущен.', 'ok');
+    document.getElementById('btn-publish').disabled = false;
+    return;
+  }
+
+  showTopMsg('Публикация в Telegram…', 'info');
+  const pubR = await adminAction({
+    action: 'publish',
+    report_id: state.id,
+    test_mode: document.getElementById('cb-test-mode').checked,
+  });
+  document.getElementById('btn-publish').disabled = false;
+  if (!pubR.ok) {
+    showTopMsg('Публикация в TG не удалась: ' + (pubR.data?.error || pubR.status) + ' (но сохранение прошло)', 'err');
+    return;
+  }
+  showTopMsg('Опубликовано ✓ ' + (document.getElementById('cb-test-mode').checked ? '(TEST в личку)' : '(PROD в каналы)'), 'ok');
+}
+
+async function onDryRun() {
+  if (!state.id) { showTopMsg('Сначала сохраните черновик.', 'err'); return; }
+  showTopMsg('Dry-run превью…', 'info');
+  const r = await adminAction({ action:'publish', report_id:state.id, dry_run:true, test_mode:document.getElementById('cb-test-mode').checked });
+  if (!r.ok) { showTopMsg('Dry-run не удался: '+(r.data?.error||r.status), 'err'); return; }
+  console.log('[DRY RUN]', r.data);
+  showTopMsg('Dry-run готов — см. console.log', 'ok');
+}
+
+async function onDelete() {
+  if (!state.id) return;
+  if (!confirm('Удалить отчёт навсегда? (Только черновики.)')) return;
+  const r = await adminAction({ action:'delete', report_id:state.id });
+  if (!r.ok) { showTopMsg('Удаление не удалось: '+(r.data?.error||r.status), 'err'); return; }
+  location.href = '/admin-analytics-list.html';
+}
+
+async function syncFromBackend(reportId) {
+  // analytics-save returns just {report_id, slug}; refetch full state via analytics-get
+  const r = await adminAction({ action:'get', id:reportId });
+  if (!r.ok || !r.data?.report) {
+    // partial: at least keep the id we know
+    state.id = reportId;
+    const u = new URL(location.href);
+    u.searchParams.set('id', reportId);
+    history.replaceState({}, '', u);
+    renderStatus();
+    return;
+  }
+  const rep = r.data.report;
+  state.id = rep.id;
+  state.slug = rep.slug;
+  state.status = rep.status;
+  state.created_at = rep.created_at;
+  state.updated_at = rep.updated_at;
+  // resync section ids by position
+  const secs = (r.data.sections||[]).slice().sort((a,b)=>a.position-b.position);
+  const bodySecs = secs.filter(s=>!s.is_conclusion);
+  bodySecs.forEach((s,i)=>{ if (state.sections[i]) state.sections[i].id = s.id; });
+  const conc = secs.find(s=>s.is_conclusion);
+  if (conc) state.conclusion.id = conc.id;
+
+  const u = new URL(location.href);
+  u.searchParams.set('id', rep.id);
+  history.replaceState({}, '', u);
+  renderStatus();
+}
+
+// ============== Helpers ==============
+function showTopMsg(text, kind) {
+  const host = document.getElementById('top-msg');
+  host.innerHTML = `<div class="msg ${kind||''}">${escapeHtml(text)}</div>`;
+  if (kind === 'ok' || kind === 'info') {
+    setTimeout(() => { if (host.firstElementChild?.textContent === text) host.innerHTML = ''; }, 4000);
+  }
+}
+function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+// ============== Boot ==============
+setupTagInputs();
+['f-title-ru','f-title-en'].forEach(id => document.getElementById(id).addEventListener('input', renderStatus));
+checkAdminAndShow();
+</script>
+</body>
+</html>
