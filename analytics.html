@@ -210,6 +210,16 @@ const I18N = {
 const POPULAR_TAGS = ['CTA','Positioning','Inflation','Bonds','Commodities','Sentiment','Volatility','Earnings','Fed','Geopolitics'];
 
 function setLang(lang) {
+  // Cross-domain switch: stay on belfed.com for EN, redirect to belfed.ru for RU
+  const host = location.hostname;
+  if (lang === 'ru' && host !== 'belfed.ru' && host !== 'www.belfed.ru') {
+    location.href = 'https://belfed.ru/analytics.html?lang=ru';
+    return;
+  }
+  if (lang === 'en' && host !== 'belfed.com' && host !== 'www.belfed.com') {
+    location.href = 'https://belfed.com/analytics.html?lang=en';
+    return;
+  }
   state.lang = lang;
   document.documentElement.lang = lang;
   document.getElementById('langRu').classList.toggle('active', lang === 'ru');
@@ -344,8 +354,12 @@ function debounce(fn, wait) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // restore lang from URL
+  // Default lang depends on host
+  const host = location.hostname;
+  if (host === 'belfed.com' || host === 'www.belfed.com') state.lang = 'en';
+  // URL ?lang=xx overrides
   const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang === 'ru') state.lang = 'ru';
   if (urlLang === 'en') state.lang = 'en';
   document.getElementById('langRu').classList.toggle('active', state.lang === 'ru');
   document.getElementById('langEn').classList.toggle('active', state.lang === 'en');

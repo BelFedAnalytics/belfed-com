@@ -133,13 +133,24 @@ function applyI18n() {
 }
 
 function setLang(lang) {
+  // Cross-domain switch: stay on belfed.com for EN, redirect to belfed.ru for RU (preserve slug/id)
+  const host = location.hostname;
+  const params = new URLSearchParams(location.search);
+  if (lang === 'en' && host !== 'belfed.com' && host !== 'www.belfed.com') {
+    params.set('lang', 'en');
+    location.href = 'https://belfed.com/analytics-view.html?' + params.toString();
+    return;
+  }
+  if (lang === 'ru' && host !== 'belfed.ru' && host !== 'www.belfed.ru') {
+    params.set('lang', 'ru');
+    location.href = 'https://belfed.ru/analytics-view.html?' + params.toString();
+    return;
+  }
   state.lang = lang;
   document.getElementById('langRu').classList.toggle('active', lang === 'ru');
   document.getElementById('langEn').classList.toggle('active', lang === 'en');
   applyI18n();
-  // re-render content with current data
   if (state.report) renderReport();
-  // update URL
   const u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState({}, '', u);
 }
 
@@ -219,7 +230,13 @@ async function loadReport() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Default lang based on host
+  const host = location.hostname;
+  if (host === 'belfed.com' || host === 'www.belfed.com') state.lang = 'en';
+  if (host === 'belfed.ru' || host === 'www.belfed.ru') state.lang = 'ru';
+  // URL param overrides
   const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang === 'ru') state.lang = 'ru';
   if (urlLang === 'en') state.lang = 'en';
   document.getElementById('langRu').classList.toggle('active', state.lang === 'ru');
   document.getElementById('langEn').classList.toggle('active', state.lang === 'en');
