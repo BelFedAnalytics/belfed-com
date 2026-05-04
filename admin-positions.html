@@ -238,11 +238,11 @@ td.col-rem-partial{background:#fff4e0;color:#ff9500;font-weight:bold}
         <textarea id="f-comment_en" placeholder="If empty, you can auto-translate from RU..."></textarea>
         <button class="secondary" type="button" onclick="translateComment()" style="margin-top:8px;font-size:11px;padding:7px 14px">Translate RU → EN</button>
 
-        <div class="checkbox-row"><input type="checkbox" id="f-publish_to_ru"><label for="f-publish_to_ru" style="margin:0">Publish to RU community channel</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="f-publish_to_en"><label for="f-publish_to_en" style="margin:0">Publish to EN community channel</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="f-publish_to_ru"><label for="f-publish_to_ru" id="l-publish_to_ru" style="margin:0">Publish to RU community channel</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="f-publish_to_en"><label for="f-publish_to_en" id="l-publish_to_en" style="margin:0">Publish to EN community channel</label></div>
 
         <div class="btn-row">
-          <button onclick="savePosition()">Save & publish (if checked)</button>
+          <button id="save-btn" onclick="savePosition()">Save & publish (if checked)</button>
           <button class="secondary" onclick="resetForm()">Reset</button>
         </div>
         <div id="form-msg"></div>
@@ -821,6 +821,25 @@ function changeAssetType() {
   document.getElementById('new-step-pick').style.display = 'block';
 }
 
+// Switch publish-checkbox labels and Save-button label between
+// "new position" mode (publish a fresh post) and "edit" mode (update the
+// existing TG post in place). Edit never sends a new message — the labels
+// reflect that so the admin isn't worried about double-posting.
+function applyEditingLabels(isEditing) {
+  const lru = document.getElementById('l-publish_to_ru');
+  const len = document.getElementById('l-publish_to_en');
+  const btn = document.getElementById('save-btn');
+  if (isEditing) {
+    if (lru) lru.textContent = 'Update post in RU community channel';
+    if (len) len.textContent = 'Update post in EN community channel';
+    if (btn) btn.textContent = 'Save & update TG post (if checked)';
+  } else {
+    if (lru) lru.textContent = 'Publish to RU community channel';
+    if (len) len.textContent = 'Publish to EN community channel';
+    if (btn) btn.textContent = 'Save & publish (if checked)';
+  }
+}
+
 function resetForm() {
   ['f-ticker','f-entry_price','f-stop_price','f-target_1','f-target_2','f-target_3',
    'f-risk_r','f-tradingview_url','f-comment_ru','f-comment_en'].forEach(id => document.getElementById(id).value = '');
@@ -832,6 +851,7 @@ function resetForm() {
   document.getElementById('form-msg').innerHTML = '';
   editingId = null;
   document.getElementById('form-title').firstChild && (document.getElementById('form-title').firstChild.nodeValue = I18N.formTitleNew);
+  applyEditingLabels(false);
   applyAssetClassUi('stock');
 }
 
@@ -899,6 +919,7 @@ async function editPosition(id) {
   document.getElementById('f-publish_to_ru').checked = !!data.publish_to_ru;
   document.getElementById('f-publish_to_en').checked = !!data.publish_to_en;
   editingId = id;
+  applyEditingLabels(true);
   // Skip the asset picker step when editing an existing position.
   document.getElementById('new-step-pick').style.display = 'none';
   document.getElementById('new-step-form').style.display = 'block';
