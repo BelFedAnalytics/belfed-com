@@ -306,8 +306,9 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 
   <div class="sidebar-card">
     <h3>// ПРЕДПРОСМОТР</h3>
-    <a id="preview-link" class="btn" target="_blank" style="display:block;text-align:center;width:100%">[ ОТКРЫТЬ НА САЙТЕ ]</a>
-    <div class="help">Доступно после первого сохранения. Черновики видны только админу.</div>
+    <button id="btn-preview-ru" class="btn" style="display:block;width:100%;text-align:center;margin-bottom:6px" onclick="onPreview('ru')">[ ПРЕДПРОСМОТР RU → belfed.ru ]</button>
+    <button id="btn-preview-en" class="btn" style="display:block;width:100%;text-align:center" onclick="onPreview('en')">[ ПРЕДПРОСМОТР EN → belfed.com ]</button>
+    <div class="help">Доступно после первого сохранения. Открывает по одноразовой ссылке (30 мин).</div>
   </div>
 
   <div class="sidebar-card">
@@ -530,16 +531,15 @@ function renderStatus() {
   const enOK = !!document.getElementById('f-title-en').value.trim();
   document.getElementById('st-langs').textContent = `RU ${ruOK?'✓':'✗'}   EN ${enOK?'✓':'✗'}`;
 
-  // preview link
-  const link = document.getElementById('preview-link');
-  if (state.slug) {
-    link.href = `/analytics-view.html?slug=${encodeURIComponent(state.slug)}&lang=${state.lang}`;
-    link.style.opacity = '1';
-    link.style.pointerEvents = 'auto';
-  } else {
-    link.href = '#';
-    link.style.opacity = '0.4';
-    link.style.pointerEvents = 'none';
+  // preview buttons enable/disable
+  const btnRu = document.getElementById('btn-preview-ru');
+  const btnEn = document.getElementById('btn-preview-en');
+  const enabled = !!state.id;
+  for (const b of [btnRu, btnEn]) {
+    if (!b) continue;
+    b.disabled = !enabled;
+    b.style.opacity = enabled ? '1' : '0.4';
+    b.style.pointerEvents = enabled ? 'auto' : 'none';
   }
 
   document.getElementById('btn-delete').disabled = !state.id || state.status === 'published';
@@ -1020,9 +1020,65 @@ async function onDryRun() {
   if (!state.id) { showTopMsg('Сначала сохраните черновик.', 'err'); return; }
   showTopMsg('Dry-run превью…', 'info');
   const r = await adminAction({ action:'publish', report_id:state.id, dry_run:true, test_mode:document.getElementById('cb-test-mode').checked });
-  if (!r.ok) { showTopMsg('Dry-run не удался: '+(r.data?.error||r.status), 'err'); return; }
+  if (!r.ok) {
+    const msg = (r.data && (r.data.error || r.data.message)) || ('HTTP '+r.status);
+    showTopMsg('Dry-run не удался: '+msg, 'err');
+    console.error('[DRY RUN ERROR]', r);
+    return;
+  }
   console.log('[DRY RUN]', r.data);
-  showTopMsg('Dry-run готов — см. console.log', 'ok');
+  // Render a compact summary in a modal-ish overlay so the user actually sees it.
+  showDryRunSummary(r.data);
+  showTopMsg('Dry-run готов — см. окно предпросмотра', 'ok');
+}
+
+function showDryRunSummary(data) {
+  let host = document.getElementById('dryrun-modal');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'dryrun-modal';
+    host.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+    host.addEventListener('click', e => { if (e.target === host) host.remove(); });
+    document.body.appendChild(host);
+  }
+  const safe = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const langs = (data && data.langs) || {};
+  let langsHtml = '';
+  for (const lang of Object.keys(langs)) {
+    const L = langs[lang];
+    const msgs = L.messages || L.preview || [];
+    let parts = '';
+    if (Array.isArray(msgs)) {
+      msgs.forEach((m, i) => {
+        const txt = m.text || m.caption || '';
+        const buttons = (m.reply_markup && m.reply_markup.inline_keyboard) || [];
+        const btnFlat = [].concat(...buttons).map(b => b.text).join(' │ ');
+        parts += `<div style="border:1px solid #ddd;padding:10px;margin:8px 0;background:#fafafa"><div style="font:11px monospace;color:#888">MSG ${i+1}${m.kind?' · '+m.kind:''}${m.parse_mode?' · '+m.parse_mode:''}</div><pre style="white-space:pre-wrap;font:12px/1.4 monospace;margin:6px 0 0">${safe(txt)}</pre>${btnFlat?`<div style="font:11px monospace;color:#06c;margin-top:6px">[${safe(btnFlat)}]</div>`:''}</div>`;
+      });
+    } else {
+      parts = `<pre style="white-space:pre-wrap;font:12px/1.4 monospace">${safe(JSON.stringify(L, null, 2))}</pre>`;
+    }
+    langsHtml += `<details open style="margin-bottom:14px"><summary style="font-weight:bold;cursor:pointer">// ${lang.toUpperCase()}</summary>${parts}</details>`;
+  }
+  if (!langsHtml) langsHtml = `<pre style="white-space:pre-wrap;font:12px monospace">${safe(JSON.stringify(data, null, 2))}</pre>`;
+  host.innerHTML = `<div style="background:#fff;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:24px;border-radius:6px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h2 style="margin:0;font:bold 14px monospace;letter-spacing:2px">// DRY-RUN PREVIEW</h2><button onclick="document.getElementById('dryrun-modal').remove()" style="border:1px solid #000;background:#fff;padding:4px 10px;cursor:pointer;font:11px monospace">CLOSE</button></div>${langsHtml}</div>`;
+}
+
+async function onPreview(lang) {
+  if (!state.id) { showTopMsg('Сначала сохраните черновик.', 'err'); return; }
+  showTopMsg('Готовлю ссылку предпросмотра…', 'info');
+  const r = await adminAction({ action:'preview_token', report_id:state.id });
+  if (!r.ok || !r.data || !r.data.ok) {
+    const msg = (r.data && (r.data.error || r.data.message)) || ('HTTP '+r.status);
+    showTopMsg('Не удалось получить токен: '+msg, 'err');
+    return;
+  }
+  const slug = r.data.slug || state.slug || '';
+  const token = r.data.token;
+  const host = lang === 'ru' ? 'https://belfed.ru' : 'https://belfed.com';
+  const url = `${host}/analytics-view.html?slug=${encodeURIComponent(slug)}&lang=${lang}&preview_token=${encodeURIComponent(token)}`;
+  window.open(url, '_blank');
+  showTopMsg('Ссылка открыта в новой вкладке (30 мин)', 'ok');
 }
 
 async function onDelete() {
