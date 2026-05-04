@@ -73,6 +73,19 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .dropzone img{width:100%;display:block;max-height:300px;object-fit:contain;background:#000}
 .dropzone .dz-replace{position:absolute;top:8px;right:8px;background:#000;color:#fff;padding:4px 10px;font-size:10px;letter-spacing:1px;cursor:pointer;z-index:2}
 .dropzone .dz-progress{position:absolute;left:0;right:0;bottom:0;background:#1a7a1a;color:#fff;font-size:10px;padding:4px;text-align:center;letter-spacing:1px}
+.dropzone.small{padding:14px 12px}
+.dropzone.small img{max-height:160px}
+.dropzone .dz-remove{position:absolute;top:8px;left:8px;background:#c50000;color:#fff;padding:4px 10px;font-size:10px;letter-spacing:1px;cursor:pointer;z-index:2}
+.charts-list{display:flex;flex-direction:column;gap:14px;margin-bottom:8px}
+.chart-item{border:1px solid #ddd;padding:10px;background:#fafafa}
+.chart-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:10px;letter-spacing:2px;opacity:0.6}
+.add-chart-btn{font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;padding:8px 16px;border:1px dashed #000;background:#f5f2eb;cursor:pointer}
+.add-chart-btn:hover{background:#fff;border-style:solid}
+.add-chart-btn:disabled{opacity:0.3;cursor:not-allowed}
+.toggle-block{display:flex;gap:8px;align-items:center;font-size:11px;letter-spacing:2px;cursor:pointer;padding:6px 0}
+.toggle-block input{transform:scale(1.2)}
+.conclusion-body{display:none}
+.conclusion-body.on{display:block}
 
 .add-section{display:flex;justify-content:center;margin-top:20px}
 .add-section button{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;padding:10px 24px;border:1px dashed #000;background:#f5f2eb;cursor:pointer}
@@ -224,30 +237,33 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
       <button onclick="addSection()">[ + ДОБАВИТЬ СЕКЦИЮ ]</button>
     </div>
 
-    <!-- CONCLUSION -->
+    <!-- CONCLUSION (опциональный) -->
     <div class="section-block" style="margin-top:30px;border-top:2px solid #000;padding-top:24px">
-      <div class="section-head">
-        <span class="label" style="color:#000;opacity:1">// ГЛАВНЫЙ ВЫВОД (обязательная финальная секция)</span>
-      </div>
+      <label class="toggle-block">
+        <input type="checkbox" id="cb-conclusion">
+        <span class="label" style="color:#000;opacity:1">// ДОБАВИТЬ ГЛАВНЫЙ ВЫВОД (опционально)</span>
+      </label>
 
-      <div class="lang-pane active" data-lang="ru">
-        <div class="field">
-          <label>ЗАГОЛОВОК · RU</label>
-          <input type="text" id="conc-headline-ru" placeholder="Что важно знать сейчас">
+      <div class="conclusion-body" id="conclusion-body">
+        <div class="lang-pane active" data-lang="ru">
+          <div class="field">
+            <label>ЗАГОЛОВОК · RU</label>
+            <input type="text" id="conc-headline-ru" placeholder="Что важно знать сейчас">
+          </div>
+          <div class="field">
+            <label>ТЕКСТ · RU</label>
+            <textarea id="conc-body-ru" rows="5"></textarea>
+          </div>
         </div>
-        <div class="field">
-          <label>ТЕКСТ · RU</label>
-          <textarea id="conc-body-ru" rows="5"></textarea>
-        </div>
-      </div>
-      <div class="lang-pane" data-lang="en">
-        <div class="field">
-          <label>HEADLINE · EN</label>
-          <input type="text" id="conc-headline-en" placeholder="Key takeaway">
-        </div>
-        <div class="field">
-          <label>BODY · EN</label>
-          <textarea id="conc-body-en" rows="5"></textarea>
+        <div class="lang-pane" data-lang="en">
+          <div class="field">
+            <label>HEADLINE · EN</label>
+            <input type="text" id="conc-headline-en" placeholder="Key takeaway">
+          </div>
+          <div class="field">
+            <label>BODY · EN</label>
+            <textarea id="conc-body-en" rows="5"></textarea>
+          </div>
         </div>
       </div>
     </div>
@@ -322,7 +338,7 @@ const state = {
   sectors: [],
   tags: [],
   sections: [],     // editable user sections (excluding conclusion)
-  conclusion: { id:null, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_image_url:null, chart_caption_ru:'', chart_caption_en:'' },
+  conclusion: { id:null, enabled:false, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_images:[] },
   lang: 'ru',
   created_at: null,
   updated_at: null,
@@ -399,7 +415,7 @@ function initBlank() {
   state.created_at = null;
   state.updated_at = null;
   state.sections = [ blankSection(0) ];
-  state.conclusion = { id:null, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_image_url:null, chart_caption_ru:'', chart_caption_en:'' };
+  state.conclusion = { id:null, enabled:false, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_images:[] };
   state.cover_image_url = null;
   state.asset_classes = [];
   state.sectors = [];
@@ -415,9 +431,19 @@ function blankSection(pos) {
     section_label_ru:`0${pos+1}  `, section_label_en:`0${pos+1}  `,
     headline_ru:'', headline_en:'',
     body_ru:'',     body_en:'',
-    chart_image_url:null,
-    chart_caption_ru:'', chart_caption_en:'',
+    chart_images:[],
   };
+}
+
+// migrate legacy single-chart fields to chart_images array
+function migrateChartImages(s) {
+  if (Array.isArray(s.chart_images) && s.chart_images.length > 0) {
+    return s.chart_images.map(c => ({ url: c.url, caption_ru: c.caption_ru || '', caption_en: c.caption_en || '' }));
+  }
+  if (s.chart_image_url) {
+    return [{ url: s.chart_image_url, caption_ru: s.chart_caption_ru || '', caption_en: s.chart_caption_en || '' }];
+  }
+  return [];
 }
 
 async function loadReport(id) {
@@ -447,22 +473,30 @@ async function loadReport(id) {
   document.getElementById('f-subtitle-en').value = rep.subtitle_en || '';
 
   // split body sections vs conclusion
-  state.sections = secs.filter(s => !s.is_conclusion).map((s,i)=>({...s, position:i}));
+  state.sections = secs.filter(s => !s.is_conclusion).map((s,i)=>({
+    ...s,
+    position:i,
+    chart_images: migrateChartImages(s),
+  }));
   if (state.sections.length === 0) state.sections = [ blankSection(0) ];
 
   const conc = secs.find(s => s.is_conclusion);
+  const hasConc = !!(conc && (conc.headline_ru || conc.headline_en || conc.body_ru || conc.body_en));
   if (conc) {
     state.conclusion = {
       id: conc.id,
+      enabled: hasConc,
       headline_ru: conc.headline_ru || '',
       headline_en: conc.headline_en || '',
       body_ru:     conc.body_ru || '',
       body_en:     conc.body_en || '',
-      chart_image_url: conc.chart_image_url || null,
-      chart_caption_ru: conc.chart_caption_ru || '',
-      chart_caption_en: conc.chart_caption_en || '',
+      chart_images: migrateChartImages(conc),
     };
+  } else {
+    state.conclusion = { id:null, enabled:false, headline_ru:'', headline_en:'', body_ru:'', body_en:'', chart_images:[] };
   }
+  document.getElementById('cb-conclusion').checked = state.conclusion.enabled;
+  document.getElementById('conclusion-body').classList.toggle('on', state.conclusion.enabled);
   document.getElementById('conc-headline-ru').value = state.conclusion.headline_ru;
   document.getElementById('conc-headline-en').value = state.conclusion.headline_en;
   document.getElementById('conc-body-ru').value     = state.conclusion.body_ru;
@@ -490,7 +524,8 @@ function renderStatus() {
   document.getElementById('st-slug').textContent     = state.slug || '—';
   document.getElementById('st-created').textContent  = state.created_at ? fmtTs(state.created_at) : '—';
   document.getElementById('st-updated').textContent  = state.updated_at ? fmtTs(state.updated_at) : '—';
-  document.getElementById('st-sections').textContent = state.sections.length + ' + ВЫВОД';
+  const concOn = document.getElementById('cb-conclusion')?.checked;
+  document.getElementById('st-sections').textContent = state.sections.length + (concOn ? ' + ВЫВОД' : '');
   const ruOK = !!document.getElementById('f-title-ru').value.trim();
   const enOK = !!document.getElementById('f-title-en').value.trim();
   document.getElementById('st-langs').textContent = `RU ${ruOK?'✓':'✗'}   EN ${enOK?'✓':'✗'}`;
@@ -624,18 +659,9 @@ function renderSectionBlock(sec, idx) {
     </div>
 
     <div class="field">
-      <label>// ГРАФИК (опционально)</label>
-      <div class="dropzone ${sec.chart_image_url ? 'has-file' : ''}" data-dz>
-        ${sec.chart_image_url
-          ? `<img src="${sec.chart_image_url}"><div class="dz-replace">[ ЗАМЕНИТЬ ]</div>`
-          : `<div class="dz-icon">⬆</div><div class="dz-text">[ DROP CHART HERE ]</div><div class="dz-sub">PNG, JPG · до 5 MB</div>`}
-      </div>
-      <div class="row-2" style="margin-top:10px">
-        <div class="field"><label>ПОДПИСЬ · RU</label>
-          <input type="text" data-bind="chart_caption_ru" value="${escapeAttr(sec.chart_caption_ru||'')}" placeholder="// ГРАФИК: ..."></div>
-        <div class="field"><label>CAPTION · EN</label>
-          <input type="text" data-bind="chart_caption_en" value="${escapeAttr(sec.chart_caption_en||'')}" placeholder="// CHART: ..."></div>
-      </div>
+      <label>// ГРАФИКИ (до 5, опционально) · CHARTS · в TG отправятся как альбом</label>
+      <div class="charts-list" data-charts></div>
+      <button type="button" class="add-chart-btn" data-add-chart>[ + ДОБАВИТЬ ГРАФИК ]</button>
     </div>
   `;
 
@@ -653,14 +679,125 @@ function renderSectionBlock(sec, idx) {
   div.querySelector('[data-act="down"]').onclick = () => moveSection(idx,  1);
   div.querySelector('[data-act="del"]').onclick  = () => deleteSection(idx);
 
-  // dropzone
-  const dz = div.querySelector('[data-dz]');
-  attachDz(dz, async (file) => {
-    const url = await uploadImage(file, dz);
-    if (url) { sec.chart_image_url = url; renderSections(); }
-  });
+  // multi-charts list
+  if (!Array.isArray(sec.chart_images)) sec.chart_images = [];
+  renderChartsList(div, sec);
 
   return div;
+}
+
+const MAX_CHARTS = 5;
+
+function renderChartsList(sectionDiv, sec) {
+  const host = sectionDiv.querySelector('[data-charts]');
+  const addBtn = sectionDiv.querySelector('[data-add-chart]');
+  host.innerHTML = '';
+  sec.chart_images.forEach((ci, i) => {
+    host.appendChild(renderChartItem(sec, ci, i));
+  });
+  if (sec.chart_images.length === 0) {
+    // initial empty dropzone — invite to add first chart
+    const empty = document.createElement('div');
+    empty.className = 'dropzone small';
+    empty.innerHTML = `<div class="dz-icon">⬆</div><div class="dz-text">[ DROP CHART HERE ]</div><div class="dz-sub">PNG, JPG · до 5 MB</div>`;
+    attachDz(empty, async (file) => {
+      const url = await uploadImage(file, empty);
+      if (url) {
+        sec.chart_images.push({ url, caption_ru:'', caption_en:'' });
+        renderChartsList(sectionDiv, sec);
+      }
+    });
+    host.appendChild(empty);
+  }
+  addBtn.disabled = sec.chart_images.length >= MAX_CHARTS;
+  addBtn.textContent = sec.chart_images.length >= MAX_CHARTS
+    ? `[ МАКСИМУМ ${MAX_CHARTS} ГРАФИКОВ ]`
+    : `[ + ДОБАВИТЬ ГРАФИК (${sec.chart_images.length}/${MAX_CHARTS}) ]`;
+  addBtn.onclick = () => {
+    if (sec.chart_images.length >= MAX_CHARTS) return;
+    // open file picker via a temp dropzone
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/png,image/jpeg,image/webp,image/gif';
+    inp.onchange = async () => {
+      if (!inp.files[0]) return;
+      // create a temp dz container only for progress display
+      const tempDz = document.createElement('div');
+      tempDz.className = 'dropzone small';
+      host.appendChild(tempDz);
+      const url = await uploadImage(inp.files[0], tempDz);
+      tempDz.remove();
+      if (url) {
+        sec.chart_images.push({ url, caption_ru:'', caption_en:'' });
+        renderChartsList(sectionDiv, sec);
+      }
+    };
+    inp.click();
+  };
+}
+
+function renderChartItem(sec, ci, idx) {
+  const item = document.createElement('div');
+  item.className = 'chart-item';
+  item.innerHTML = `
+    <div class="chart-item-head">
+      <span>// ГРАФИК ${idx+1}</span>
+      <div style="display:flex;gap:6px">
+        <button type="button" class="icon-btn" data-act="chart-up"   ${idx===0?'disabled':''}>↑</button>
+        <button type="button" class="icon-btn" data-act="chart-down" ${idx===sec.chart_images.length-1?'disabled':''}>↓</button>
+        <button type="button" class="icon-btn" data-act="chart-del">УДАЛИТЬ</button>
+      </div>
+    </div>
+    <div class="dropzone small has-file" data-chart-dz>
+      <img src="${ci.url}">
+      <div class="dz-replace">[ ЗАМЕНИТЬ ]</div>
+    </div>
+    <div class="row-2" style="margin-top:10px">
+      <div class="field"><label>ПОДПИСЬ · RU</label>
+        <input type="text" data-chart-cap="caption_ru" value="${escapeAttr(ci.caption_ru||'')}" placeholder="// ГРАФИК: ..."></div>
+      <div class="field"><label>CAPTION · EN</label>
+        <input type="text" data-chart-cap="caption_en" value="${escapeAttr(ci.caption_en||'')}" placeholder="// CHART: ..."></div>
+    </div>
+  `;
+  // wire captions
+  item.querySelectorAll('[data-chart-cap]').forEach(el => {
+    const k = el.dataset.chartCap;
+    el.addEventListener('input', () => { ci[k] = el.value; });
+  });
+  // replace via dropzone
+  const dz = item.querySelector('[data-chart-dz]');
+  attachDz(dz, async (file) => {
+    const url = await uploadImage(file, dz);
+    if (url) {
+      ci.url = url;
+      // re-render this item to show new image
+      const sectionDiv = item.closest('.section-block');
+      renderChartsList(sectionDiv, sec);
+    }
+  });
+  // actions
+  item.querySelector('[data-act="chart-up"]').onclick = () => {
+    if (idx === 0) return;
+    const tmp = sec.chart_images[idx];
+    sec.chart_images[idx] = sec.chart_images[idx-1];
+    sec.chart_images[idx-1] = tmp;
+    const sectionDiv = item.closest('.section-block');
+    renderChartsList(sectionDiv, sec);
+  };
+  item.querySelector('[data-act="chart-down"]').onclick = () => {
+    if (idx === sec.chart_images.length-1) return;
+    const tmp = sec.chart_images[idx];
+    sec.chart_images[idx] = sec.chart_images[idx+1];
+    sec.chart_images[idx+1] = tmp;
+    const sectionDiv = item.closest('.section-block');
+    renderChartsList(sectionDiv, sec);
+  };
+  item.querySelector('[data-act="chart-del"]').onclick = () => {
+    sec.chart_images.splice(idx, 1);
+    const sectionDiv = item.closest('.section-block');
+    renderChartsList(sectionDiv, sec);
+  };
+  return item;
 }
 
 function updateCounters(el, sec) {
@@ -771,37 +908,47 @@ function attachDz(dz, handler) {
 // ============== Save / Publish ==============
 function buildPayload(status) {
   const date_ru = document.getElementById('f-date').value;
-  const sections = state.sections.map((s, i) => ({
-    position: i,
-    is_conclusion: false,
-    section_label_ru: s.section_label_ru || `0${i+1}`,
-    section_label_en: s.section_label_en || `0${i+1}`,
-    headline_ru: s.headline_ru || '',
-    headline_en: s.headline_en || '',
-    body_ru:     s.body_ru || '',
-    body_en:     s.body_en || '',
-    chart_image_url:  s.chart_image_url || null,
-    chart_caption_ru: s.chart_caption_ru || '',
-    chart_caption_en: s.chart_caption_en || '',
-  }));
-  // conclusion as last section
-  state.conclusion.headline_ru = document.getElementById('conc-headline-ru').value;
-  state.conclusion.headline_en = document.getElementById('conc-headline-en').value;
-  state.conclusion.body_ru     = document.getElementById('conc-body-ru').value;
-  state.conclusion.body_en     = document.getElementById('conc-body-en').value;
-  sections.push({
-    position: sections.length,
-    is_conclusion: true,
-    section_label_ru: 'ГЛАВНЫЙ ВЫВОД',
-    section_label_en: 'KEY TAKEAWAY',
-    headline_ru: state.conclusion.headline_ru,
-    headline_en: state.conclusion.headline_en,
-    body_ru:     state.conclusion.body_ru,
-    body_en:     state.conclusion.body_en,
-    chart_image_url:  state.conclusion.chart_image_url || null,
-    chart_caption_ru: state.conclusion.chart_caption_ru || '',
-    chart_caption_en: state.conclusion.chart_caption_en || '',
+  const sections = state.sections.map((s, i) => {
+    const charts = (s.chart_images || []).filter(c => c && c.url);
+    return {
+      position: i,
+      is_conclusion: false,
+      section_label_ru: s.section_label_ru || `0${i+1}`,
+      section_label_en: s.section_label_en || `0${i+1}`,
+      headline_ru: s.headline_ru || '',
+      headline_en: s.headline_en || '',
+      body_ru:     s.body_ru || '',
+      body_en:     s.body_en || '',
+      chart_images: charts,
+      // legacy mirror for first chart (back-compat with old views/clients)
+      chart_image_url:  charts[0]?.url || null,
+      chart_caption_ru: charts[0]?.caption_ru || '',
+      chart_caption_en: charts[0]?.caption_en || '',
+    };
   });
+  // conclusion as last section — only if checkbox is on
+  state.conclusion.enabled = document.getElementById('cb-conclusion').checked;
+  if (state.conclusion.enabled) {
+    state.conclusion.headline_ru = document.getElementById('conc-headline-ru').value;
+    state.conclusion.headline_en = document.getElementById('conc-headline-en').value;
+    state.conclusion.body_ru     = document.getElementById('conc-body-ru').value;
+    state.conclusion.body_en     = document.getElementById('conc-body-en').value;
+    const concCharts = (state.conclusion.chart_images || []).filter(c => c && c.url);
+    sections.push({
+      position: sections.length,
+      is_conclusion: true,
+      section_label_ru: 'ГЛАВНЫЙ ВЫВОД',
+      section_label_en: 'KEY TAKEAWAY',
+      headline_ru: state.conclusion.headline_ru,
+      headline_en: state.conclusion.headline_en,
+      body_ru:     state.conclusion.body_ru,
+      body_en:     state.conclusion.body_en,
+      chart_images: concCharts,
+      chart_image_url:  concCharts[0]?.url || null,
+      chart_caption_ru: concCharts[0]?.caption_ru || '',
+      chart_caption_en: concCharts[0]?.caption_en || '',
+    });
+  }
 
   const payload = {
     action: 'save',
@@ -928,8 +1075,20 @@ function showTopMsg(text, kind) {
 function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
 
+// conclusion checkbox toggle
+function setupConclusionToggle() {
+  const cb = document.getElementById('cb-conclusion');
+  const body = document.getElementById('conclusion-body');
+  cb.addEventListener('change', () => {
+    state.conclusion.enabled = cb.checked;
+    body.classList.toggle('on', cb.checked);
+    renderStatus();
+  });
+}
+
 // ============== Boot ==============
 setupTagInputs();
+setupConclusionToggle();
 ['f-title-ru','f-title-en'].forEach(id => document.getElementById(id).addEventListener('input', renderStatus));
 checkAdminAndShow();
 </script>
