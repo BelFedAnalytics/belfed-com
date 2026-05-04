@@ -1042,26 +1042,48 @@ function showDryRunSummary(data) {
     document.body.appendChild(host);
   }
   const safe = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const langs = (data && data.langs) || {};
+
+  // Render Telegram-style HTML preview: convert <b>, <i>, <code>, \n -> <br> while escaping the rest.
+  function tgRender(html) {
+    // 1) escape everything
+    let s = safe(html || '');
+    // 2) un-escape allowed inline tags
+    s = s
+      .replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>')
+      .replace(/&lt;i&gt;/g, '<i>').replace(/&lt;\/i&gt;/g, '</i>')
+      .replace(/&lt;u&gt;/g, '<u>').replace(/&lt;\/u&gt;/g, '</u>')
+      .replace(/&lt;s&gt;/g, '<s>').replace(/&lt;\/s&gt;/g, '</s>')
+      .replace(/&lt;code&gt;/g, '<code>').replace(/&lt;\/code&gt;/g, '</code>')
+      .replace(/&lt;tg-spoiler&gt;/g, '<span style="background:#444;color:#444">').replace(/&lt;\/tg-spoiler&gt;/g, '</span>')
+      .replace(/&lt;a href=&quot;([^&]+)&quot;&gt;/g, '<a href="$1" target="_blank" rel="noopener">').replace(/&lt;\/a&gt;/g, '</a>');
+    // 3) literal \n in escaped text -> <br>
+    s = s.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+    return s;
+  }
+
+  const results = (data && (data.results || data.langs)) || {};
   let langsHtml = '';
-  for (const lang of Object.keys(langs)) {
-    const L = langs[lang];
-    const msgs = L.messages || L.preview || [];
+  for (const lang of Object.keys(results)) {
+    const L = results[lang] || {};
+    const cover = L.cover_preview || L.cover || '';
+    const sections = L.section_previews || L.sections || [];
     let parts = '';
-    if (Array.isArray(msgs)) {
-      msgs.forEach((m, i) => {
-        const txt = m.text || m.caption || '';
-        const buttons = (m.reply_markup && m.reply_markup.inline_keyboard) || [];
-        const btnFlat = [].concat(...buttons).map(b => b.text).join(' │ ');
-        parts += `<div style="border:1px solid #ddd;padding:10px;margin:8px 0;background:#fafafa"><div style="font:11px monospace;color:#888">MSG ${i+1}${m.kind?' · '+m.kind:''}${m.parse_mode?' · '+m.parse_mode:''}</div><pre style="white-space:pre-wrap;font:12px/1.4 monospace;margin:6px 0 0">${safe(txt)}</pre>${btnFlat?`<div style="font:11px monospace;color:#06c;margin-top:6px">[${safe(btnFlat)}]</div>`:''}</div>`;
-      });
-    } else {
-      parts = `<pre style="white-space:pre-wrap;font:12px/1.4 monospace">${safe(JSON.stringify(L, null, 2))}</pre>`;
+    if (cover) {
+      parts += `<div style="border:1px solid #ccc;padding:12px;margin:10px 0;background:#fff;border-radius:4px"><div style="font:11px monospace;color:#888;margin-bottom:8px">// COVER</div><div style="font:13px/1.5 -apple-system,system-ui,sans-serif">${tgRender(cover)}</div></div>`;
     }
-    langsHtml += `<details open style="margin-bottom:14px"><summary style="font-weight:bold;cursor:pointer">// ${lang.toUpperCase()}</summary>${parts}</details>`;
+    if (Array.isArray(sections)) {
+      sections.forEach((sec, i) => {
+        const cap = sec.caption || sec.text || '';
+        const cc = sec.chart_count != null ? sec.chart_count : (sec.charts || 0);
+        const chartsLabel = cc === 0 ? 'без графика' : (cc === 1 ? '1 график' : cc + ' графика(ов) — album');
+        parts += `<div style="border:1px solid #ccc;padding:12px;margin:10px 0;background:#fff;border-radius:4px"><div style="font:11px monospace;color:#888;margin-bottom:8px">// СЕКЦИЯ ${i+1} · ${safe(chartsLabel)}</div><div style="font:13px/1.5 -apple-system,system-ui,sans-serif">${tgRender(cap)}</div></div>`;
+      });
+    }
+    if (!parts) parts = `<pre style="white-space:pre-wrap;font:12px/1.4 monospace;background:#f5f5f5;padding:10px">${safe(JSON.stringify(L, null, 2))}</pre>`;
+    langsHtml += `<details open style="margin-bottom:18px;border-top:2px solid #000;padding-top:10px"><summary style="font:bold 13px monospace;letter-spacing:2px;cursor:pointer">// ${lang.toUpperCase()}</summary>${parts}</details>`;
   }
   if (!langsHtml) langsHtml = `<pre style="white-space:pre-wrap;font:12px monospace">${safe(JSON.stringify(data, null, 2))}</pre>`;
-  host.innerHTML = `<div style="background:#fff;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:24px;border-radius:6px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h2 style="margin:0;font:bold 14px monospace;letter-spacing:2px">// DRY-RUN PREVIEW</h2><button onclick="document.getElementById('dryrun-modal').remove()" style="border:1px solid #000;background:#fff;padding:4px 10px;cursor:pointer;font:11px monospace">CLOSE</button></div>${langsHtml}</div>`;
+  host.innerHTML = `<div style="background:#f5f2eb;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:24px;border:1px solid #000"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #000;padding-bottom:10px"><h2 style="margin:0;font:bold 14px monospace;letter-spacing:2px">// DRY-RUN PREVIEW — КАК БУДЕТ ВЫГЛЯДЕТЬ В TELEGRAM</h2><button onclick="document.getElementById('dryrun-modal').remove()" style="border:1px solid #000;background:#fff;padding:4px 10px;cursor:pointer;font:11px monospace">CLOSE</button></div>${langsHtml}</div>`;
 }
 
 async function onPreview(lang) {
