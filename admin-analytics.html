@@ -312,6 +312,33 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
   </div>
 
   <div class="sidebar-card">
+    <h3>// EMAIL РАССЫЛКА</h3>
+    <div class="row"><span>Премиум</span><span id="st-email-prem-count" style="font-size:10px">—</span></div>
+    <div class="row"><span>Лиды</span><span id="st-email-leads-count" style="font-size:10px">—</span></div>
+    <div style="margin-top:10px">
+      <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="cb-email-premium">
+        <span>Email premium (RU+EN)</span>
+      </label>
+    </div>
+    <div style="margin-top:6px">
+      <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="cb-email-leads">
+        <span>Email leads (RU+EN)</span>
+      </label>
+    </div>
+    <div class="help" style="margin-top:8px">При публикации отправка автоматически запланируется через 30 мин. Cron каждые 5 мин проверяет очередь.</div>
+    <div id="email-status" style="font-size:10px;margin-top:8px;color:#888"></div>
+    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <button id="btn-email-preview-ru" class="btn" style="font-size:10px" onclick="onEmailPreview('ru')">[ ПРЕВЬЮ RU ]</button>
+      <button id="btn-email-preview-en" class="btn" style="font-size:10px" onclick="onEmailPreview('en')">[ ПРЕВЬЮ EN ]</button>
+      <button id="btn-email-test-ru" class="btn" style="font-size:10px" onclick="onEmailTest('ru')">[ ТЕСТ RU → мне ]</button>
+      <button id="btn-email-test-en" class="btn" style="font-size:10px" onclick="onEmailTest('en')">[ ТЕСТ EN → мне ]</button>
+    </div>
+    <div class="help" style="margin-top:6px">Превью открывает HTML письма в новой вкладке. Тест отправляет реальное письмо на ваш admin-email.</div>
+  </div>
+
+  <div class="sidebar-card">
     <h3>// ОПАСНАЯ ЗОНА</h3>
     <button class="btn danger" id="btn-delete" style="width:100%" onclick="onDelete()">[ УДАЛИТЬ ОТЧЁТ ]</button>
     <div class="help">Удаление возможно только пока статус «Черновик».</div>
@@ -421,9 +448,18 @@ function initBlank() {
   state.asset_classes = [];
   state.sectors = [];
   state.tags = [];
+  state.email_send_to_premium = false;
+  state.email_send_to_leads = false;
+  state.email_send_at = null;
+  state.email_sent_at = null;
 
   document.getElementById('f-date').value = todayISO();
   document.getElementById('f-type').value = 'daily';
+  const cbP = document.getElementById('cb-email-premium');
+  const cbL = document.getElementById('cb-email-leads');
+  if (cbP) cbP.checked = false;
+  if (cbL) cbL.checked = false;
+  updateEmailStatus();
 }
 
 function blankSection(pos) {
@@ -465,6 +501,15 @@ async function loadReport(id) {
   state.tags = rep.tags || [];
   state.created_at = rep.created_at;
   state.updated_at = rep.updated_at;
+  state.email_send_to_premium = !!rep.email_send_to_premium;
+  state.email_send_to_leads = !!rep.email_send_to_leads;
+  state.email_send_at = rep.email_send_at || null;
+  state.email_sent_at = rep.email_sent_at || null;
+  const cbP = document.getElementById('cb-email-premium');
+  const cbL = document.getElementById('cb-email-leads');
+  if (cbP) cbP.checked = state.email_send_to_premium;
+  if (cbL) cbL.checked = state.email_send_to_leads;
+  updateEmailStatus();
 
   document.getElementById('f-date').value     = (rep.report_date || todayISO()).slice(0,10);
   document.getElementById('f-type').value     = rep.report_type || 'daily';
@@ -964,10 +1009,56 @@ function buildPayload(status) {
     sectors:       state.sectors,
     tags:          state.tags,
     cover_image_url: state.cover_image_url || null,
+    email_send_to_premium: !!document.getElementById('cb-email-premium')?.checked,
+    email_send_to_leads:   !!document.getElementById('cb-email-leads')?.checked,
     status,
     sections,
   };
   return payload;
+}
+
+function updateEmailStatus() {
+  const el = document.getElementById('email-status');
+  if (!el) return;
+  if (state.email_sent_at) {
+    const d = new Date(state.email_sent_at);
+    el.textContent = '✓ Отправлено: ' + d.toLocaleString('ru-RU');
+    el.style.color = '#1a7a1a';
+  } else if (state.email_send_at) {
+    const d = new Date(state.email_send_at);
+    el.textContent = '⏰ Запланировано: ' + d.toLocaleString('ru-RU');
+    el.style.color = '#888';
+  } else {
+    el.textContent = '';
+  }
+}
+
+async function onEmailPreview(lang) {
+  if (!state.id) { showTopMsg('Сначала сохраните отчёт', 'err'); return; }
+  showTopMsg('Рендер email…', 'info');
+  const r = await adminAction({ action: 'email_preview', report_id: state.id, language: lang });
+  if (!r.ok || !r.data?.html) {
+    showTopMsg('Ошибка рендера: ' + (r.data?.error || r.status), 'err');
+    return;
+  }
+  const w = window.open('', '_blank');
+  if (!w) { showTopMsg('Разрешите всплывающие окна', 'err'); return; }
+  w.document.open();
+  w.document.write(r.data.html);
+  w.document.close();
+  showTopMsg('Email превью открыто в новой вкладке', 'ok');
+}
+
+async function onEmailTest(lang) {
+  if (!state.id) { showTopMsg('Сначала сохраните отчёт', 'err'); return; }
+  if (!confirm('Отправить тестовое ' + lang.toUpperCase() + ' письмо на ваш admin-email?')) return;
+  showTopMsg('Отправка теста…', 'info');
+  const r = await adminAction({ action: 'email_test', report_id: state.id, language: lang });
+  if (!r.ok || r.data?.ok !== true) {
+    showTopMsg('Ошибка теста: ' + (r.data?.error || r.status), 'err');
+    return;
+  }
+  showTopMsg('Тестовое письмо отправлено ✓', 'ok');
 }
 
 async function onSaveDraft() {
