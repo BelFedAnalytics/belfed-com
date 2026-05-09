@@ -75,8 +75,8 @@
     .members-hero p { font-size: 15px; color: #555; max-width: 580px; margin-bottom: 32px; }
 
     .members-grid {
-      padding: 0 40px 60px; max-width: 1100px;
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+      padding: 0 40px 60px; max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;
     }
     .member-card {
       background: var(--white); border: 1px solid var(--border);
@@ -324,9 +324,16 @@
 
         <a href="/analytics.html" class="member-card" style="text-decoration:none;color:inherit;display:block">
           <div class="card-label">// Analytics</div>
-          <h3>Reports &amp; deep dives</h3>
+          <h3>Analytics</h3>
           <p>Weekly market research, charts, and key takeaways. Browse all analytical reports and themed breakdowns.</p>
           <div class="card-arrow">&rarr; Open analytics</div>
+        </a>
+
+        <a href="/asset-analysis.html" class="member-card" style="text-decoration:none;color:inherit;display:block">
+          <div class="card-label">// Asset analysis</div>
+          <h3>Asset analysis &amp; requests</h3>
+          <p>Updates on individual tickers across stocks, crypto, commodities and FX. Filter by ticker or asset class, with TradingView charts and replies to subscriber requests.</p>
+          <div class="card-arrow">&rarr; Open asset analysis</div>
         </a>
 
         <div class="member-card" onclick="alert('Account settings — manage email, password, and profile — will appear here soon. For now, manage your subscription directly in Telegram via @BelfedBot.')">
