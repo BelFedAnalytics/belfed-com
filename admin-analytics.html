@@ -647,13 +647,27 @@ function setupTagInputs() {
 
 // ============== Cover ==============
 function renderCover() {
-  const dz = document.getElementById('dz-cover');
+  // Сбрасываем накопленные обработчики click/drag…, клонируя узел. Предотвращает двойные срабатывания при повторных renderCover()
+  let dz = document.getElementById('dz-cover');
+  const fresh = dz.cloneNode(false); // без детей — innerHTML ниже всё перезапишет
+  dz.parentNode.replaceChild(fresh, dz);
+  dz = fresh;
   if (state.cover_image_url) {
     dz.classList.add('has-file');
     dz.innerHTML = `
       <img src="${state.cover_image_url}" alt="">
-      <div class="dz-replace">[ ЗАМЕНИТЬ ]</div>
+      <div class="dz-remove"  title="Удалить обложку">[ × УДАЛИТЬ ]</div>
+      <div class="dz-replace" title="Загрузить другую">[ ЗАМЕНИТЬ ]</div>
     `;
+    // Кнопка удаления — отдельный обработчик, клик НЕ должен открывать file picker.
+    const rm = dz.querySelector('.dz-remove');
+    rm.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!confirm('Удалить обложку отчёта?')) return;
+      state.cover_image_url = null;
+      renderCover();
+    });
   } else {
     dz.classList.remove('has-file');
     dz.innerHTML = `
