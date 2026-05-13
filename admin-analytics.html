@@ -302,19 +302,30 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
     <h3>// ПУБЛИКАЦИЯ</h3>
     <div class="row"><span>RU канал</span><span>📊 Аналитика</span></div>
     <div class="row"><span>EN канал</span><span>📊 Analytics</span></div>
-    <div class="help">При нажатии «Опубликовать» статус сменится на published, серия RU+EN уйдёт в каждый канал. Тестовый режим = только в личку Артёма.</div>
-    <div style="margin-top:12px">
+    <div class="help">При нажатии «Опубликовать» статус сменится на published. Серия уйдёт в каждый выбранный язык. Тестовый режим = только в личку Артёма.</div>
+    <div style="margin-top:12px;display:flex;gap:14px">
       <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
-        <input type="checkbox" id="cb-test-mode" checked>
+        <input type="checkbox" id="cb-lang-ru" checked onchange="updatePublishHint()">
+        <span>RU</span>
+      </label>
+      <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="cb-lang-en" checked onchange="updatePublishHint()">
+        <span>EN</span>
+      </label>
+    </div>
+    <div style="margin-top:10px">
+      <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="cb-test-mode" checked onchange="updatePublishHint()">
         <span>TEST MODE (в личку Артёма)</span>
       </label>
     </div>
     <div style="margin-top:8px">
       <label style="font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
-        <input type="checkbox" id="cb-skip-tg">
+        <input type="checkbox" id="cb-skip-tg" onchange="updatePublishHint()">
         <span>SKIP TG (только сайт)</span>
       </label>
     </div>
+    <div id="publish-hint" class="help" style="margin-top:8px;font-weight:bold"></div>
     <button class="btn" style="width:100%;margin-top:10px" onclick="onDryRun()">[ DRY-RUN PREVIEW ]</button>
   </div>
 
@@ -602,6 +613,7 @@ function renderStatus() {
   }
 
   document.getElementById('btn-delete').disabled = !state.id || state.status === 'published';
+  if (typeof updatePublishHint === 'function') updatePublishHint();
 }
 
 function fmtTs(iso) {
@@ -888,20 +900,23 @@ function updateCounters(el, sec) {
 }
 
 // v18: проверка длины body перед сохранением/публикацией.
+// v19: принимает langs (по умолчанию ['ru','en']) — проверяет только выбранные языки.
 // Возвращает массив с описанием превышений, либо пустой массив.
-function findBodyOverflows() {
+function findBodyOverflows(langs) {
+  const checkRu = !langs || langs.includes('ru');
+  const checkEn = !langs || langs.includes('en');
   const overflows = [];
   state.sections.forEach((sec, i) => {
     const ruLen = (sec.body_ru||'').length;
     const enLen = (sec.body_en||'').length;
-    if (ruLen > TG_BODY_LIMIT) overflows.push(`Секция ${i+1} (RU): ${ruLen}/${TG_BODY_LIMIT}`);
-    if (enLen > TG_BODY_LIMIT) overflows.push(`Секция ${i+1} (EN): ${enLen}/${TG_BODY_LIMIT}`);
+    if (checkRu && ruLen > TG_BODY_LIMIT) overflows.push(`Секция ${i+1} (RU): ${ruLen}/${TG_BODY_LIMIT}`);
+    if (checkEn && enLen > TG_BODY_LIMIT) overflows.push(`Секция ${i+1} (EN): ${enLen}/${TG_BODY_LIMIT}`);
   });
   if (state.conclusion && state.conclusion.enabled) {
     const cRuLen = (state.conclusion.body_ru||'').length;
     const cEnLen = (state.conclusion.body_en||'').length;
-    if (cRuLen > TG_BODY_LIMIT) overflows.push(`Главный вывод (RU): ${cRuLen}/${TG_BODY_LIMIT}`);
-    if (cEnLen > TG_BODY_LIMIT) overflows.push(`Главный вывод (EN): ${cEnLen}/${TG_BODY_LIMIT}`);
+    if (checkRu && cRuLen > TG_BODY_LIMIT) overflows.push(`Главный вывод (RU): ${cRuLen}/${TG_BODY_LIMIT}`);
+    if (checkEn && cEnLen > TG_BODY_LIMIT) overflows.push(`Главный вывод (EN): ${cEnLen}/${TG_BODY_LIMIT}`);
   }
   return overflows;
 }
@@ -1126,17 +1141,60 @@ async function onSaveDraft() {
   showTopMsg('Сохранено ✓', 'ok');
 }
 
-async function onPublish() {
-  // v18: блокируем публикацию в TG если body превышает лимит (иначе будет режим reply, не caption).
+// v19: собирает выбранные языки из чекбоксов (без выбора — пустой массив).
+function selectedLangs() {
+  const langs = [];
+  if (document.getElementById('cb-lang-ru').checked) langs.push('ru');
+  if (document.getElementById('cb-lang-en').checked) langs.push('en');
+  return langs;
+}
+
+// v19: обновляет хинт под чекбоксами в сайдбаре.
+function updatePublishHint() {
+  const host = document.getElementById('publish-hint');
+  if (!host) return;
   const skipTg = document.getElementById('cb-skip-tg').checked;
+  const test = document.getElementById('cb-test-mode').checked;
+  if (skipTg) {
+    host.textContent = '→ Только сайт (TG пропущен)';
+    host.style.color = '#666';
+    return;
+  }
+  const langs = selectedLangs();
+  if (langs.length === 0) {
+    host.textContent = '→ Ни одного языка не выбрано — публикация в TG будет заблокирована';
+    host.style.color = '#b00';
+    return;
+  }
+  const labels = langs.map(l => l.toUpperCase()).join('+');
+  host.textContent = `→ В TG уйдёт: ${labels} ${test ? '(test → личка)' : '(PROD → каналы)'}`;
+  host.style.color = test ? '#a47800' : '#1a7a1a';
+}
+
+async function onPublish() {
+  const skipTg = document.getElementById('cb-skip-tg').checked;
+  const langs = selectedLangs();
+
+  // v19: если TG не пропущен — должен быть выбран хотя бы 1 язык.
+  if (!skipTg && langs.length === 0) {
+    alert('Выберите хотя бы один язык (RU или EN) или включите SKIP TG.');
+    return;
+  }
+
+  // v18+v19: блокируем публикацию в TG если body превышает лимит для выбранных языков.
   if (!skipTg) {
-    const overflows = findBodyOverflows();
+    const overflows = findBodyOverflows(langs);
     if (overflows.length) {
-      alert('Текст превышает безопасный лимит ' + TG_BODY_LIMIT + ' символов в:\n\n' + overflows.join('\n') + '\n\nСократите текст или включите «Не отправлять в TG».');
+      alert('Текст превышает безопасный лимит ' + TG_BODY_LIMIT + ' символов в:\n\n' + overflows.join('\n') + '\n\nСократите текст или включите «SKIP TG».');
       return;
     }
   }
-  if (!confirm('Опубликовать отчёт?\n• Статус сменится на published\n• ' + (skipTg ? 'TG отправка пропущена' : 'Серия RU+EN уйдёт в TG' + (document.getElementById('cb-test-mode').checked ? ' (test)' : ' (PROD)')))) return;
+
+  const test = document.getElementById('cb-test-mode').checked;
+  const tgPart = skipTg
+    ? 'TG отправка пропущена'
+    : 'Серия ' + langs.map(l => l.toUpperCase()).join('+') + ' уйдёт в TG' + (test ? ' (test)' : ' (PROD)');
+  if (!confirm('Опубликовать отчёт?\n• Статус сменится на published\n• ' + tgPart)) return;
 
   document.getElementById('btn-publish').disabled = true;
   showTopMsg('Сохранение…', 'info');
@@ -1148,7 +1206,7 @@ async function onPublish() {
   }
   await syncFromBackend(saveR.data.report_id);
 
-  if (document.getElementById('cb-skip-tg').checked) {
+  if (skipTg) {
     showTopMsg('Сохранено и опубликовано на сайте. TG пропущен.', 'ok');
     document.getElementById('btn-publish').disabled = false;
     return;
@@ -1158,20 +1216,27 @@ async function onPublish() {
   const pubR = await adminAction({
     action: 'publish',
     report_id: state.id,
-    test_mode: document.getElementById('cb-test-mode').checked,
+    langs,
+    test_mode: test,
   });
   document.getElementById('btn-publish').disabled = false;
   if (!pubR.ok) {
     showTopMsg('Публикация в TG не удалась: ' + (pubR.data?.error || pubR.status) + ' (но сохранение прошло)', 'err');
     return;
   }
-  showTopMsg('Опубликовано ✓ ' + (document.getElementById('cb-test-mode').checked ? '(TEST в личку)' : '(PROD в каналы)'), 'ok');
+  const langsLabel = langs.map(l => l.toUpperCase()).join('+');
+  showTopMsg(`Опубликовано ✓ ${langsLabel} ` + (test ? '(TEST в личку)' : '(PROD в каналы)'), 'ok');
 }
 
 async function onDryRun() {
   if (!state.id) { showTopMsg('Сначала сохраните черновик.', 'err'); return; }
+  const langs = selectedLangs();
+  if (langs.length === 0) {
+    showTopMsg('Выберите RU и/или EN для Dry-run.', 'err');
+    return;
+  }
   showTopMsg('Dry-run превью…', 'info');
-  const r = await adminAction({ action:'publish', report_id:state.id, dry_run:true, test_mode:document.getElementById('cb-test-mode').checked });
+  const r = await adminAction({ action:'publish', report_id:state.id, dry_run:true, langs, test_mode:document.getElementById('cb-test-mode').checked });
   if (!r.ok) {
     const msg = (r.data && (r.data.error || r.data.message)) || ('HTTP '+r.status);
     showTopMsg('Dry-run не удался: '+msg, 'err');
@@ -1291,6 +1356,14 @@ async function syncFromBackend(reportId) {
   const u = new URL(location.href);
   u.searchParams.set('id', rep.id);
   history.replaceState({}, '', u);
+  // v19: если отчёт уже published — снимаем оба чекбокса языков,
+  // чтобы каждый язык при повторной публикации выбирался сознательно.
+  if (rep.status === 'published') {
+    const ruCb = document.getElementById('cb-lang-ru');
+    const enCb = document.getElementById('cb-lang-en');
+    if (ruCb) ruCb.checked = false;
+    if (enCb) enCb.checked = false;
+  }
   renderStatus();
 }
 
