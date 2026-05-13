@@ -714,7 +714,7 @@ function renderSectionBlock(sec, idx) {
       </div>
       <div class="field"><label>ТЕКСТ · RU</label>
         <textarea data-bind="body_ru" rows="4">${escapeHtml(sec.body_ru||'')}</textarea>
-        <div class="char-counter" data-counter="body_ru">0 / 1024</div>
+        <div class="char-counter" data-counter="body_ru">0 / 900</div>
       </div>
     </div>
 
@@ -727,7 +727,7 @@ function renderSectionBlock(sec, idx) {
       </div>
       <div class="field"><label>BODY · EN</label>
         <textarea data-bind="body_en" rows="4">${escapeHtml(sec.body_en||'')}</textarea>
-        <div class="char-counter" data-counter="body_en">0 / 1024</div>
+        <div class="char-counter" data-counter="body_en">0 / 900</div>
       </div>
     </div>
 
@@ -873,13 +873,37 @@ function renderChartItem(sec, ci, idx) {
   return item;
 }
 
+// v18: TG_BODY_LIMIT — безопасный лимит для body, чтобы caption под альбомом
+// влез в Telegram caption limit (1024). Учитывает headline + part_label + @BelfedBot.
+const TG_BODY_LIMIT = 900;
+const TG_BODY_WARN  = 800;
+
 function updateCounters(el, sec) {
   el.querySelectorAll('[data-counter]').forEach(cnt => {
     const k = cnt.dataset.counter;
     const len = (sec[k]||'').length;
-    cnt.textContent = `${len} / 1024 символов (TG caption)`;
-    cnt.className = 'char-counter' + (len > 1024 ? ' over' : (len > 900 ? ' warn' : ''));
+    cnt.textContent = `${len} / ${TG_BODY_LIMIT} символов (TG caption)`;
+    cnt.className = 'char-counter' + (len > TG_BODY_LIMIT ? ' over' : (len > TG_BODY_WARN ? ' warn' : ''));
   });
+}
+
+// v18: проверка длины body перед сохранением/публикацией.
+// Возвращает массив с описанием превышений, либо пустой массив.
+function findBodyOverflows() {
+  const overflows = [];
+  state.sections.forEach((sec, i) => {
+    const ruLen = (sec.body_ru||'').length;
+    const enLen = (sec.body_en||'').length;
+    if (ruLen > TG_BODY_LIMIT) overflows.push(`Секция ${i+1} (RU): ${ruLen}/${TG_BODY_LIMIT}`);
+    if (enLen > TG_BODY_LIMIT) overflows.push(`Секция ${i+1} (EN): ${enLen}/${TG_BODY_LIMIT}`);
+  });
+  if (state.conclusion && state.conclusion.enabled) {
+    const cRuLen = (state.conclusion.body_ru||'').length;
+    const cEnLen = (state.conclusion.body_en||'').length;
+    if (cRuLen > TG_BODY_LIMIT) overflows.push(`Главный вывод (RU): ${cRuLen}/${TG_BODY_LIMIT}`);
+    if (cEnLen > TG_BODY_LIMIT) overflows.push(`Главный вывод (EN): ${cEnLen}/${TG_BODY_LIMIT}`);
+  }
+  return overflows;
 }
 
 function moveSection(i, dir) {
@@ -1103,7 +1127,16 @@ async function onSaveDraft() {
 }
 
 async function onPublish() {
-  if (!confirm('Опубликовать отчёт?\n• Статус сменится на published\n• ' + (document.getElementById('cb-skip-tg').checked ? 'TG отправка пропущена' : 'Серия RU+EN уйдёт в TG' + (document.getElementById('cb-test-mode').checked ? ' (test)' : ' (PROD)')))) return;
+  // v18: блокируем публикацию в TG если body превышает лимит (иначе будет режим reply, не caption).
+  const skipTg = document.getElementById('cb-skip-tg').checked;
+  if (!skipTg) {
+    const overflows = findBodyOverflows();
+    if (overflows.length) {
+      alert('Текст превышает безопасный лимит ' + TG_BODY_LIMIT + ' символов в:\n\n' + overflows.join('\n') + '\n\nСократите текст или включите «Не отправлять в TG».');
+      return;
+    }
+  }
+  if (!confirm('Опубликовать отчёт?\n• Статус сменится на published\n• ' + (skipTg ? 'TG отправка пропущена' : 'Серия RU+EN уйдёт в TG' + (document.getElementById('cb-test-mode').checked ? ' (test)' : ' (PROD)')))) return;
 
   document.getElementById('btn-publish').disabled = true;
   showTopMsg('Сохранение…', 'info');
