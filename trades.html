@@ -52,6 +52,7 @@ tbody tr:hover{background:#fafafa}
 tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
 .num{color:#ccc;font-size:11px}
 .ticker{font-weight:700;letter-spacing:1px;font-size:14px}
+.member-dot{display:inline-block;margin-left:6px;color:#111;font-size:10px;line-height:1;vertical-align:middle}
 .badge{display:inline-block;padding:3px 10px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;border:1px solid #111}
 .badge-long{background:transparent;color:#111}
 .badge-short{background:#111;color:#fff}
@@ -155,6 +156,9 @@ footer{padding:32px 48px;border-top:1px solid #111;display:flex;justify-content:
 </div>
 
 <div class="disclaimer">
+    Track record includes all setups published in public and private channels. Ideas with entry and exit signals delivered to members are marked with &laquo;&#9679;&raquo;.
+</div>
+<div class="disclaimer">
     New to R-multiples? <a href="/disclaimer.html" style="color:#888;text-decoration:underline;text-underline-offset:2px;">How we measure performance</a> &mdash; a short explainer on how to read this table.
   Past results do not guarantee future performance. R-multiples are calculated relative to initial risk per trade (1R = amount risked). This page is updated manually after each position is closed. No positions are removed or edited retroactively.
 </div>
@@ -244,6 +248,9 @@ footer{padding:32px 48px;border-top:1px solid #111;display:flex;justify-content:
       var exitP=(r[8]||'').trim();
       var result=(r[9]||'').trim();
       var tvLink=(r[10]||'').trim();
+      // Members Signal: crypto uses col O (idx 14), equities uses col T (idx 19)
+      var membersSignal=((isCrypto?r[14]:r[19])||'').trim().toLowerCase();
+      var memberDot=(membersSignal==='yes'||membersSignal==='y'||membersSignal==='true'||membersSignal==='1'||membersSignal==='•'||membersSignal==='●')?' <span class="member-dot" title="Members signal">●</span>':'';
       if(!ticker)return;
       var rVal=parseFloat(result.replace(',','.'));
       var isFullyClosed=status.toLowerCase()==='closed'&&!isNaN(rVal)&&result!==''&&exitP!=='';
@@ -261,7 +268,7 @@ footer{padding:32px 48px;border-top:1px solid #111;display:flex;justify-content:
 
       var tr=document.createElement('tr');
       tr.innerHTML='<td class="num">'+(idx+1).toString().padStart(2,'0')+'</td>'
-        +'<td><span class="ticker">'+ticker+'</span></td>'
+        +'<td><span class="ticker">'+ticker+'</span>'+memberDot+'</td>'
         +'<td><span class="badge '+dirClass+'">'+dir+'</span></td>'
         +'<td>'+entryDate+'</td>'
         +'<td>'+(exitDate||'—')+'</td>'
