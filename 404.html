@@ -17,8 +17,37 @@
 </head>
 <body>
   <div class="code">404</div>
-  <h1>PAGE NOT FOUND</h1>
-  <p>The page you're looking for doesn't exist or has been moved. Head back to the homepage.</p>
+  <h1 id="title">PAGE NOT FOUND</h1>
+  <p id="msg">The page you're looking for doesn't exist or has been moved. Head back to the homepage.</p>
   <a href="/">Back to home</a>
+<script>
+// SPA-shim for clean permalinks under /analysis/<ticker>/<slug>
+// GitHub Pages has no rewrite rules, so 404.html catches the request,
+// parses the path, and forwards to /asset-analysis.html with query params.
+(function() {
+  try {
+    var path = window.location.pathname || '';
+    var m = path.match(/^\/analysis\/([^\/?#]+)\/([^\/?#]+)\/?$/i);
+    if (m) {
+      var ticker = decodeURIComponent(m[1]).toUpperCase();
+      var slug = decodeURIComponent(m[2]);
+      var target = '/asset-analysis.html?ticker=' + encodeURIComponent(ticker) +
+                   '&slug=' + encodeURIComponent(slug);
+      var t = document.getElementById('title');
+      var p = document.getElementById('msg');
+      if (t) t.textContent = 'OPENING ANALYSIS';
+      if (p) p.textContent = 'Loading analysis for ' + ticker + '...';
+      window.location.replace(target);
+      return;
+    }
+    var m2 = path.match(/^\/analysis\/([^\/?#]+)\/?$/i);
+    if (m2) {
+      var t2 = decodeURIComponent(m2[1]).toUpperCase();
+      window.location.replace('/asset-analysis.html?ticker=' + encodeURIComponent(t2));
+      return;
+    }
+  } catch (e) { /* fall through */ }
+})();
+</script>
 </body>
 </html>
