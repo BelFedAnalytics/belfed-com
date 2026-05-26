@@ -166,6 +166,7 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
   <a href="/admin-positions.html">[ POSITIONS ]</a>
   <a href="/admin-analytics-list.html">[ ANALYTICS ]</a>
   <a href="/admin-analysis-posts.html" class="active">[ ASSET ANALYSIS ]</a>
+  <a href="/admin-chart-requests.html">[ REQUESTS ]</a>
 </nav>
 
 <div class="container">
@@ -428,6 +429,40 @@ function initEditor(){
 
   // Handle ?reply_to=<id> from URL
   handleReplyToParam();
+  // Handle ?fulfill_req=<id>&ticker=<>&asset_class=<> from URL
+  handleFulfillReqParam();
+}
+
+async function handleFulfillReqParam(){
+  const params = new URLSearchParams(location.search);
+  const fulfillReq = params.get('fulfill_req');
+  if (!fulfillReq) return;
+  const ticker = (params.get('ticker') || '').toUpperCase();
+  const assetClass = params.get('asset_class') || 'stocks';
+  if (ticker) els.ticker.value = ticker;
+  if (assetClass) els.assetClass.value = assetClass;
+  els.tags.value = '#AnalysisUpdate #' + (assetClass==='crypto' ? 'crypto' : 'equities');
+  syncAssetClassTag();
+  const existing = document.getElementById('fulfill-banner');
+  if (!existing) {
+    const b = document.createElement('div');
+    b.id = 'fulfill-banner';
+    b.style.cssText = 'background:#fffbe5;border:1px solid #000;padding:10px 14px;margin-bottom:14px;font-size:11px;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center';
+    b.innerHTML = '<span>// FULFILL MODE — after publishing, all pending requests for $' + escapeHtml(ticker) + ' will be auto-marked as fulfilled, users will get a DM.</span>' +
+      '<button class="btn small" onclick="clearFulfill()">[ CANCEL ]</button>';
+    const notice = document.querySelector('.notice');
+    notice.parentNode.insertBefore(b, notice.nextSibling);
+  }
+  els.ticker.focus();
+}
+function clearFulfill(){
+  const url = new URL(location.href);
+  url.searchParams.delete('fulfill_req');
+  url.searchParams.delete('ticker');
+  url.searchParams.delete('asset_class');
+  history.replaceState(null,'', url.pathname + (url.search||''));
+  const b = document.getElementById('fulfill-banner');
+  if (b) b.remove();
 }
 
 // =================== HASHTAG AUTOMATION ===================
@@ -733,6 +768,25 @@ async function publish(){
       flash('err', `publish failed: ${j.error||res.status}`);
     } else {
       flash('ok', `Published: ${[data.publish_to_ru?'RU':'',data.publish_to_en?'EN':''].filter(Boolean).join(' + ')}`);
+      // Auto-fulfill request if we came from chart-requests queue
+      const fulfillParams = new URLSearchParams(location.search);
+      const fulfillReqId = fulfillParams.get('fulfill_req');
+      const publishedPostId = editingId;
+      if (fulfillReqId && publishedPostId) {
+        try {
+          const ff = await fetch(`${SUPABASE_URL}/functions/v1/chart-request`, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON },
+            body: JSON.stringify({ action: 'admin_fulfill', request_id: fulfillReqId, post_id: publishedPostId })
+          });
+          const fj = await ff.json().catch(()=>({}));
+          if (ff.ok && fj.ok) {
+            flash('ok', `Request fulfilled: ${fj.fulfilled_count} user(s) notified.`);
+          } else {
+            flash('err', `Failed to fulfill request: ${fj.error||ff.status}`);
+          }
+        } catch (e) { flash('err', 'Fulfill error: '+e.message); }
+      }
       // reset to fresh form
       editingId = null;
       parentPostId = null;
@@ -742,7 +796,12 @@ async function publish(){
       if (banner) banner.style.display='none';
       const url = new URL(location.href);
       url.searchParams.delete('reply_to');
+      url.searchParams.delete('fulfill_req');
+      url.searchParams.delete('ticker');
+      url.searchParams.delete('asset_class');
       history.replaceState(null,'', url.pathname + (url.search||''));
+      const fb = document.getElementById('fulfill-banner');
+      if (fb) fb.remove();
       state.images=[]; renderThumbs(); updateCounters(); updateReplyVisibility(); render();
     }
     loadHistory();
