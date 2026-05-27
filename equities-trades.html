@@ -69,15 +69,21 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
 .disclaimer{padding:20px 48px 32px;font-size:11px;color:#bbb;line-height:1.9;max-width:880px}
 footer{padding:32px 48px;border-top:1px solid #111;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888;letter-spacing:1px}
 @media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100%}
   nav{padding:12px 20px}.nav-links{display:none}
   .hamburger{display:flex}
   .menu-dropdown{display:block}
   .bottom-bar{display:grid}
   body{padding-bottom:76px}
   .page-header,.tab-bar,.table-wrap,.summary-bar,.disclaimer,footer{padding-left:20px;padding-right:20px}
+  .table-wrap{max-width:100vw;-webkit-overflow-scrolling:touch}
+  .summary-bar{gap:20px 24px}
   .stats-bar{grid-template-columns:repeat(2,1fr)}
-  .stat-item{padding:20px}
-  .page-title{font-size:26px}
+  .stat-item{padding:20px;min-width:0}
+  .stat-value{font-size:22px;overflow-wrap:anywhere}
+  .page-title{font-size:26px;overflow-wrap:anywhere}
+  .page-subtitle{font-size:13px}
+  .disclaimer{max-width:100%}
   footer{flex-direction:column;gap:8px;text-align:center}
 }
 </style>
@@ -253,7 +259,7 @@ footer{padding:32px 48px;border-top:1px solid #111;display:flex;justify-content:
 <script>
 (function(){
 var css=document.createElement('style');
-css.textContent='.pht{display:flex;align-items:baseline;justify-content:space-between;gap:24px}.yf{display:flex;gap:8px;align-items:center}.yfb{font-family:inherit;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border:1px solid #ccc;background:transparent;color:#888;cursor:pointer;transition:all .2s}.yfb:hover{border-color:#111;color:#111}.yfb.on{background:#111;color:#fff;border-color:#111}';
+css.textContent='.pht{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap}.yf{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.yfb{font-family:inherit;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border:1px solid #ccc;background:transparent;color:#888;cursor:pointer;transition:all .2s}.yfb:hover{border-color:#111;color:#111}.yfb.on{background:#111;color:#fff;border-color:#111}@media(max-width:768px){.pht{gap:10px}.page-title{font-size:24px;overflow-wrap:anywhere;min-width:0;flex:1 1 100%}}';
 document.head.appendChild(css);
 var h1=document.querySelector('.page-title');
 var ph=h1.parentNode;
