@@ -48,6 +48,35 @@ header.topbar h1{font-size:18px;letter-spacing:3px;font-weight:bold}
 .tg-cta a:hover{background:#222}
 .draft-banner{margin-bottom:18px;padding:10px 14px;border:1px dashed #c00;background:#fff5f5;color:#900;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center}
 
+/* Login + Expired screens (match dashboard) */
+#loginScreen{display:none;justify-content:center;align-items:center;min-height:80vh}
+.login-box{background:#fff;border:2px solid #000;padding:40px;max-width:460px;width:100%;text-align:center}
+.login-box h2{font-size:18px;letter-spacing:3px;margin-bottom:8px}
+.login-box .login-sub{font-size:11px;opacity:0.6;margin-bottom:18px;letter-spacing:1px}
+.teaser{background:#fff;border:1px solid #000;padding:18px 20px;margin:0 auto 18px;text-align:left;max-width:460px}
+.teaser .teaser-meta{font-size:10px;letter-spacing:2px;opacity:0.7;margin-bottom:6px;text-transform:uppercase}
+.teaser .teaser-title{font-size:15px;letter-spacing:1px;font-weight:bold;line-height:1.4;margin-bottom:6px;text-transform:uppercase}
+.teaser .teaser-sub{font-size:12px;opacity:0.8;line-height:1.5}
+.auth-tabs{display:flex;margin-bottom:18px;border-bottom:1px solid #000}
+.auth-tab{flex:1;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;letter-spacing:2px;padding:8px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;color:#999}
+.auth-tab.active{color:#000;border-bottom-color:#000}
+.auth-tab:hover{color:#000}
+.login-box input{font-family:'Courier New',monospace;width:100%;padding:10px 14px;font-size:13px;border:1px solid #000;background:#f5f2eb;margin-bottom:12px;outline:none}
+.login-box input:focus{background:#fff}
+.login-box .login-btn{font-family:'Courier New',monospace;width:100%;padding:12px;font-size:13px;font-weight:bold;letter-spacing:2px;background:#000;color:#f5f2eb;border:none;cursor:pointer;margin-top:6px;text-decoration:none;display:block;box-sizing:border-box}
+.login-box .login-btn:hover{background:#222}
+.login-box .login-btn.alt{background:#fff;color:#000;border:1px solid #000}
+.login-box .login-btn.alt:hover{background:#f0ede4}
+.login-box .login-error{color:#c50000;font-size:12px;margin-top:12px;display:none}
+.login-box .login-msg{color:#1a7a1a;font-size:12px;margin-top:12px;display:none}
+.cta-row{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.cta-row .or{font-size:10px;letter-spacing:2px;opacity:0.5;margin:2px 0}
+.trial-note{font-size:10px;opacity:0.5;margin-top:14px;letter-spacing:0.5px}
+#expiredScreen{display:none;justify-content:center;align-items:center;min-height:80vh}
+.expired-box{background:#fff;border:2px solid #c50000;padding:40px;max-width:460px;width:100%;text-align:center}
+.expired-box h2{font-size:16px;letter-spacing:2px;color:#c50000;margin-bottom:12px}
+.expired-box p{font-size:13px;line-height:1.8;margin-bottom:16px}
+
 @media (max-width:600px){
   .report-title{font-size:18px;letter-spacing:1px}
   header.topbar h1{font-size:14px;letter-spacing:2px}
@@ -56,7 +85,70 @@ header.topbar h1{font-size:18px;letter-spacing:3px;font-weight:bold}
 </style>
 </head>
 <body>
-<div class="container">
+
+<!-- LOGIN SCREEN (with optional teaser metadata) -->
+<div id="loginScreen">
+  <div>
+    <div id="loginTeaser" class="teaser" style="display:none">
+      <div class="teaser-meta" id="teaserMeta"></div>
+      <div class="teaser-title" id="teaserTitle"></div>
+      <div class="teaser-sub" id="teaserSubtitle"></div>
+    </div>
+    <div class="login-box">
+      <h2><a href="/" style="color:#000;text-decoration:none">— BELFED_ —</a></h2>
+      <div class="login-sub" data-i18n="memberAccess">MEMBER ACCESS</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="showAuthTab('signin')">SIGN IN</button>
+        <button class="auth-tab" onclick="showAuthTab('signup')">SIGN UP</button>
+        <button class="auth-tab" onclick="showAuthTab('magiclink')">MAGIC LINK</button>
+      </div>
+      <div id="signinForm">
+        <input type="email" id="siEmail" placeholder="Email address">
+        <input type="password" id="siPassword" placeholder="Password">
+        <button class="login-btn" onclick="handleSignIn()">SIGN IN</button>
+        <a href="#" id="forgotPasswordLink" style="display:block;margin-top:10px;font-size:11px;color:#999;letter-spacing:1px;text-decoration:none" onclick="document.getElementById('forgotPasswordBlock').style.display='block';this.style.display='none';return false;">Forgot password?</a>
+        <div id="forgotPasswordBlock" style="display:none;margin-top:10px">
+          <input type="email" id="resetEmail" placeholder="Enter your email">
+          <button class="login-btn" onclick="handleForgotPassword()">SEND RESET LINK</button>
+          <div id="resetStatus" style="font-size:11px;margin-top:8px;display:none"></div>
+        </div>
+      </div>
+      <div id="signupForm" style="display:none">
+        <input type="email" id="suEmail" placeholder="Email address">
+        <input type="password" id="suPassword" placeholder="Password (min 6 chars)">
+        <input type="password" id="suPassword2" placeholder="Confirm password">
+        <button class="login-btn" onclick="handleSignUp()" data-i18n-attr="textContent" data-i18n="startTrial">START FREE TRIAL</button>
+        <div class="trial-note" data-i18n="trialNote">30 days free access &bull; No credit card required</div>
+      </div>
+      <div id="magiclinkForm" style="display:none">
+        <input type="email" id="mlEmail" placeholder="Email address">
+        <button class="login-btn" onclick="handleMagicLink()">SEND MAGIC LINK</button>
+        <div class="trial-note">A sign-in link will be sent to your email. No password needed.</div>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <div class="login-msg" id="loginMsg"></div>
+      <div class="cta-row">
+        <div class="or">— OR —</div>
+        <a class="login-btn alt" href="https://t.me/BelfedBot?start=auth" target="_blank" rel="noopener" data-i18n="ctaTelegram">SUBSCRIBE VIA TELEGRAM</a>
+        <a class="login-btn alt" href="https://belfed.com/#subscribe" data-i18n="ctaPlans">VIEW PLANS</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPIRED SCREEN (admin/active/trial expired or no entitlement) -->
+<div id="expiredScreen">
+  <div class="expired-box">
+    <h2 data-i18n="expiredTitle">SUBSCRIPTION REQUIRED</h2>
+    <p data-i18n="expiredText">Full analytics reports are available to active subscribers. Subscribe to continue reading.</p>
+    <a href="https://belfed.com/#subscribe" class="login-btn" data-i18n="ctaPlans">VIEW PLANS</a>
+    <a href="https://t.me/BelfedBot?start=auth" target="_blank" rel="noopener" class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" data-i18n="ctaTelegram">SUBSCRIBE VIA TELEGRAM</a>
+    <button class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" onclick="handleLogout()" data-i18n="signOut">SIGN OUT</button>
+  </div>
+</div>
+
+<!-- MAIN: report content (only shown to authorized users) -->
+<div class="container" id="mainContainer" style="display:none">
 
 <header class="topbar">
 <h2><a href="/" style="color:#000;text-decoration:none">— BELFED_ —</a></h2>
@@ -80,13 +172,14 @@ header.topbar h1{font-size:18px;letter-spacing:3px;font-weight:bold}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="belfed-auth.js"></script>
 <script>
-const SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+// SUPABASE_URL, SUPABASE_KEY (anon), and supaClient are provided by belfed-auth.js
+const ANON_KEY = SUPABASE_KEY;
 const GET_URL = SUPABASE_URL + '/functions/v1/analytics-get';
 const ADMIN_URL = SUPABASE_URL + '/functions/v1/analytics-admin-action';
 const PREVIEW_URL = SUPABASE_URL + '/functions/v1/analytics-preview';
-const sb = supabase.createClient(SUPABASE_URL, ANON_KEY);
+const sb = supaClient;
 
 const I18N = {
   ru: {
@@ -101,6 +194,15 @@ const I18N = {
     tgBtn: 'ОТКРЫТЬ В TELEGRAM',
     disclaimerTitle: '// DISCLAIMER',
     disclaimerText: 'Материалы носят информационно-аналитический характер и не являются индивидуальной инвестиционной рекомендацией. BelFed не несёт ответственности за решения, принятые на основании этих данных. Прошлые результаты не гарантируют будущих.',
+    memberAccess: 'ДОСТУП ДЛЯ ПОДПИСЧИКОВ',
+    startTrial: 'НАЧАТЬ ТРИАЛ',
+    trialNote: '30 дней бесплатно • Без карты',
+    ctaTelegram: 'ПОДПИСАТЬСЯ В TELEGRAM',
+    ctaPlans: 'ТАРИФЫ',
+    expiredTitle: 'ТРЕБУЕТСЯ ПОДПИСКА',
+    expiredText: 'Полные аналитические отчёты доступны активным подписчикам. Оформите подписку, чтобы продолжить чтение.',
+    signOut: 'ВЫЙТИ',
+    teaserAuthPrompt: 'ВОЙДИТЕ ИЛИ ОФОРМИТЕ ПОДПИСКУ, ЧТОБЫ ПРОЧИТАТЬ ОТЧЁТ ПОЛНОСТЬЮ',
   },
   en: {
     title: '— BELFED ANALYTICS —',
@@ -114,6 +216,15 @@ const I18N = {
     tgBtn: 'OPEN IN TELEGRAM',
     disclaimerTitle: '// DISCLAIMER',
     disclaimerText: 'Materials are informational and analytical in nature and do not constitute individual investment advice. BelFed is not responsible for decisions made on the basis of this data. Past performance does not guarantee future results.',
+    memberAccess: 'MEMBER ACCESS',
+    startTrial: 'START FREE TRIAL',
+    trialNote: '30 days free access • No credit card required',
+    ctaTelegram: 'SUBSCRIBE VIA TELEGRAM',
+    ctaPlans: 'VIEW PLANS',
+    expiredTitle: 'SUBSCRIPTION REQUIRED',
+    expiredText: 'Full analytics reports are available to active subscribers. Subscribe to continue reading.',
+    signOut: 'SIGN OUT',
+    teaserAuthPrompt: 'SIGN IN OR SUBSCRIBE TO READ THIS REPORT IN FULL',
   }
 };
 
@@ -223,18 +334,59 @@ function renderReport() {
   document.title = title + ' — BelFed Analytics';
 }
 
-async function loadReport() {
+// Read URL params used by loadReport / loadTeaser
+function getReportParams() {
   const params = new URLSearchParams(location.search);
-  const slug = params.get('slug');
-  const id = params.get('id');
-  const previewToken = params.get('preview_token');
+  return {
+    slug: params.get('slug'),
+    id: params.get('id'),
+    previewToken: params.get('preview_token')
+  };
+}
+
+// Anonymous/teaser-only fetch: surface non-sensitive metadata to display in the
+// login box. The server-side analytics-get function MUST return ONLY
+// title/subtitle/date/type/tags/cover_image_url when the caller is unauthenticated
+// (and explicitly omit `sections`, `body_*`, etc.). See SUPABASE_EDGE_FUNCTIONS_GATING.md.
+async function loadTeaser() {
+  const { slug, id } = getReportParams();
+  if (!slug && !id) return;
+  const url = GET_URL + '?teaser=1&' + (slug ? `slug=${encodeURIComponent(slug)}` : `id=${encodeURIComponent(id)}`);
+  try {
+    const res = await fetch(url, {
+      headers: { 'apikey': ANON_KEY, 'authorization': 'Bearer ' + ANON_KEY }
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json || !json.ok || !json.report) return;
+    const r = json.report;
+    const title = (state.lang === 'ru' ? r.title_ru : (r.title_en || r.title_ru)) || '';
+    const subtitle = (state.lang === 'ru' ? r.subtitle_ru : (r.subtitle_en || r.subtitle_ru)) || '';
+    const dateStr = fmtDate(r.report_date);
+    const typeStr = (r.report_type || '').toUpperCase();
+    const teaser = document.getElementById('loginTeaser');
+    if (!teaser) return;
+    document.getElementById('teaserMeta').textContent = [dateStr, typeStr].filter(Boolean).join(' · ');
+    document.getElementById('teaserTitle').textContent = title;
+    document.getElementById('teaserSubtitle').textContent = subtitle || I18N[state.lang].teaserAuthPrompt;
+    if (title) {
+      teaser.style.display = 'block';
+      document.title = title + ' — BelFed Analytics';
+    }
+  } catch (_) { /* teaser is best-effort */ }
+}
+
+async function loadReport() {
+  const { slug, id, previewToken } = getReportParams();
   const t = I18N[state.lang];
   if (!slug && !id) {
     document.getElementById('content').innerHTML = `<div class="empty">// ${t.notFound}</div>`;
     return;
   }
 
-  // 1) Cross-domain admin draft preview via short-lived HMAC token (preferred).
+  // 1) Cross-domain admin draft preview via short-lived HMAC token. Preserves
+  //    admin draft preview workflow without requiring a logged-in session on
+  //    this exact domain.
   if (previewToken) {
     const qs = new URLSearchParams();
     qs.set('token', previewToken);
@@ -250,26 +402,28 @@ async function loadReport() {
     } catch (_) { /* fall through */ }
   }
 
-  // 2) Try public path (works for published reports without sign-in).
-  const publicUrl = GET_URL + '?' + (slug ? `slug=${encodeURIComponent(slug)}` : `id=${encodeURIComponent(id)}`);
-  try {
-    const res = await fetch(publicUrl, {
-      headers: { 'apikey': ANON_KEY, 'authorization': 'Bearer ' + ANON_KEY }
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.ok) {
-        applyLoaded(json);
-        return;
+  // 2) Authenticated path. Send the user's Supabase JWT so the edge function
+  //    can verify entitlement server-side. This is the only path that returns
+  //    the full report body for subscribers.
+  let session = null;
+  try { const s = await sb.auth.getSession(); session = s.data.session; } catch (_) {}
+  if (session && session.access_token) {
+    const publicUrl = GET_URL + '?' + (slug ? `slug=${encodeURIComponent(slug)}` : `id=${encodeURIComponent(id)}`);
+    try {
+      const res = await fetch(publicUrl, {
+        headers: { 'apikey': ANON_KEY, 'authorization': 'Bearer ' + session.access_token }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.ok && Array.isArray(json.sections)) {
+          applyLoaded(json);
+          return;
+        }
       }
-    }
-  } catch (_) { /* fall through to admin path */ }
+    } catch (_) { /* fall through to admin path */ }
 
-  // 3) Same-origin admin (Supabase session) fallback — works only if logged-in admin
-  //    is on this exact domain.
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session && session.access_token) {
+    // 3) Admin draft fallback via analytics-admin-action (returns drafts for admins).
+    try {
       const r = await fetch(ADMIN_URL, {
         method: 'POST',
         headers: {
@@ -283,10 +437,11 @@ async function loadReport() {
         applyLoaded(data);
         return;
       }
-    }
-  } catch (_) { /* fall through to not_found */ }
+    } catch (_) { /* fall through to not_found */ }
+  }
 
-  document.getElementById('content').innerHTML = `<div class="empty">// ${t.notFound}</div>`;
+  // No access → fall back to expired/login screen.
+  showExpiredScreen();
 }
 
 function applyLoaded(json) {
@@ -304,6 +459,61 @@ function applyLoaded(json) {
   renderReport();
 }
 
+// ============== ACCESS GATING ==============
+// Visibility is locked (body hidden via CSS) until we know what to show. The
+// admin draft preview (signed HMAC token in URL) bypasses session auth.
+function hasPreviewToken() {
+  return !!new URLSearchParams(location.search).get('preview_token');
+}
+
+function showLoginScreen() {
+  document.getElementById('mainContainer').style.display = 'none';
+  document.getElementById('expiredScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.body.style.visibility = 'visible';
+}
+function showExpiredScreen() {
+  document.getElementById('mainContainer').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('expiredScreen').style.display = 'flex';
+  document.body.style.visibility = 'visible';
+}
+function showMainScreen() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('expiredScreen').style.display = 'none';
+  document.getElementById('mainContainer').style.display = 'block';
+  document.body.style.visibility = 'visible';
+}
+
+// Callbacks consumed by belfed-auth.js
+function onAuthReady(profile, session, entitlement) {
+  // Admin draft preview tokens are validated server-side; allow load regardless
+  // of subscription state, since the token itself is the authorization.
+  if (hasPreviewToken()) {
+    showMainScreen();
+    loadReport();
+    return;
+  }
+  if (entitlement && entitlement.access) {
+    showMainScreen();
+    loadReport();
+  } else {
+    // Render a teaser hint in the expired screen header is optional; show CTA.
+    showExpiredScreen();
+  }
+}
+function onAuthSignedOut() {
+  if (hasPreviewToken()) {
+    // Admin preview token: render without session.
+    showMainScreen();
+    loadReport();
+    return;
+  }
+  showLoginScreen();
+  // Fetch a teaser (title/date/type/subtitle only) to give context in the login box.
+  loadTeaser();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Default lang based on host
   const host = location.hostname;
@@ -316,8 +526,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('langRu').classList.toggle('active', state.lang === 'ru');
   document.getElementById('langEn').classList.toggle('active', state.lang === 'en');
   applyI18n();
-  document.body.style.visibility = 'visible';
-  loadReport();
+  // belfed-auth.js drives onAuthReady/onAuthSignedOut after checking the
+  // session. We deliberately do NOT call loadReport() here; gating happens
+  // in the callbacks.
 });
 </script>
 </body>
