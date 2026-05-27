@@ -58,6 +58,31 @@ a.card{text-decoration:none;color:#000}
 .pager button{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;padding:8px 18px;background:#fff;border:1px solid #000;cursor:pointer}
 .pager button:disabled{opacity:0.4;cursor:not-allowed}
 
+/* Login + Expired screens (match dashboard) */
+#loginScreen{display:none;justify-content:center;align-items:center;min-height:80vh}
+.login-box{background:#fff;border:2px solid #000;padding:40px;max-width:460px;width:100%;text-align:center}
+.login-box h2{font-size:18px;letter-spacing:3px;margin-bottom:8px}
+.login-box .login-sub{font-size:11px;opacity:0.6;margin-bottom:18px;letter-spacing:1px}
+.auth-tabs{display:flex;margin-bottom:18px;border-bottom:1px solid #000}
+.auth-tab{flex:1;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;letter-spacing:2px;padding:8px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;color:#999}
+.auth-tab.active{color:#000;border-bottom-color:#000}
+.auth-tab:hover{color:#000}
+.login-box input{font-family:'Courier New',monospace;width:100%;padding:10px 14px;font-size:13px;border:1px solid #000;background:#f5f2eb;margin-bottom:12px;outline:none}
+.login-box input:focus{background:#fff}
+.login-box .login-btn{font-family:'Courier New',monospace;width:100%;padding:12px;font-size:13px;font-weight:bold;letter-spacing:2px;background:#000;color:#f5f2eb;border:none;cursor:pointer;margin-top:6px;text-decoration:none;display:block;box-sizing:border-box}
+.login-box .login-btn:hover{background:#222}
+.login-box .login-btn.alt{background:#fff;color:#000;border:1px solid #000}
+.login-box .login-btn.alt:hover{background:#f0ede4}
+.login-box .login-error{color:#c50000;font-size:12px;margin-top:12px;display:none}
+.login-box .login-msg{color:#1a7a1a;font-size:12px;margin-top:12px;display:none}
+.cta-row{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.cta-row .or{font-size:10px;letter-spacing:2px;opacity:0.5;margin:2px 0}
+.trial-note{font-size:10px;opacity:0.5;margin-top:14px;letter-spacing:0.5px}
+#expiredScreen{display:none;justify-content:center;align-items:center;min-height:80vh}
+.expired-box{background:#fff;border:2px solid #c50000;padding:40px;max-width:460px;width:100%;text-align:center}
+.expired-box h2{font-size:16px;letter-spacing:2px;color:#c50000;margin-bottom:12px}
+.expired-box p{font-size:13px;line-height:1.8;margin-bottom:16px}
+
 @media (max-width:600px){
   .filter-group input,.filter-group select{min-width:100%;width:100%}
   .filter-group{width:100%}
@@ -66,7 +91,62 @@ a.card{text-decoration:none;color:#000}
 </style>
 </head>
 <body>
-<div class="container">
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2><a href="/" style="color:#000;text-decoration:none">— BELFED_ —</a></h2>
+    <div class="login-sub" data-i18n="memberAccess">MEMBER ACCESS</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="showAuthTab('signin')">SIGN IN</button>
+      <button class="auth-tab" onclick="showAuthTab('signup')">SIGN UP</button>
+      <button class="auth-tab" onclick="showAuthTab('magiclink')">MAGIC LINK</button>
+    </div>
+    <div id="signinForm">
+      <input type="email" id="siEmail" placeholder="Email address">
+      <input type="password" id="siPassword" placeholder="Password">
+      <button class="login-btn" onclick="handleSignIn()">SIGN IN</button>
+      <a href="#" id="forgotPasswordLink" style="display:block;margin-top:10px;font-size:11px;color:#999;letter-spacing:1px;text-decoration:none" onclick="document.getElementById('forgotPasswordBlock').style.display='block';this.style.display='none';return false;">Forgot password?</a>
+      <div id="forgotPasswordBlock" style="display:none;margin-top:10px">
+        <input type="email" id="resetEmail" placeholder="Enter your email">
+        <button class="login-btn" onclick="handleForgotPassword()">SEND RESET LINK</button>
+        <div id="resetStatus" style="font-size:11px;margin-top:8px;display:none"></div>
+      </div>
+    </div>
+    <div id="signupForm" style="display:none">
+      <input type="email" id="suEmail" placeholder="Email address">
+      <input type="password" id="suPassword" placeholder="Password (min 6 chars)">
+      <input type="password" id="suPassword2" placeholder="Confirm password">
+      <button class="login-btn" onclick="handleSignUp()" data-i18n="startTrial">START FREE TRIAL</button>
+      <div class="trial-note" data-i18n="trialNote">30 days free access &bull; No credit card required</div>
+    </div>
+    <div id="magiclinkForm" style="display:none">
+      <input type="email" id="mlEmail" placeholder="Email address">
+      <button class="login-btn" onclick="handleMagicLink()">SEND MAGIC LINK</button>
+      <div class="trial-note">A sign-in link will be sent to your email. No password needed.</div>
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-msg" id="loginMsg"></div>
+    <div class="cta-row">
+      <div class="or">— OR —</div>
+      <a class="login-btn alt" href="https://t.me/BelfedBot?start=auth" target="_blank" rel="noopener" data-i18n="ctaTelegram">SUBSCRIBE VIA TELEGRAM</a>
+      <a class="login-btn alt" href="https://belfed.com/#subscribe" data-i18n="ctaPlans">VIEW PLANS</a>
+    </div>
+  </div>
+</div>
+
+<!-- EXPIRED SCREEN -->
+<div id="expiredScreen">
+  <div class="expired-box">
+    <h2 data-i18n="expiredTitle">SUBSCRIPTION REQUIRED</h2>
+    <p data-i18n="expiredText">The analytics feed and full reports are available to active subscribers.</p>
+    <a href="https://belfed.com/#subscribe" class="login-btn" data-i18n="ctaPlans">VIEW PLANS</a>
+    <a href="https://t.me/BelfedBot?start=auth" target="_blank" rel="noopener" class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" data-i18n="ctaTelegram">SUBSCRIBE VIA TELEGRAM</a>
+    <button class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" onclick="handleLogout()" data-i18n="signOut">SIGN OUT</button>
+  </div>
+</div>
+
+<div class="container" id="mainContainer" style="display:none">
 
 <header>
 <h2><a href="/" style="color:#000;text-decoration:none">— BELFED_ —</a></h2>
@@ -140,9 +220,11 @@ a.card{text-decoration:none;color:#000}
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="belfed-auth.js"></script>
 <script>
-const SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+// SUPABASE_URL, SUPABASE_KEY (anon) and supaClient provided by belfed-auth.js
+const ANON_KEY = SUPABASE_KEY;
 const LIST_URL = SUPABASE_URL + '/functions/v1/analytics-list';
 
 const PAGE_SIZE = 12;
@@ -182,6 +264,14 @@ const I18N = {
     disclaimerText: 'Материалы носят информационно-аналитический характер и не являются индивидуальной инвестиционной рекомендацией. BelFed не несёт ответственности за решения, принятые на основании этих данных. Прошлые результаты не гарантируют будущих.',
     placeholderSearch: 'ключевые слова, тикер...',
     prev: '← НАЗАД', next: 'ВПЕРЁД →',
+    memberAccess: 'ДОСТУП ДЛЯ ПОДПИСЧИКОВ',
+    startTrial: 'НАЧАТЬ ТРИАЛ',
+    trialNote: '30 дней бесплатно • Без карты',
+    ctaTelegram: 'ПОДПИСАТЬСЯ В TELEGRAM',
+    ctaPlans: 'ТАРИФЫ',
+    expiredTitle: 'ТРЕБУЕТСЯ ПОДПИСКА',
+    expiredText: 'Лента и полные отчёты доступны активным подписчикам.',
+    signOut: 'ВЫЙТИ',
   },
   en: {
     title: '— BELFED ANALYTICS —',
@@ -207,6 +297,14 @@ const I18N = {
     disclaimerText: 'Materials are informational and analytical in nature and do not constitute individual investment advice. BelFed is not responsible for decisions made on the basis of this data. Past performance does not guarantee future results.',
     placeholderSearch: 'keywords, ticker...',
     prev: '← PREV', next: 'NEXT →',
+    memberAccess: 'MEMBER ACCESS',
+    startTrial: 'START FREE TRIAL',
+    trialNote: '30 days free access • No credit card required',
+    ctaTelegram: 'SUBSCRIBE VIA TELEGRAM',
+    ctaPlans: 'VIEW PLANS',
+    expiredTitle: 'SUBSCRIPTION REQUIRED',
+    expiredText: 'The feed and full reports are available to active subscribers.',
+    signOut: 'SIGN OUT',
   }
 };
 
@@ -228,7 +326,7 @@ function setLang(lang) {
   document.getElementById('langRu').classList.toggle('active', lang === 'ru');
   document.getElementById('langEn').classList.toggle('active', lang === 'en');
   applyI18n();
-  fetchList();
+  if (document.getElementById('mainContainer').style.display === 'block') fetchList();
 }
 
 function applyI18n() {
@@ -327,8 +425,15 @@ async function fetchList() {
   if (state.type) params.set('type', state.type);
   if (state.tag) params.set('tag', state.tag);
   try {
+    let bearer = ANON_KEY;
+    try {
+      const s = await supaClient.auth.getSession();
+      if (s && s.data && s.data.session && s.data.session.access_token) {
+        bearer = s.data.session.access_token;
+      }
+    } catch (_) {}
     const res = await fetch(LIST_URL + '?' + params.toString(), {
-      headers: { 'apikey': ANON_KEY, 'authorization': 'Bearer ' + ANON_KEY }
+      headers: { 'apikey': ANON_KEY, 'authorization': 'Bearer ' + bearer }
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'unknown');
@@ -356,21 +461,42 @@ function debounce(fn, wait) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Default lang depends on host
-  const host = location.hostname;
-  if (host === 'belfed.com' || host === 'www.belfed.com') state.lang = 'en';
-  // URL ?lang=xx overrides
-  const urlLang = new URLSearchParams(location.search).get('lang');
-  if (urlLang === 'ru') state.lang = 'ru';
-  if (urlLang === 'en') state.lang = 'en';
-  document.getElementById('langRu').classList.toggle('active', state.lang === 'ru');
-  document.getElementById('langEn').classList.toggle('active', state.lang === 'en');
-  document.documentElement.lang = state.lang;
+// ============== ACCESS GATING ==============
+function showLoginScreen() {
+  document.getElementById('mainContainer').style.display = 'none';
+  document.getElementById('expiredScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.body.style.visibility = 'visible';
+}
+function showExpiredScreen() {
+  document.getElementById('mainContainer').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('expiredScreen').style.display = 'flex';
+  document.body.style.visibility = 'visible';
+}
+function showMainScreen() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('expiredScreen').style.display = 'none';
+  document.getElementById('mainContainer').style.display = 'block';
+  document.body.style.visibility = 'visible';
+}
 
-  applyI18n();
+let _feedInitialized = false;
+function onAuthReady(profile, session, entitlement) {
+  if (entitlement && entitlement.access) {
+    showMainScreen();
+    if (!_feedInitialized) { initFeed(); _feedInitialized = true; }
+    else { fetchList(); }
+  } else {
+    showExpiredScreen();
+  }
+}
+function onAuthSignedOut() {
+  showLoginScreen();
+}
+
+function initFeed() {
   buildTagRow();
-
   document.getElementById('fSearch').addEventListener('input', debounce(e => {
     state.search = e.target.value.trim();
     state.offset = 0;
@@ -391,9 +517,23 @@ document.addEventListener('DOMContentLoaded', () => {
     state.offset = 0;
     fetchList();
   });
-
-  document.body.style.visibility = 'visible';
   fetchList();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Default lang depends on host
+  const host = location.hostname;
+  if (host === 'belfed.com' || host === 'www.belfed.com') state.lang = 'en';
+  // URL ?lang=xx overrides
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang === 'ru') state.lang = 'ru';
+  if (urlLang === 'en') state.lang = 'en';
+  document.getElementById('langRu').classList.toggle('active', state.lang === 'ru');
+  document.getElementById('langEn').classList.toggle('active', state.lang === 'en');
+  document.documentElement.lang = state.lang;
+
+  applyI18n();
+  // belfed-auth.js triggers onAuthReady / onAuthSignedOut after session check.
 });
 </script>
 </body>
