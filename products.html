@@ -40,7 +40,7 @@
     .products-hero .tag { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 24px; }
     .products-hero h1 { font-size: clamp(28px, 4vw, 48px); font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 18px; }
     .products-hero p { font-size: 15px; color: #333; line-height: 1.7; max-width: 600px; }
-    .product-grid { padding: 20px 40px 40px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px; }
+    .product-grid { padding: 20px 40px 40px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr)); max-width: 1200px; }
     .product-card { border: 1px solid var(--border); padding: 32px; background: var(--white); transition: border-color 0.2s; }
     .product-card:hover { border-color: var(--black); }
     .product-card .label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; }
@@ -59,7 +59,7 @@
     footer a { color: var(--gray); text-decoration: none; }
     footer a:hover { color: var(--black); }
     .footer-links { display: flex; gap: 20px; }
-    @media (max-width: 700px) { nav { padding: 0 20px; } .nav-links { display: none; } .nav-actions { display: none; } .hamburger { display: flex; } .menu-dropdown { display: block; } .bottom-bar { display: grid; } body { padding-bottom: 76px; } .products-hero, .pricing { padding-left: 20px; padding-right: 20px; } .product-grid { padding: 20px; } footer { padding: 20px; } }
+    @media (max-width: 700px) { nav { padding: 0 20px; } .nav-links { display: none; } .nav-actions { display: none; } .hamburger { display: flex; } .menu-dropdown { display: block; } .bottom-bar { display: grid; } body { padding-bottom: 76px; } .products-hero, .pricing { padding-left: 20px; padding-right: 20px; } .product-grid { padding: 20px; } .product-card { padding: 24px 22px; } footer { padding: 20px; } }
   </style>
 </head>
 <body>

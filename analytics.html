@@ -34,7 +34,7 @@ header h1{font-size:18px;letter-spacing:3px;font-weight:bold}
 .tag-chip.active{background:#000;color:#f5f2eb}
 
 .results-count{font-size:11px;letter-spacing:1px;opacity:0.6;margin-bottom:14px}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:18px}
 a.card{text-decoration:none;color:#000}
 .card{background:#fff;border:1px solid #000;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-2px);box-shadow:4px 4px 0 #000}
@@ -84,9 +84,19 @@ a.card{text-decoration:none;color:#000}
 .expired-box p{font-size:13px;line-height:1.8;margin-bottom:16px}
 
 @media (max-width:600px){
+  body{padding:14px 12px}
   .filter-group input,.filter-group select{min-width:100%;width:100%}
   .filter-group{width:100%}
-  header h1{font-size:14px;letter-spacing:2px}
+  header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px;padding-bottom:16px}
+  header h2{font-size:12px;letter-spacing:2.5px;margin-bottom:0}
+  header h1{font-size:clamp(13px,4vw,14px);letter-spacing:1px;line-height:1.35;margin:0;max-width:100%;overflow-wrap:anywhere}
+  .lang-switch{position:static;transform:none;margin-top:4px}
+  .lang-switch button{font-size:10px;letter-spacing:.8px;padding:6px 12px;min-width:42px}
+  .sub-nav{justify-content:center;row-gap:4px;margin-bottom:20px}
+  .sub-nav a{font-size:11px;letter-spacing:1px;padding:9px 10px}
+  .filters{padding:14px 14px}
+  .filters-row{gap:12px}
+  .pager button{padding:8px 14px;font-size:11px;letter-spacing:1px}
 }
 </style>
 </head>
