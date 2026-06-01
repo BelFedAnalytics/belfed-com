@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add your email — BelFed Analytics</title>
+  <meta name="description" content="Add your email to your BelFed account after a Telegram Stars subscription. Required for member-dashboard recovery and important service notifications.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f5f0;
+      --gray: #888;
+      --light-gray: #e8e8e3;
+      --border: #d0d0ca;
+      --green: #1a6b3a;
+      --red: #8b1a1a;
+      --gold: #b8860b;
+      --font: 'Courier Prime', 'Courier New', monospace;
+    }
+    body {
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--black);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    nav {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 56px;
+    }
+    .nav-logo { font-size: 17px; font-weight: 700; letter-spacing: 0.05em; text-decoration: none; color: var(--black); }
+    main { flex: 1; padding: 60px 40px 80px; max-width: 640px; margin: 0 auto; width: 100%; }
+
+    .tag {
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 20px;
+    }
+    h1 {
+      font-size: clamp(28px, 5vw, 44px); font-weight: 700;
+      line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 18px;
+    }
+    .lead {
+      font-size: 15px; color: #333; margin-bottom: 36px; max-width: 560px;
+    }
+    .lead strong { font-weight: 700; }
+
+    .info-card {
+      border: 1px solid var(--border); background: #fbfbf6;
+      padding: 18px 22px; margin-bottom: 32px;
+      font-size: 13px;
+    }
+    .info-card-label {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 6px;
+    }
+    .info-card-list { list-style: disc; padding-left: 20px; margin: 4px 0 0; }
+    .info-card-list li { margin-bottom: 2px; }
+
+    form { display: block; }
+    .field { margin-bottom: 22px; }
+    .field label.lbl {
+      display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 8px;
+    }
+    .field input[type="email"] {
+      width: 100%; font-family: var(--font); font-size: 16px;
+      padding: 14px 16px; background: var(--white); color: var(--black);
+      border: 1px solid var(--black); outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input[type="email"]:focus { border-color: var(--gold); }
+    .field input[type="email"].error { border-color: var(--red); background: #fdf5f5; }
+    .field .hint { font-size: 12px; color: var(--gray); margin-top: 6px; }
+
+    .consent { margin-bottom: 14px; }
+    .consent label {
+      display: flex; gap: 12px; align-items: flex-start;
+      font-size: 13px; line-height: 1.5; cursor: pointer;
+      padding: 12px 14px; border: 1px solid var(--border); background: #fbfbf6;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .consent label:hover { border-color: var(--black); }
+    .consent input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none;
+      width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+      border: 1px solid var(--black); background: var(--white); cursor: pointer;
+      position: relative;
+    }
+    .consent input[type="checkbox"]:checked { background: var(--black); }
+    .consent input[type="checkbox"]:checked::after {
+      content: ''; position: absolute; left: 5px; top: 1px;
+      width: 5px; height: 10px; border: solid var(--white);
+      border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    .consent.error label { border-color: var(--red); background: #fdf5f5; }
+    .consent a { color: var(--black); text-decoration: underline; }
+    .consent a:hover { color: var(--gold); }
+
+    .submit-row { margin-top: 28px; }
+    button[type="submit"] {
+      width: 100%; font-family: var(--font); font-size: 13px;
+      letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+      padding: 16px 24px; background: var(--black); color: var(--white);
+      border: 1px solid var(--black); cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    button[type="submit"]:hover:not(:disabled) { background: transparent; color: var(--black); }
+    button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .alert {
+      margin-bottom: 22px; padding: 14px 18px; font-size: 13px;
+      border: 1px solid var(--red); background: #fdf5f5; color: var(--red);
+      display: none;
+    }
+    .alert.show { display: block; }
+    .alert.info { border-color: var(--gold); background: #fdfaf0; color: #6b5008; }
+    .alert.success { border-color: var(--green); background: #f0f8f3; color: var(--green); }
+
+    .success-block {
+      text-align: center; padding: 40px 24px;
+      border: 1px solid var(--green); background: #f0f8f3;
+      display: none;
+    }
+    .success-block.show { display: block; }
+    .success-block h2 {
+      font-size: 22px; color: var(--green); margin-bottom: 12px;
+    }
+    .success-block p { font-size: 14px; color: #2a4a36; margin-bottom: 0; }
+
+    .small {
+      margin-top: 28px; font-size: 12px; color: var(--gray); line-height: 1.6;
+    }
+    .small a { color: var(--gray); }
+    .small a:hover { color: var(--black); }
+
+    .invalid-state {
+      text-align: center; padding: 40px 24px;
+      border: 1px solid var(--red); background: #fdf5f5;
+      display: none;
+    }
+    .invalid-state.show { display: block; }
+    .invalid-state h2 { font-size: 22px; color: var(--red); margin-bottom: 12px; }
+    .invalid-state p { font-size: 14px; color: #6b1010; }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 24px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: var(--gray); flex-wrap: wrap; gap: 12px;
+    }
+    footer a { color: var(--gray); text-decoration: none; }
+    footer a:hover { color: var(--black); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; }
+      main { padding: 40px 20px 60px; }
+      footer { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">BELFED_</a>
+  </nav>
+
+  <main>
+    <div id="noToken" class="invalid-state">
+      <h2 data-en="Invalid link" data-ru="Неверная ссылка">Invalid link</h2>
+      <p data-en="This page must be opened from the link the BelFed bot sent you in Telegram after your subscription payment."
+         data-ru="Откройте эту страницу по ссылке, которую BelFed-бот прислал вам в Telegram после оплаты подписки.">
+        This page must be opened from the link the BelFed bot sent you in Telegram after your subscription payment.
+      </p>
+    </div>
+
+    <div id="formContainer">
+      <div class="tag" data-en="✓ Subscription active" data-ru="✓ Подписка активна">✓ Subscription active</div>
+      <h1 data-en="One last step." data-ru="Последний шаг.">One last step.</h1>
+      <p class="lead" data-en="Add your email to your account. It powers your member-dashboard recovery and lets us notify you about important account events. &lt;strong&gt;No marketing, no spam.&lt;/strong&gt;"
+         data-ru="Добавьте email к вашему аккаунту. Он нужен для восстановления доступа к личному кабинету и важных сервисных уведомлений. &lt;strong&gt;Без рассылки и спама.&lt;/strong&gt;">
+        Add your email to your account. It powers your member-dashboard recovery and lets us notify you about important account events. <strong>No marketing, no spam.</strong>
+      </p>
+
+      <div class="info-card">
+        <div class="info-card-label" data-en="What we'll use it for" data-ru="Для чего нам email">What we'll use it for</div>
+        <ul class="info-card-list">
+          <li data-en="Recovering access to your member dashboard" data-ru="Восстановление доступа к личному кабинету">Recovering access to your member dashboard</li>
+          <li data-en="Critical service notifications (subscription, payments, security)" data-ru="Критичные сервисные уведомления (подписка, платежи, безопасность)">Critical service notifications (subscription, payments, security)</li>
+          <li data-en="Receipts and renewal reminders" data-ru="Чеки и напоминания о продлении">Receipts and renewal reminders</li>
+        </ul>
+      </div>
+
+      <div id="alert" class="alert" role="alert"></div>
+
+      <form id="upgradeForm" novalidate>
+        <div class="field">
+          <label class="lbl" for="email" data-en="Email address" data-ru="Электронная почта">Email address</label>
+          <input type="email" id="email" name="email" autocomplete="email" required
+                 placeholder="you@example.com" inputmode="email" spellcheck="false">
+          <div class="hint"
+               data-en="We use it for account recovery and important service notifications only."
+               data-ru="Используется только для восстановления доступа и важных сервисных уведомлений.">
+            We use it for account recovery and important service notifications only.
+          </div>
+        </div>
+
+        <div class="consent" id="consentPrivacyWrap">
+          <label>
+            <input type="checkbox" id="acceptPrivacy" name="acceptPrivacy">
+            <span data-en="I have read and accept the &lt;a href='/privacy.html' target='_blank' rel='noopener'&gt;Privacy Policy&lt;/a&gt; and consent to the processing of my email by the data controller — Individual Entrepreneur Artem I. Fedorov (INN 781103296545)."
+                  data-ru="Я ознакомлен с &lt;a href='/privacy.html' target='_blank' rel='noopener'&gt;Политикой конфиденциальности&lt;/a&gt; и даю согласие на обработку моего email оператором — ИП Фёдоров Артём Игоревич (ИНН 781103296545).">
+              I have read and accept the <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a> and consent to the processing of my email by the data controller — Individual Entrepreneur Artem I. Fedorov (INN 781103296545).
+            </span>
+          </label>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" id="submitBtn" data-en="Save email →" data-ru="Сохранить email →">Save email →</button>
+        </div>
+
+        <p class="small"
+           data-en="Your data is stored on EU servers (Supabase, eu-west-1). You may withdraw consent and request deletion at any time by emailing &lt;a href='mailto:hello@belfed.com'&gt;hello@belfed.com&lt;/a&gt;."
+           data-ru="Данные хранятся на серверах Supabase (eu-west-1, ЕС). Вы можете отозвать согласие и потребовать удаления данных, написав на &lt;a href='mailto:hello@belfed.com'&gt;hello@belfed.com&lt;/a&gt;.">
+          Your data is stored on EU servers (Supabase, eu-west-1). You may withdraw consent and request deletion at any time by emailing <a href="mailto:hello@belfed.com">hello@belfed.com</a>.
+        </p>
+      </form>
+    </div>
+
+    <div id="successBlock" class="success-block">
+      <h2 data-en="Email saved." data-ru="Email сохранён.">Email saved.</h2>
+      <p data-en="You can close this page and return to Telegram. Welcome to BelFed."
+         data-ru="Можете закрыть эту страницу и вернуться в Telegram. Добро пожаловать в BelFed.">
+        You can close this page and return to Telegram. Welcome to BelFed.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <span>&copy; 2025&ndash;2026 BelFed Analytics. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="/disclaimer.html">Disclaimer</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      var SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
+      var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+
+      var params = new URLSearchParams(window.location.search);
+      var token = (params.get('stars_token') || '').trim();
+      var lang = params.get('lang') === 'ru' ? 'ru' : 'en';
+
+      // Apply language to all data-en/data-ru elements
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-en][data-ru]').forEach(function(el) {
+        var text = el.getAttribute('data-' + lang);
+        if (text != null) el.innerHTML = text;
+      });
+
+      var formContainer = document.getElementById('formContainer');
+      var noTokenBlock  = document.getElementById('noToken');
+      var successBlock  = document.getElementById('successBlock');
+      var form          = document.getElementById('upgradeForm');
+      var emailInput    = document.getElementById('email');
+      var privacyCb     = document.getElementById('acceptPrivacy');
+      var privacyWrap   = document.getElementById('consentPrivacyWrap');
+      var alertBox      = document.getElementById('alert');
+      var submitBtn     = document.getElementById('submitBtn');
+
+      // Token sanity check
+      if (!token || !/^[a-z0-9]{16,64}$/.test(token)) {
+        formContainer.style.display = 'none';
+        noTokenBlock.classList.add('show');
+        return;
+      }
+
+      var MSG = {
+        en: {
+          invalid_email:    'That email looks invalid. Please double-check and try again.',
+          consent_required: 'You must accept the Privacy Policy.',
+          invalid_or_expired_token: 'This link is no longer valid (it may have expired or already been used). Please contact hello@belfed.com.',
+          profile_not_found:'Account not found. Please contact hello@belfed.com.',
+          db_error:         'A temporary server error occurred. Please try again in a moment.',
+          network:          'Network error. Please check your connection and try again.',
+          generic:          'Something went wrong. Please try again or email hello@belfed.com.',
+          working:          'Saving...',
+          submit:           'Save email →'
+        },
+        ru: {
+          invalid_email:    'Email указан некорректно. Проверьте написание и попробуйте снова.',
+          consent_required: 'Необходимо принять Политику конфиденциальности.',
+          invalid_or_expired_token: 'Ссылка больше недействительна (истёк срок или уже использовалась). Напишите на hello@belfed.com.',
+          profile_not_found:'Аккаунт не найден. Напишите на hello@belfed.com.',
+          db_error:         'Временная ошибка сервера. Попробуйте через минуту.',
+          network:          'Сетевая ошибка. Проверьте подключение и попробуйте ещё раз.',
+          generic:          'Что-то пошло не так. Попробуйте ещё раз или напишите на hello@belfed.com.',
+          working:          'Сохраняем...',
+          submit:           'Сохранить email →'
+        }
+      };
+      var L = MSG[lang];
+
+      function showAlert(msg, kind) {
+        alertBox.textContent = msg;
+        alertBox.className = 'alert show' + (kind === 'info' ? ' info' : (kind === 'success' ? ' success' : ''));
+      }
+      function clearAlert() { alertBox.className = 'alert'; alertBox.textContent = ''; }
+      function clearErrors() {
+        emailInput.classList.remove('error');
+        privacyWrap.classList.remove('error');
+      }
+      emailInput.addEventListener('input', clearErrors);
+      privacyCb.addEventListener('change', clearErrors);
+
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+      form.addEventListener('submit', function(ev) {
+        ev.preventDefault();
+        clearAlert();
+        clearErrors();
+
+        var email = emailInput.value.trim().toLowerCase();
+        var hasPrivacy = privacyCb.checked;
+        var failed = false;
+
+        if (!email || !EMAIL_RE.test(email) || email.length > 254) {
+          emailInput.classList.add('error'); failed = true;
+        }
+        if (!hasPrivacy) { privacyWrap.classList.add('error'); failed = true; }
+        if (failed) {
+          showAlert(!email || !EMAIL_RE.test(email) ? L.invalid_email : L.consent_required);
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = L.working;
+
+        fetch(SUPABASE_URL + '/functions/v1/stars-attach-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + SUPABASE_ANON,
+            'apikey': SUPABASE_ANON
+          },
+          body: JSON.stringify({
+            token: token,
+            email: email,
+            accept_privacy: true
+          })
+        }).then(function(r) {
+          return r.json().then(function(body) { return { status: r.status, body: body }; });
+        }).then(function(res) {
+          if (res.body && res.body.ok) {
+            form.style.display = 'none';
+            alertBox.className = 'alert';
+            successBlock.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          var code = (res.body && res.body.error) || 'generic';
+          var msg = L[code] || L.generic;
+          showAlert(msg);
+          if (code === 'invalid_email') { emailInput.classList.add('error'); emailInput.focus(); }
+          submitBtn.disabled = false;
+          submitBtn.textContent = L.submit;
+        }).catch(function() {
+          showAlert(L.network);
+          submitBtn.disabled = false;
+          submitBtn.textContent = L.submit;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
