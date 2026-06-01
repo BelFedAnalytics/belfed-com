@@ -89,30 +89,9 @@ body{background:#f5f2eb;font-family:'Courier New',Courier,monospace;color:#000;p
 
 footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #000;font-size:12px;opacity:0.5}
 
-/* Thread pill & drawer (Option B) */
+/* Thread navigation pills (↑ PREVIOUS / ↓ NEWER) */
 .thread-pill{display:inline-flex;align-items:center;gap:5px;font-family:'Courier New',monospace;font-size:10px;font-weight:bold;letter-spacing:1.5px;padding:3px 8px;border:1px solid #2b6cb0;background:#eef6ff;color:#2b6cb0;cursor:pointer;text-transform:uppercase}
 .thread-pill:hover{background:#2b6cb0;color:#fff}
-.thread-pill .arrow{font-size:9px;transition:transform 0.15s}
-.thread-pill.open .arrow{transform:rotate(180deg)}
-.thread-drawer{display:none;background:#f5f2eb;border-top:1px dashed #000}
-.thread-drawer.open{display:block}
-.thread-drawer-head{padding:8px 20px;font-size:10px;letter-spacing:2px;opacity:0.6;border-bottom:1px dashed #ccc}
-.thread-update{padding:14px 20px;border-bottom:1px dashed #ccc;display:grid;grid-template-columns:90px 1fr auto;gap:14px;align-items:start}
-.thread-update:last-child{border-bottom:none}
-.thread-update .tu-date{font-size:10px;letter-spacing:1px;opacity:0.7;padding-top:2px}
-.thread-update .tu-body{font-size:12px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word}
-.thread-update .tu-body a{color:#000;border-bottom:1px dashed #777}
-.thread-update .tu-img{width:80px;height:60px;background:#0e1419;cursor:pointer;flex-shrink:0;overflow:hidden}
-.thread-update .tu-img img{width:100%;height:100%;object-fit:cover;display:block}
-.thread-update.highlight{background:#fffbe5;animation:flash-highlight 2s ease-out}
-@keyframes flash-highlight{0%{background:#fff3a8}100%{background:#fffbe5}}
-.thread-update .tu-actions{display:flex;gap:6px;flex-shrink:0}
-.thread-update .tu-copy{font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;padding:3px 7px;border:1px solid #000;background:#fff;cursor:pointer;color:#000;text-transform:uppercase}
-.thread-update .tu-copy:hover{background:#f0ede4}
-@media(max-width:700px){
-  .thread-update{grid-template-columns:1fr;gap:8px}
-  .thread-update .tu-date{font-size:10px}
-}
 
 /* Copy link button in card header */
 .card-head .copylink{font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.5px;padding:3px 8px;border:1px solid #000;background:#fff;color:#000;cursor:pointer;text-transform:uppercase;margin-left:8px}
@@ -360,8 +339,9 @@ var state = {
   ticker: '',
   asset_class: '',
   posts: [],     // all flat
-  threads: [],   // leaf posts (latest of each thread), each with ._chain
-  filtered: [],  // threads filtered by UI
+  byId: {},      // id -> post (for thread back/forward nav)
+  childOf: {},   // parent_post_id -> newest child post (forward link)
+  filtered: [],  // posts filtered by UI (flat, each its own card)
   pendingPermalink: null
 };
 
@@ -418,22 +398,9 @@ function permalinkUrl(post) {
   return location.origin + '/analysis/' + encodeURIComponent(ticker) + '/' + encodeURIComponent(slug);
 }
 
-function renderThreadUpdate(p) {
-  var imgs = (p.image_paths || []).map(function(path) { return SUPA_URL_PUB + path; });
-  var imgHtml = imgs.length ? '<div class="tu-img" data-images=\'' + JSON.stringify(imgs).replace(/'/g, '&#39;') + '\'><img src="' + escapeHtml(imgs[0]) + '" alt="" loading="lazy"></div>' : '<div></div>';
-  var bodyTxt = (p.greeting_en || p.greeting_ru) ? ((p.greeting_en || p.greeting_ru) + '\n\n' + (p.body_en || p.body_ru || '')) : (p.body_en || p.body_ru || '');
-  var permalink = permalinkUrl(p);
-  var copyBtn = permalink ? '<button class="tu-copy" data-copy="' + escapeHtml(permalink) + '" title="Copy link">[ § ]</button>' : '';
-  return '<div class="thread-update" data-slug="' + escapeHtml(p.slug||'') + '" data-post-id="' + escapeHtml(p.id) + '">' +
-    '<div class="tu-date">' + escapeHtml(fmtDateTime(p.published_at || p.created_at)) + '</div>' +
-    '<div class="tu-body">' + bodyToHtml(bodyTxt) + '</div>' +
-    '<div class="tu-actions">' + imgHtml + copyBtn + '</div>' +
-  '</div>';
-}
-
 function renderCard(p) {
-  // p is the latest post in a thread; p._chain contains earlier posts (oldest→newest, EXCLUDING p)
-  var chain = p._chain || [];
+  // Each published post renders as its own card. Thread chain is exposed via
+  // back-reference (↑ PREVIOUS) and forward-reference (↓ NEWER) pills in the head.
   var imgs = (p.image_paths || []).map(function(path) { return SUPA_URL_PUB + path; });
   var imgHtml = '';
   if (imgs.length === 1) {
@@ -486,24 +453,19 @@ function renderCard(p) {
 
   var hasFooter = tagHtml || actions;
 
-  // Thread pill (Option B)
-  var threadPill = '';
-  if (chain.length > 0) {
-    threadPill = '<button class="thread-pill" data-toggle-thread="1" title="Show earlier updates">↻ ' + chain.length + ' PREVIOUS <span class="arrow">▾</span></button>';
-  }
+  // Thread navigation pills: back to previous update, forward to newer update.
+  var prevPost = (p.parent_post_id && state.byId[p.parent_post_id]) ? state.byId[p.parent_post_id] : null;
+  var nextPost = state.childOf[p.id] || null;
+  var prevPill = prevPost
+    ? '<button class="thread-pill" data-goto-post="' + escapeHtml(prevPost.id) + '" title="Previous update · ' + escapeHtml(fmtDateTime(prevPost.published_at || prevPost.created_at)) + '">↑ PREVIOUS</button>'
+    : '';
+  var nextPill = nextPost
+    ? '<button class="thread-pill" data-goto-post="' + escapeHtml(nextPost.id) + '" title="Newer update · ' + escapeHtml(fmtDateTime(nextPost.published_at || nextPost.created_at)) + '">↓ NEWER</button>'
+    : '';
 
   // Copy-link button
   var permalink = permalinkUrl(p);
   var copyLinkBtn = permalink ? '<button class="copylink" data-copy="' + escapeHtml(permalink) + '" title="Copy link to this post">[ § LINK ]</button>' : '';
-
-  // Drawer (chain shown oldest→newest, then current post is at top of card already)
-  var drawerHtml = '';
-  if (chain.length > 0) {
-    drawerHtml = '<div class="thread-drawer">' +
-      '<div class="thread-drawer-head">// POST HISTORY (' + chain.length + ' earlier)</div>' +
-      chain.slice().reverse().map(renderThreadUpdate).join('') +
-    '</div>';
-  }
 
   return '<article class="card" data-slug="' + escapeHtml(p.slug||'') + '" data-post-id="' + escapeHtml(p.id) + '">' +
     '<div class="card-head">' +
@@ -512,7 +474,8 @@ function renderCard(p) {
         company +
         classPill +
         typePill +
-        threadPill +
+        prevPill +
+        nextPill +
       '</div>' +
       '<div class="right">' + escapeHtml(fmtDateTime(p.published_at || p.created_at)) + copyLinkBtn + '</div>' +
     '</div>' +
@@ -526,60 +489,32 @@ function renderCard(p) {
         '<div class="actions">' + actions + '</div>' +
       '</div>'
     : '') +
-    drawerHtml +
   '</article>';
 }
 
-// Build thread tree: posts → threads (each thread = chain of posts linked via parent_post_id)
-// Returns array of {leaf, chain} where leaf = latest post in chain, chain = older posts oldest→newest (excluding leaf)
-function buildThreads(posts) {
+// Index posts by id and by parent (for prev/next navigation pills).
+function indexPosts(posts) {
   var byId = {};
+  var childOf = {};
   posts.forEach(function(p) { byId[p.id] = p; });
-
-  function rootOf(p) {
-    var cur = p;
-    var seen = {};
-    while (cur.parent_post_id && byId[cur.parent_post_id] && !seen[cur.id]) {
-      seen[cur.id] = true;
-      cur = byId[cur.parent_post_id];
-    }
-    return cur;
-  }
-
-  var threadsByRoot = {};
+  // For each parent, pick its newest child as the “next” pointer
+  // (Telegram threads are linear; defensive against accidental branches.)
   posts.forEach(function(p) {
-    var r = rootOf(p);
-    if (!threadsByRoot[r.id]) threadsByRoot[r.id] = [];
-    threadsByRoot[r.id].push(p);
+    if (!p.parent_post_id || !byId[p.parent_post_id]) return;
+    var existing = childOf[p.parent_post_id];
+    var pt = new Date(p.published_at || p.created_at).getTime();
+    var et = existing ? new Date(existing.published_at || existing.created_at).getTime() : -Infinity;
+    if (!existing || pt > et) childOf[p.parent_post_id] = p;
   });
-
-  var threads = [];
-  Object.keys(threadsByRoot).forEach(function(rid) {
-    var arr = threadsByRoot[rid].slice().sort(function(a, b) {
-      var ta = new Date(a.published_at || a.created_at).getTime();
-      var tb = new Date(b.published_at || b.created_at).getTime();
-      return ta - tb;
-    });
-    var leaf = arr[arr.length - 1];
-    var chain = arr.slice(0, -1);
-    leaf._chain = chain;
-    threads.push(leaf);
-  });
-
-  threads.sort(function(a, b) {
-    var ta = new Date(a.published_at || a.created_at).getTime();
-    var tb = new Date(b.published_at || b.created_at).getTime();
-    return tb - ta;
-  });
-
-  return threads;
+  state.byId = byId;
+  state.childOf = childOf;
 }
 
 function applyFilters() {
   var ticker = (state.ticker || '').toUpperCase();
   var cls = state.asset_class || '';
-  // Filter at thread level using leaf attributes (a thread is shown if leaf matches)
-  state.filtered = state.threads.filter(function(p) {
+  // Flat filter — each published post is its own card.
+  state.filtered = state.posts.filter(function(p) {
     if (cls && (p.asset_class || 'stocks') !== cls) return false;
     if (ticker && (p.ticker || '').toUpperCase().indexOf(ticker) !== 0) return false;
     return true;
@@ -592,13 +527,13 @@ function renderFeed() {
   var count = document.getElementById('feedCount');
   if (!state.filtered.length) {
     feed.innerHTML = '<div class="empty">// NO POSTS MATCH FILTERS</div>';
-    count.textContent = '// 0 threads · ' + state.posts.length + ' total posts';
+    count.textContent = '// 0 posts · ' + state.posts.length + ' total';
     return;
   }
   feed.innerHTML = state.filtered.map(renderCard).join('');
-  count.textContent = '// ' + state.filtered.length + ' threads · ' + state.posts.length + ' total posts';
+  count.textContent = '// ' + state.filtered.length + (state.filtered.length === state.posts.length ? ' posts' : (' of ' + state.posts.length + ' posts'));
   bindLightboxes();
-  bindThreadToggles();
+  bindThreadNav();
   bindCopyButtons();
   // After render, handle permalink scrolling if URL matched
   if (state.pendingPermalink) {
@@ -608,23 +543,36 @@ function renderFeed() {
   }
 }
 
-function bindThreadToggles() {
-  document.querySelectorAll('.thread-pill[data-toggle-thread]').forEach(function(btn) {
+function bindThreadNav() {
+  // Prev / Next pills — jump to the target card and highlight it.
+  document.querySelectorAll('.thread-pill[data-goto-post]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
-      var card = btn.closest('.card');
-      var drawer = card.querySelector('.thread-drawer');
-      if (!drawer) return;
-      var isOpen = drawer.classList.toggle('open');
-      btn.classList.toggle('open', isOpen);
+      var targetId = btn.getAttribute('data-goto-post');
+      if (targetId) gotoPostById(targetId);
     });
   });
-  // Image thumbs in drawer → open lightbox
-  document.querySelectorAll('.tu-img').forEach(function(el) {
-    el.addEventListener('click', function() {
-      try { var imgs = JSON.parse(el.getAttribute('data-images')); openLightbox(imgs, 0); } catch (e) {}
-    });
-  });
+}
+
+function gotoPostById(postId) {
+  var card = document.querySelector('.card[data-post-id="' + cssEscape(postId) + '"]');
+  if (card) {
+    card.classList.add('permalink-target');
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+    setTimeout(function() { card.classList.remove('permalink-target'); }, 3000);
+    return;
+  }
+  // Target card filtered out of current view — clear filters and retry.
+  if (!state.byId[postId]) { showToast('Post not found'); return; }
+  state.ticker = '';
+  state.asset_class = '';
+  var fT = document.getElementById('fTicker');
+  if (fT) fT.value = '';
+  document.querySelectorAll('#classChips .chip').forEach(function(x) { x.classList.remove('active'); });
+  var allChip = document.querySelector('#classChips .chip[data-class=""]');
+  if (allChip) allChip.classList.add('active');
+  applyFilters();
+  setTimeout(function() { gotoPostById(postId); }, 50);
 }
 
 function bindCopyButtons() {
@@ -705,22 +653,6 @@ function scrollToPermalink(slug) {
     setTimeout(function() { card.classList.remove('permalink-target'); }, 3000);
     return;
   }
-  var upd = document.querySelector('.thread-update[data-slug="' + cssEscape(slug) + '"]');
-  if (upd) {
-    var pcard = upd.closest('.card');
-    if (pcard) {
-      var drawer = pcard.querySelector('.thread-drawer');
-      var pill = pcard.querySelector('.thread-pill');
-      if (drawer && !drawer.classList.contains('open')) {
-        drawer.classList.add('open');
-        if (pill) pill.classList.add('open');
-      }
-    }
-    upd.classList.add('highlight');
-    upd.scrollIntoView({behavior:'smooth', block:'center'});
-    setTimeout(function() { upd.classList.remove('highlight'); }, 3000);
-    return;
-  }
   // Slug not found in current feed — silently ignore
 }
 
@@ -742,7 +674,7 @@ async function loadPosts() {
       .limit(200);
     if (res.error) throw res.error;
     state.posts = res.data || [];
-    state.threads = buildThreads(state.posts);
+    indexPosts(state.posts);
     var pm = parsePermalink();
     if (pm) {
       state.pendingPermalink = pm.slug;
