@@ -61,26 +61,119 @@ async function handleMagicLink() {
   }
 }
 
+// ===========================================
+// BelFed Auth — Signup UX patch (EN)
+// ===========================================
+
+(function () {
+  function injectStyles() {
+    if (document.getElementById('belfed-signup-styles')) return;
+    var css = ''
+      + '.signup-consent{margin:14px 0 8px;font-size:12px;line-height:1.55;display:flex;align-items:flex-start;gap:8px;letter-spacing:0.02em}'
+      + '.signup-consent input[type="checkbox"]{margin-top:3px;flex-shrink:0;cursor:pointer;width:14px;height:14px}'
+      + '.signup-consent label{cursor:pointer;color:var(--gray,#666)}'
+      + '.signup-consent a{color:inherit;text-decoration:underline;text-underline-offset:2px}'
+      + '.signup-consent a:hover{color:var(--green,#1a7a1a)}'
+      + '.signup-success{padding:24px 22px;border:1px solid #000;background:#fff;margin-top:18px}'
+      + '.signup-success h3{margin:0 0 12px;font-size:14px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}'
+      + '.signup-success p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#222}'
+      + '.signup-success .cta-tg{display:block;width:100%;text-align:center;padding:16px 18px;background:#000;color:#fff;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;border:1px solid #000;transition:background .15s ease,color .15s ease}'
+      + '.signup-success .cta-tg:hover{background:#1a7a1a;border-color:#1a7a1a;color:#fff}'
+      + '.signup-success .signup-success-note{margin:14px 0 0;font-size:11px;color:var(--gray,#999);text-align:center;letter-spacing:0.04em}'
+      + '.signup-success .signup-success-note a{color:inherit;text-decoration:underline}';
+    var st = document.createElement('style');
+    st.id = 'belfed-signup-styles';
+    st.textContent = css;
+    document.head.appendChild(st);
+  }
+
+  function injectConsent() {
+    document.querySelectorAll('#signupForm').forEach(function (form) {
+      if (form.querySelector('.signup-consent')) return;
+      var btn = form.querySelector('.login-btn');
+      if (!btn) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'signup-consent';
+      wrap.innerHTML = ''
+        + '<input type="checkbox" id="suConsent">'
+        + '<label for="suConsent">I agree to the <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a> and <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a></label>';
+      form.insertBefore(wrap, btn);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { injectStyles(); injectConsent(); });
+  } else {
+    injectStyles();
+    injectConsent();
+  }
+})();
+
 async function handleSignUp() {
   var email = document.getElementById('suEmail').value.trim();
-  var pw = document.getElementById('suPassword').value;
+  var pw  = document.getElementById('suPassword').value;
   var pw2 = document.getElementById('suPassword2').value;
+  var consentBox = document.getElementById('suConsent');
   var errEl = document.getElementById('loginError');
   var msgEl = document.getElementById('loginMsg');
   errEl.style.display = 'none'; msgEl.style.display = 'none';
+  msgEl.innerHTML = '';
+
   if (!email || !pw || !pw2) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
   if (pw !== pw2) { errEl.textContent = 'Passwords do not match'; errEl.style.display = 'block'; return; }
   if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; errEl.style.display = 'block'; return; }
+  if (!consentBox || !consentBox.checked) {
+    errEl.textContent = 'You must agree to the Privacy Policy and Terms of Service';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  var btn = document.querySelector('#signupForm .login-btn');
+  var prevBtnText = null;
+  if (btn) { prevBtnText = btn.textContent; btn.disabled = true; btn.textContent = 'Creating account...'; }
+
   try {
-    var res = await supaClient.auth.signUp({ email: email, password: pw, options: { emailRedirectTo: window.location.origin + '/confirm.html' } });
+    var res = await supaClient.auth.signUp({
+      email: email,
+      password: pw,
+      options: { emailRedirectTo: window.location.origin + '/confirm.html' }
+    });
     if (res.error) throw res.error;
-    if (res.data.user && !res.data.session) {
-      msgEl.textContent = 'Check your email to confirm your account, then sign in.';
-      msgEl.style.display = 'block';
-    } else if (res.data.session) {
+
+    var intentRes = await fetch(SUPABASE_URL + '/functions/v1/trial-intent-create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        lang: 'en',
+        source: 'web_signup',
+        accept_privacy: true,
+        accept_terms: true
+      })
+    });
+    var intentData = await intentRes.json();
+    var deepLink = (intentData && intentData.ok && intentData.deep_link)
+      ? intentData.deep_link
+      : 'https://t.me/BelfedBot?start=trial_link';
+
+    msgEl.innerHTML = ''
+      + '<div class="signup-success">'
+      + '  <h3>Account created</h3>'
+      + '  <p>To activate your 14-day access to the dashboard and receive our trades in real time — join our trading group.</p>'
+      + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Join our trading group</a>'
+      + '  <div class="signup-success-note">Link is single-use and valid for 15 minutes. If it expires — <a href="#" onclick="document.getElementById(\'signupForm\').querySelector(\'.login-btn\').click();return false;">request a new one</a>.</div>'
+      + '</div>';
+    msgEl.style.display = 'block';
+
+    if (res.data.session) {
       await checkProfile();
     }
-  } catch (err) { errEl.textContent = err.message || 'Sign up failed'; errEl.style.display = 'block'; }
+  } catch (err) {
+    errEl.textContent = err.message || 'Sign up failed';
+    errEl.style.display = 'block';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = prevBtnText || 'START FREE TRIAL'; }
+  }
 }
 
 async function handleForgotPassword() {
