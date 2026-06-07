@@ -134,6 +134,8 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .icon-btn:disabled,.icon-btn[disabled]{opacity:0.3;cursor:not-allowed;background:#f5f2eb}
 .icon-btn:disabled:hover,.icon-btn[disabled]:hover{background:#f5f2eb}
 .icon-btn.danger{background:#c50000;color:#fff;border-color:#c50000}
+.icon-btn.warn{background:#ffefc4;color:#7a4a00;border-color:#b87a00;font-weight:bold}
+.icon-btn.warn:hover{background:#b87a00;color:#fff}
 
 .schedule-row{display:grid;grid-template-columns:160px 1fr;gap:8px;align-items:center}
 @media(max-width:500px){.schedule-row{grid-template-columns:1fr}}
@@ -275,12 +277,12 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
           <div class="body-col-head"><span class="lang">RU</span></div>
           <div class="field">
             <label>// GREETING <span class="hint">optional</span></label>
-            <input type="text" id="greet-ru" placeholder="Например: Привет, Алекс!">
+            <input type="text" id="greet-ru" value="Анализ по запросу пользователя" placeholder="Например: Привет, Алекс!">
           </div>
           <div class="field">
             <label>// BODY</label>
             <textarea id="body-ru" placeholder="Следим за формированием более высоких минимумов..."></textarea>
-            <div class="char-counter" id="cnt-ru">0 / 1000</div>
+            <div class="char-counter" id="cnt-ru">RU caption: 0 / 1024</div>
           </div>
         </div>
 
@@ -293,7 +295,7 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
           <div class="field">
             <label>// BODY</label>
             <textarea id="body-en" placeholder="Price is acting constructively..."></textarea>
-            <div class="char-counter" id="cnt-en">0 / 1000</div>
+            <div class="char-counter" id="cnt-en">EN caption: 0 / 1024</div>
           </div>
         </div>
 
@@ -635,11 +637,54 @@ function render(){
   `;
 }
 
+// v6: build the FULL Telegram caption client-side, mirroring server buildText().
+function estimateSlug(){
+  const t = (els.ticker.value||'').trim().toLowerCase();
+  if (!t) return '';
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${t}-${y}-${m}-${day}`;
+}
+function buildCaption(lang){
+  const ticker = (els.ticker.value||'').trim().toUpperCase();
+  const company = (els.company.value||'').trim();
+  const greet = (lang==='ru' ? els.greetRu.value : els.greetEn.value).trim();
+  const body  = (lang==='ru' ? els.bodyRu.value  : els.bodyEn.value ).trim();
+  const tv = (els.tv.value||'').trim();
+  const tags = (els.tags.value||'').trim();
+  const tickerLc = ticker.toLowerCase();
+  const slug = (window.__editingSlug && editingId) ? window.__editingSlug : estimateSlug();
+  const base = lang==='ru' ? 'https://belfed.ru' : 'https://belfed.com';
+  const link = (slug && tickerLc) ? `${base}/analysis/${encodeURIComponent(tickerLc)}/${encodeURIComponent(slug)}` : '';
+
+  const lines = [];
+  if (!ticker) return '';
+  lines.push(company ? `$${ticker} — ${company}` : `$${ticker}`);
+  lines.push('');
+  if (greet){ lines.push(greet); lines.push(''); }
+  if (body) { lines.push(body);  lines.push(''); }
+  if (tv)   { lines.push(`${lang==='ru'?'График':'Chart'}: ${tv}`); lines.push(''); }
+  if (link) { lines.push(`${lang==='ru'?'Веб':'Web'}: ${link}`); lines.push(''); }
+  if (tags) { lines.push(tags); }
+  return lines.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
 function updateCounters(){
-  const ru = els.bodyRu.value.length, en = els.bodyEn.value.length;
-  els.cntRu.textContent = `${ru} / 1000`; els.cntEn.textContent = `${en} / 1000`;
-  els.cntRu.classList.toggle('warn', ru>800 && ru<=1000); els.cntRu.classList.toggle('over', ru>1000);
-  els.cntEn.classList.toggle('warn', en>800 && en<=1000); els.cntEn.classList.toggle('over', en>1000);
+  const hasImages = state.images.length > 0;
+  const limit = hasImages ? 1024 : 4096;
+  const warnAt = Math.round(limit * 0.85);
+
+  const ruText = buildCaption('ru');
+  const enText = buildCaption('en');
+  const ru = ruText.length, en = enText.length;
+
+  els.cntRu.textContent = `RU caption: ${ru} / ${limit}`;
+  els.cntEn.textContent = `EN caption: ${en} / ${limit}`;
+  els.cntRu.classList.toggle('warn', ru>warnAt && ru<=limit);
+  els.cntRu.classList.toggle('over', ru>limit);
+  els.cntEn.classList.toggle('warn', en>warnAt && en<=limit);
+  els.cntEn.classList.toggle('over', en>limit);
 }
 function updateReplyVisibility(){ els.replytoBlock.style.display = els.type.value==='request' ? 'block' : 'none'; }
 
@@ -649,7 +694,7 @@ function addFiles(list){
     const url = URL.createObjectURL(f);
     state.images.push({ file:f, url, name:f.name, isUploaded:false });
   });
-  renderThumbs(); render();
+  renderThumbs(); updateCounters(); render();
 }
 function renderThumbs(){
   els.thumbs.innerHTML = state.images.map((im,i)=>`
@@ -660,7 +705,7 @@ function renderThumbs(){
     </div>
   `).join('');
   els.thumbs.querySelectorAll('.x').forEach(b => b.addEventListener('click', ()=>{
-    state.images.splice(+b.dataset.i, 1); renderThumbs(); render();
+    state.images.splice(+b.dataset.i, 1); renderThumbs(); updateCounters(); render();
   }));
 }
 
@@ -672,8 +717,10 @@ function flash(kind, text){
 function clearForm(){
   if (!confirm('Clear the form?')) return;
   editingId = null;
+  window.__editingSlug = null;
   parentPostId = null;
   document.querySelectorAll('input[type=text],input[type=url],textarea').forEach(i => i.value='');
+  els.greetRu.value = 'Анализ по запросу пользователя';
   els.tags.value = '#AnalysisUpdate #equities';
   els.type.value = 'update';
   els.type.disabled = false;
@@ -803,7 +850,18 @@ async function publish(){
     });
     const j = await res.json().catch(()=>({}));
     if (!res.ok || j.error){
-      flash('err', `publish failed: ${j.error||res.status}`);
+      // v6: show caption-length details per language
+      if (j.error === 'caption_too_long' && Array.isArray(j.failures)){
+        const lines = j.failures.map(f => `${f.lang.toUpperCase()}: ${f.length} / ${f.limit} — exceeded by ${f.excess}`);
+        flash('err', `caption too long — ${lines.join('; ')}. Shorten and retry.`);
+      } else if (j.error === 'partial_failure' && Array.isArray(j.failures)){
+        const lines = j.failures.map(f => f.error === 'caption_too_long'
+          ? `${f.lang.toUpperCase()}: ${f.length}/${f.limit} (exceeded by ${f.excess})`
+          : `${f.lang.toUpperCase()}: ${f.error}`);
+        flash('err', `partial failure: ${lines.join('; ')}. Open the post and click «Resend».`);
+      } else {
+        flash('err', `publish failed: ${j.error||res.status}`);
+      }
     } else {
       flash('ok', `Published: ${[data.publish_to_ru?'RU':'',data.publish_to_en?'EN':''].filter(Boolean).join(' + ')}`);
       // Auto-fulfill request if we came from chart-requests queue
@@ -827,8 +885,10 @@ async function publish(){
       }
       // reset to fresh form
       editingId = null;
+      window.__editingSlug = null;
       parentPostId = null;
       document.querySelectorAll('input[type=text],input[type=url],textarea').forEach(i => i.value='');
+      els.greetRu.value = 'Анализ по запросу пользователя';
       els.tags.value = '#AnalysisUpdate #equities'; els.type.value='update'; els.type.disabled=false; els.assetClass.value='stocks';
       const banner = document.getElementById('parent-banner');
       if (banner) banner.style.display='none';
@@ -878,7 +938,7 @@ async function loadHistory(query){
   }
 
   let req = sb.from('analysis_posts')
-    .select('id,ticker,slug,company_name,post_type,reply_name,status,published_at,created_at,publish_to_ru,publish_to_en')
+    .select('id,ticker,slug,company_name,post_type,reply_name,status,published_at,created_at,publish_to_ru,publish_to_en,message_id_ru,message_id_en')
     .neq('status','deleted')
     .order('created_at',{ascending:false});
 
@@ -921,6 +981,14 @@ async function loadHistory(query){
     const openBtn = (p.status==='published' && p.slug)
       ? `<a class="icon-btn" href="${liveUrl}" target="_blank" rel="noopener" title="Open on site (${liveHost})">⧉</a>`
       : `<button class="icon-btn" disabled title="Draft — no public page">⧉</button>`;
+    // v6: «Resend» — visible when both channels were selected but a message_id is missing
+    const ruMissing = !!p.publish_to_ru && !p.message_id_ru;
+    const enMissing = !!p.publish_to_en && !p.message_id_en;
+    const showResend = (p.status==='published' || p.status==='draft') && (ruMissing || enMissing);
+    const missingLangs = [ruMissing?'RU':'', enMissing?'EN':''].filter(Boolean).join('+');
+    const resendBtn = showResend
+      ? `<button class="icon-btn warn" data-act="resend" data-id="${p.id}" title="Resend to TG: ${missingLangs}">↻</button>`
+      : '';
     return `
       <div class="hi-item">
         <div class="tk">$${tickerHtml}</div>
@@ -930,6 +998,7 @@ async function loadHistory(query){
         </div>
         <div class="ax">
           ${openBtn}
+          ${resendBtn}
           <button class="icon-btn" data-act="reply" data-id="${p.id}" title="Publish update (reply)">↩</button>
           <button class="icon-btn" data-act="edit" data-id="${p.id}" title="Edit">✎</button>
           <button class="icon-btn danger" data-act="del" data-id="${p.id}" title="Delete">×</button>
@@ -942,6 +1011,7 @@ async function loadHistory(query){
     if (b.dataset.act==='edit') loadIntoEditor(id);
     else if (b.dataset.act==='del') deletePost(id);
     else if (b.dataset.act==='reply') startReplyTo(id);
+    else if (b.dataset.act==='resend') resendMissing(id);
   }));
 }
 
@@ -949,6 +1019,7 @@ async function loadIntoEditor(id){
   const { data, error } = await sb.from('analysis_posts').select('*').eq('id', id).maybeSingle();
   if (error || !data){ flash('err','load failed'); return; }
   editingId = id;
+  window.__editingSlug = data.slug || null;
   els.ticker.value = data.ticker || '';
   els.assetClass.value = data.asset_class || 'stocks';
   els.company.value = data.company_name || '';
@@ -1006,6 +1077,43 @@ async function startReplyTo(parentId){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
+// v6: Resend missing TG channels without touching the web version. Uses action: 'republish_missing'.
+async function resendMissing(id){
+  if (!confirm('Resend this post to missing TG channels? (web page will not change)')) return;
+  const session = (await sb.auth.getSession()).data.session;
+  if (!session){ flash('err','no session'); return; }
+  flash('info','resending to telegram...');
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/analysis-publish`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+      body: JSON.stringify({ action:'republish_missing', post_id:id })
+    });
+    const j = await res.json().catch(()=>({}));
+    if (!res.ok || j.error){
+      if (j.error === 'caption_too_long' && Array.isArray(j.failures)){
+        const lines = j.failures.map(f => `${f.lang.toUpperCase()}: ${f.length} / ${f.limit} — exceeded by ${f.excess}`);
+        flash('err', `caption too long — ${lines.join('; ')}. Open editor, shorten and save as draft.`);
+      } else if (j.error === 'nothing_missing'){
+        flash('info', 'nothing to resend — all selected channels already published');
+      } else if (j.error === 'partial_failure' && Array.isArray(j.failures)){
+        const lines = j.failures.map(f => f.error === 'caption_too_long'
+          ? `${f.lang.toUpperCase()}: ${f.length}/${f.limit} (exceeded by ${f.excess})`
+          : `${f.lang.toUpperCase()}: ${f.error}`);
+        flash('err', `partial failure: ${lines.join('; ')}`);
+      } else {
+        flash('err', `resend failed: ${j.error||res.status}`);
+      }
+    } else {
+      const sent = (j.results||[]).filter(r=>r.ok).map(r=>r.lang.toUpperCase()).join('+') || '—';
+      flash('ok', `Resent to TG: ${sent}`);
+    }
+    loadHistory();
+  } catch (e){
+    flash('err', 'resend error: '+(e.message||e));
+  }
+}
+
 async function deletePost(id){
   if (!confirm('Delete this post (will also remove from Telegram if published)?')) return;
   const session = (await sb.auth.getSession()).data.session;
@@ -1027,8 +1135,10 @@ async function deletePost(id){
 }
 
 function clearFormSilent(){
+  window.__editingSlug = null;
   parentPostId = null;
   document.querySelectorAll('input[type=text],input[type=url],textarea').forEach(i => i.value='');
+  els.greetRu.value = 'Анализ по запросу пользователя';
   els.tags.value='#AnalysisUpdate #equities'; els.type.value='update'; els.type.disabled=false; els.assetClass.value='stocks';
   const banner = document.getElementById('parent-banner'); if (banner) banner.style.display='none';
   state.images=[]; renderThumbs(); updateCounters(); updateReplyVisibility(); render();
