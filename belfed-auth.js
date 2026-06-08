@@ -140,28 +140,61 @@ async function handleSignUp() {
     });
     if (res.error) throw res.error;
 
-    var intentRes = await fetch(SUPABASE_URL + '/functions/v1/trial-intent-create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email,
-        lang: 'en',
-        source: 'web_signup',
-        accept_privacy: true,
-        accept_terms: true
-      })
-    });
-    var intentData = await intentRes.json();
-    var deepLink = (intentData && intentData.ok && intentData.deep_link)
-      ? intentData.deep_link
-      : 'https://t.me/BelfedBot?start=trial_link';
+    var userId = res.data && res.data.user ? res.data.user.id : null;
+    var consentNow = new Date().toISOString();
+
+    // Activate the 7-day trial immediately — no Telegram step required.
+    if (userId) {
+      try {
+        await supaClient.rpc('start_web_trial', {
+          p_user_id: userId,
+          p_lang: 'en',
+          p_source: 'web_signup',
+          p_privacy_consent_at: consentNow,
+          p_terms_consent_at: consentNow,
+          p_consent_locale: 'en'
+        });
+      } catch (e) { /* trial activation is best-effort; cabinet still works */ }
+    }
+
+    // Send the welcome email immediately (best-effort, rate-limited server-side).
+    try {
+      await fetch(SUPABASE_URL + '/functions/v1/welcome-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_KEY,
+          Authorization: 'Bearer ' + SUPABASE_KEY
+        },
+        body: JSON.stringify({ email: email, lang: 'en' })
+      });
+    } catch (e) { /* welcome email is best-effort */ }
+
+    // Get an optional one-time Telegram deep-link for live alerts (not required).
+    var deepLink = 'https://t.me/BelfedBot?start=trial_link';
+    try {
+      var intentRes = await fetch(SUPABASE_URL + '/functions/v1/trial-intent-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          lang: 'en',
+          source: 'web_signup',
+          accept_privacy: true,
+          accept_terms: true
+        })
+      });
+      var intentData = await intentRes.json();
+      if (intentData && intentData.ok && intentData.deep_link) deepLink = intentData.deep_link;
+    } catch (e) { /* deep-link is optional */ }
 
     msgEl.innerHTML = ''
       + '<div class="signup-success">'
-      + '  <h3>Account created</h3>'
-      + '  <p>To activate your 7-day access to the dashboard and receive our trades in real time — join our trading group.</p>'
-      + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Join our trading group</a>'
-      + '  <div class="signup-success-note">Link is single-use and valid for 15 minutes. If it expires — <a href="#" onclick="document.getElementById(\'signupForm\').querySelector(\'.login-btn\').click();return false;">request a new one</a>.</div>'
+      + '  <h3>Account created — your trial is active</h3>'
+      + '  <p>Your member area is open for 7 days. We sent a confirmation email to <b>' + email + '</b> — please verify your address to receive notifications.</p>'
+      + '  <p style="margin-top:12px"><b>No email?</b> Check your spam folder or <a href="#" onclick="resendConfirmation(\'' + email.replace(/'/g, "\\'") + '\');return false;">resend it</a>.</p>'
+      + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Connect Telegram alerts (optional)</a>'
+      + '  <div class="signup-success-note">Telegram delivers live trade alerts. Your member area works without it. Link is single-use and valid for 15 minutes.</div>'
       + '</div>';
     msgEl.style.display = 'block';
 
@@ -169,11 +202,29 @@ async function handleSignUp() {
       await checkProfile();
     }
   } catch (err) {
-    errEl.textContent = err.message || 'Sign up failed';
+    var emsg = err.message || 'Sign up failed';
+    if (/already registered|already been registered|User already/i.test(emsg)) {
+      errEl.innerHTML = 'This email is already registered. <a href="#" onclick="showAuthTab(\'signin\');return false;" style="text-decoration:underline">Sign in</a> or <a href="#" onclick="if(document.getElementById(\'forgotPasswordLink\'))document.getElementById(\'forgotPasswordLink\').click();return false;" style="text-decoration:underline">reset your password</a>.';
+    } else {
+      errEl.textContent = emsg;
+    }
     errEl.style.display = 'block';
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = prevBtnText || 'START FREE TRIAL'; }
   }
+}
+
+// Resend the Supabase email-confirmation link
+async function resendConfirmation(email) {
+  try {
+    var r = await supaClient.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: window.location.origin + '/confirm.html' } });
+    var msgEl = document.getElementById('loginMsg');
+    var note = document.createElement('div');
+    note.className = 'signup-success-note';
+    note.style.color = '#1a7a1a';
+    note.textContent = r.error ? ('Could not resend: ' + r.error.message) : ('Confirmation email resent to ' + email);
+    if (msgEl) msgEl.appendChild(note);
+  } catch (e) { /* ignore */ }
 }
 
 async function handleForgotPassword() {
