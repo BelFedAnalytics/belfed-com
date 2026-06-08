@@ -159,7 +159,7 @@ async function handleSignUp() {
     msgEl.innerHTML = ''
       + '<div class="signup-success">'
       + '  <h3>Account created</h3>'
-      + '  <p>To activate your 14-day access to the dashboard and receive our trades in real time — join our trading group.</p>'
+      + '  <p>To activate your 7-day access to the dashboard and receive our trades in real time — join our trading group.</p>'
       + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Join our trading group</a>'
       + '  <div class="signup-success-note">Link is single-use and valid for 15 minutes. If it expires — <a href="#" onclick="document.getElementById(\'signupForm\').querySelector(\'.login-btn\').click();return false;">request a new one</a>.</div>'
       + '</div>';
