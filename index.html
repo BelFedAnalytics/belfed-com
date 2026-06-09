@@ -145,7 +145,7 @@
       border-top: 1px solid var(--border); display: flex; padding: 0;
     }
     .stats-column { flex: 1; padding: 40px; }
-    .stats-column:first-child { border-right: 1px solid var(--border); }
+    .stats-column:not(:last-child) { border-right: 1px solid var(--border); }
     .stats-column-header {
       font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
       color: var(--gray); margin-bottom: 24px;
@@ -250,7 +250,7 @@
       /* Year stats — 2 stacked cards (Equities, Crypto), each with 3 numbers in a 3-col grid */
       .stats-columns { flex-direction: column; padding: 0; }
       .stats-column { padding: 28px 20px; }
-      .stats-column:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+      .stats-column:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
       .stats-column-header { font-size: 10px; margin-bottom: 18px; }
       .stats-column-items {
         display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
@@ -315,18 +315,35 @@
 
     <section class="stats-columns" id="track-record">
       <div class="stats-column">
-        <div class="stats-column-header">// 2025 Equities</div>
+        <div class="stats-column-header">// 2026 Equities</div>
         <div class="stats-column-items">
           <div class="stat-item">
-            <div class="stat-value">+85.96R</div>
+            <div class="stat-value">+93.54R</div>
             <div class="stat-label">Return</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">47.89%</div>
+            <div class="stat-value">62%</div>
             <div class="stat-label">Win Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">71</div>
+            <div class="stat-value">87</div>
+            <div class="stat-label">Closed Trades</div>
+          </div>
+        </div>
+      </div>
+      <div class="stats-column">
+        <div class="stats-column-header">// 2025 Equities</div>
+        <div class="stats-column-items">
+          <div class="stat-item">
+            <div class="stat-value">+70.33R</div>
+            <div class="stat-label">Return</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">42.62%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">61</div>
             <div class="stat-label">Closed Trades</div>
           </div>
         </div>
@@ -355,7 +372,7 @@
       <a href="/trades.html" class="trc-link">View track record <span class="arrow">&rarr;</span></a>
     </div>
 
-    <p class="disclaimer-link">Performance is reported in R-multiples (risk units). Methodology and risk disclosures are available in the <a href="/disclaimer.html">full disclaimer</a>.</p>
+    <p class="disclaimer-link">Performance is reported in R-multiples (risk units). Returns are booked to each trade's close (exit) date; scale-ins and scale-outs of the same position are reported as a single trade. Methodology and risk disclosures are available in the <a href="/disclaimer.html">full disclaimer</a>.</p>
 
     <section class="features">
       <div class="feature">

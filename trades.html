@@ -167,6 +167,7 @@ footer{padding:32px 48px;border-top:1px solid #111;display:flex;justify-content:
 <div class="disclaimer">
     New to R-multiples? <a href="/disclaimer.html" style="color:#888;text-decoration:underline;text-underline-offset:2px;">How we measure performance</a> &mdash; a short explainer on how to read this table.
   Past results do not guarantee future performance. R-multiples are calculated relative to initial risk per trade (1R = amount risked). This page is updated manually after each position is closed. No positions are removed or edited retroactively.
+  Returns are booked to each trade's close (exit) date; scale-ins and scale-outs of the same position are reported as a single trade.
 </div>
 <footer>
   <span>BELFED ANALYTICS</span>
@@ -345,13 +346,13 @@ var tR=0,w=0,l=0,wR=0,lR=0,n=0;
 rows.forEach(function(r){
 var c=r.querySelectorAll('td');
 if(c.length<8)return;
-var d=c[3].textContent.trim().split('.');
+var d=c[4].textContent.trim().split('.');
 var ey=d.length===3?parseInt(d[2]):0;
 var ok=yr==='all'||ey===parseInt(yr);
 r.style.display=ok?'':'none';
 if(ok){
 n++;
-var rv=parseFloat(c[7].textContent.trim().replace('R','').replace(',',''))||0;
+var rv=parseFloat(c[7].textContent.trim().replace('R','').replace(',','.'))||0;
 tR+=rv;
 if(rv>0){w++;wR+=rv}else{l++;lR+=rv}
 c[0].textContent=String(n).padStart(2,'0');
