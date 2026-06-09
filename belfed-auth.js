@@ -14,7 +14,15 @@ var currentSubscription = null;
 // --- Auth UI helpers ---
 function showAuthTab(tab) {
   document.querySelectorAll('.auth-tab').forEach(function(b) { b.classList.remove('active'); });
-  event.target.classList.add('active');
+  // Activate the matching tab button whether called from a click or programmatically.
+  if (typeof event !== 'undefined' && event && event.target) {
+    event.target.classList.add('active');
+  } else {
+    document.querySelectorAll('.auth-tab').forEach(function(b) {
+      var oc = b.getAttribute('onclick') || '';
+      if (oc.indexOf("'" + tab + "'") !== -1) b.classList.add('active');
+    });
+  }
   document.getElementById('signinForm').style.display = tab === 'signin' ? 'block' : 'none';
   document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
   var mlForm = document.getElementById('magiclinkForm'); if (mlForm) mlForm.style.display = tab === 'magiclink' ? 'block' : 'none';
@@ -303,7 +311,13 @@ async function checkAuth() {
   }
   var sess = await supaClient.auth.getSession();
   if (sess.data.session) { await checkProfile(); }
-  else { if (typeof onAuthSignedOut === 'function') onAuthSignedOut(); }
+  else {
+    if (typeof onAuthSignedOut === 'function') onAuthSignedOut();
+    // Deep-link from the homepage CTA: open the Register tab directly.
+    if (window.location.hash === '#signup' && typeof showAuthTab === 'function') {
+      try { showAuthTab('signup'); } catch (e) {}
+    }
+  }
 }
 
 supaClient.auth.onAuthStateChange(function(event, session) {
