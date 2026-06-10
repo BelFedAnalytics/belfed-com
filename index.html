@@ -314,36 +314,36 @@
     </section>
 
     <section class="stats-columns" id="track-record">
-      <div class="stats-column">
+      <div class="stats-column" data-eq-year="2026">
         <div class="stats-column-header">// 2026 Equities</div>
         <div class="stats-column-items">
           <div class="stat-item">
-            <div class="stat-value">+96.45R</div>
+            <div class="stat-value" data-eq="return">+96.45R</div>
             <div class="stat-label">Return</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">60%</div>
+            <div class="stat-value" data-eq="winrate">60%</div>
             <div class="stat-label">Win Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">90</div>
+            <div class="stat-value" data-eq="trades">90</div>
             <div class="stat-label">Closed Trades</div>
           </div>
         </div>
       </div>
-      <div class="stats-column">
+      <div class="stats-column" data-eq-year="2025">
         <div class="stats-column-header">// 2025 Equities</div>
         <div class="stats-column-items">
           <div class="stat-item">
-            <div class="stat-value">+70.33R</div>
+            <div class="stat-value" data-eq="return">+70.33R</div>
             <div class="stat-label">Return</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">42.62%</div>
+            <div class="stat-value" data-eq="winrate">42.62%</div>
             <div class="stat-label">Win Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">61</div>
+            <div class="stat-value" data-eq="trades">61</div>
             <div class="stat-label">Closed Trades</div>
           </div>
         </div>
@@ -453,6 +453,48 @@
         });
       });
     })();
+  </script>
+  <script>
+  /* Live homepage equities stats — fetches the same Google Sheet as the
+     dashboard/trades page and recomputes 2026 & 2025 figures on load.
+     Convention: Status='Closed', exit price present, bucketed by EXIT-date year,
+     R parsed with comma-decimal support. Hardcoded values act as fallback. */
+  (function(){
+    var SHEET_ID='1bBpKZP74HEVrLZJlazz7gY7jbuBj9R5rPBcV2KklwDo';
+    var GID='0';
+    var csvUrl='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:csv&gid='+GID+'&single=true';
+    function parseCSV(text){var lines=text.split(/\r?\n/);var res=[];for(var i=0;i<lines.length;i++){var cols=[];var cur='';var inQ=false;for(var c=0;c<lines[i].length;c++){var ch=lines[i][c];if(ch=='"'&&inQ&&lines[i][c+1]=='"'){cur+='"';c++;}else if(ch=='"'){inQ=!inQ;}else if(ch==','&&!inQ){cols.push(cur.trim());cur='';}else{cur+=ch;}}cols.push(cur.trim());res.push(cols);}return res;}
+    function num(s){var n=parseFloat(String(s).replace(',','.'));return isNaN(n)?null:n;}
+    fetch(csvUrl).then(function(r){return r.text();}).then(function(text){
+      var rows=parseCSV(text);
+      var agg={'2026':{R:0,w:0,n:0},'2025':{R:0,w:0,n:0}};
+      for(var i=1;i<rows.length;i++){
+        var r=rows[i];
+        if(!r[1]||r[1].trim()===''||r[1].trim().toLowerCase()==='ticker')continue;
+        var status=(r[3]||'').trim().toLowerCase();
+        var exitDate=(r[5]||'').trim();
+        var exitP=(r[8]||'').trim();
+        var rVal=num((r[9]||'').trim());
+        if(status!=='closed'||rVal===null||(r[9]||'').trim()===''||exitP==='')continue;
+        var parts=exitDate.split('.');
+        if(parts.length!==3)continue;
+        var yr=parts[2];
+        if(!agg[yr])continue;
+        agg[yr].R+=rVal;agg[yr].n++;if(rVal>0)agg[yr].w++;
+      }
+      Object.keys(agg).forEach(function(yr){
+        var a=agg[yr];if(a.n===0)return;
+        var col=document.querySelector('.stats-column[data-eq-year="'+yr+'"]');
+        if(!col)return;
+        var ret=col.querySelector('[data-eq="return"]');
+        var wr=col.querySelector('[data-eq="winrate"]');
+        var tr=col.querySelector('[data-eq="trades"]');
+        if(ret)ret.textContent=(a.R>0?'+':'')+a.R.toFixed(2)+'R';
+        if(wr)wr.textContent=Math.round(a.w/a.n*100)+'%';
+        if(tr)tr.textContent=a.n;
+      });
+    }).catch(function(e){/* keep fallback hardcoded values */});
+  })();
   </script>
 </body>
 </html>
