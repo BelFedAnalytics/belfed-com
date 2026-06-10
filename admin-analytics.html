@@ -43,6 +43,22 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .lang-tabs button{flex:1;font-family:'Courier New',monospace;font-size:12px;letter-spacing:2px;padding:10px;background:none;border:none;border-right:1px solid #000;cursor:pointer;font-weight:bold}
 .lang-tabs button:last-child{border-right:none}
 .lang-tabs button.active{background:#000;color:#f5f2eb}
+
+/* ── DESTINATION TOGGLE (Timeline / Report) ── */
+.dest-toggle{display:flex;border-bottom:1px solid #000}
+.dest-toggle button{flex:1;font-family:'Courier New',monospace;font-size:12px;letter-spacing:2px;padding:12px 10px;background:#f0ece1;border:none;border-right:1px solid #000;cursor:pointer;font-weight:bold;color:#888;display:flex;align-items:center;justify-content:center;gap:8px}
+.dest-toggle button:last-child{border-right:none}
+.dest-toggle button.sel{background:#000;color:#f5f2eb}
+.dest-toggle .dot{width:8px;height:8px;border-radius:50%;background:#1a7a1a;display:inline-block}
+.dest-toggle .dot.idle{background:#bbb;animation:none}
+.dest-toggle button.sel .dot{animation:blinkdot 1.2s ease-in-out infinite}
+@keyframes blinkdot{0%,100%{opacity:1}50%{opacity:0.25}}
+/* fields shown depending on destination mode */
+#timeline-fields{display:none}
+.tl-cat-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.tl-cat-chips button{font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;padding:5px 10px;border:1px solid #000;background:#fff;cursor:pointer;text-transform:uppercase}
+.tl-cat-chips button.on{background:#000;color:#f5f2eb}
+.tl-hashtags{font-family:'Courier New',monospace;font-size:11px;color:#1a7a1a;margin-top:6px;letter-spacing:1px}
 .editor-pad{padding:20px}
 
 .field{margin-bottom:16px}
@@ -170,12 +186,56 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 
 <div class="editor">
 
+  <!-- ───── DESTINATION (Timeline / Report) ───── -->
+  <div class="dest-toggle" id="dest-toggle">
+    <button type="button" id="dest-timeline" class="sel" onclick="setDestination('timeline')"><span class="dot"></span>ЛЕНТА · TIMELINE</button>
+    <button type="button" id="dest-report" onclick="setDestination('report')">ОБЗОР · REPORT</button>
+  </div>
+
   <div class="lang-tabs">
     <button id="tab-ru" class="active" onclick="switchLang('ru')">// RU</button>
     <button id="tab-en" onclick="switchLang('en')">// EN</button>
   </div>
 
   <div class="editor-pad">
+
+  <!-- ═════ TIMELINE FIELDS (simple feed post → analysis_posts) ═════ -->
+  <div id="timeline-fields">
+    <div class="field">
+      <label>// КАТЕГОРИЯ · CATEGORY (фильтр ленты)</label>
+      <div class="tl-cat-chips" id="tl-cat-chips"></div>
+      <div class="tl-hashtags" id="tl-hashtags"></div>
+    </div>
+    <!-- RU -->
+    <div class="lang-pane active" data-tl-lang="ru">
+      <div class="field">
+        <label>// ЗАГОЛОВОК · RU</label>
+        <input type="text" id="tl-headline-ru" placeholder="Например, SMR backlog пересобирает ядерный тезис">
+      </div>
+      <div class="field">
+        <label>// ТЕКСТ · RU</label>
+        <textarea id="tl-body-ru" rows="5"></textarea>
+      </div>
+    </div>
+    <!-- EN -->
+    <div class="lang-pane" data-tl-lang="en">
+      <div class="field">
+        <label>// HEADLINE · EN</label>
+        <input type="text" id="tl-headline-en" placeholder="e.g. SMR backlog reframes the nuclear thesis">
+      </div>
+      <div class="field">
+        <label>// BODY · EN</label>
+        <textarea id="tl-body-en" rows="5"></textarea>
+      </div>
+    </div>
+    <div class="field">
+      <label>// ИСТОЧНИК · SOURCE (необязательно)</label>
+      <input type="text" id="tl-source" placeholder="напр. Goldman Sachs Equity Research">
+    </div>
+  </div>
+
+  <!-- ═════ REPORT FIELDS (existing multi-section report editor) ═════ -->
+  <div id="report-fields">
 
     <div class="row-2">
       <div class="field">
@@ -284,7 +344,9 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
       </div>
     </div>
 
-  </div>
+  </div><!-- /#report-fields -->
+
+  </div><!-- /.editor-pad -->
 </div>
 
 <aside class="sidebar">
@@ -403,7 +465,19 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ============== State ==============
+// Timeline categories (1:1 with member feed filters) -> hashtag
+const TL_CATEGORIES = [
+  { cat:'macro',       tag:'#macro' },
+  { cat:'crypto',      tag:'#crypto' },
+  { cat:'equities',    tag:'#equities' },
+  { cat:'volatility',  tag:'#volatility' },
+  { cat:'world',       tag:'#world' },
+  { cat:'commodities', tag:'#commodities' },
+];
+
 const state = {
+  destination: 'timeline',   // 'timeline' | 'report'
+  tlCategories: new Set(),   // selected Timeline categories
   id: null,
   slug: null,
   status: 'draft',
@@ -417,6 +491,53 @@ const state = {
   created_at: null,
   updated_at: null,
 };
+
+// ============== Destination (Timeline / Report) ==============
+function setDestination(dest) {
+  state.destination = dest === 'report' ? 'report' : 'timeline';
+  const isTl = state.destination === 'timeline';
+  const btnTl = document.getElementById('dest-timeline');
+  const btnRep = document.getElementById('dest-report');
+  btnTl.classList.toggle('sel', isTl);
+  btnRep.classList.toggle('sel', !isTl);
+  btnTl.querySelector('.dot').classList.toggle('idle', !isTl);
+  document.getElementById('timeline-fields').style.display = isTl ? 'block' : 'none';
+  document.getElementById('report-fields').style.display = isTl ? 'none' : 'block';
+  // page title + publish help reflect mode
+  const title = document.getElementById('page-title');
+  if (title) title.textContent = isTl
+    ? (state.id ? '— ПОСТ ЛЕНТЫ —' : '— НОВЫЙ ПОСТ ЛЕНТЫ —')
+    : (state.id ? '— ОТЧЁТ АНАЛИТИКИ —' : '— НОВЫЙ ОТЧЁТ АНАЛИТИКИ —');
+  if (typeof updatePublishHint === 'function') updatePublishHint();
+}
+
+function renderTlCategoryChips() {
+  const host = document.getElementById('tl-cat-chips');
+  if (!host) return;
+  host.innerHTML = '';
+  TL_CATEGORIES.forEach(({ cat }) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = cat;
+    b.className = state.tlCategories.has(cat) ? 'on' : '';
+    b.onclick = () => {
+      if (state.tlCategories.has(cat)) state.tlCategories.delete(cat);
+      else state.tlCategories.add(cat);
+      renderTlCategoryChips();
+    };
+    host.appendChild(b);
+  });
+  // hashtag preview
+  const hh = document.getElementById('tl-hashtags');
+  if (hh) hh.textContent = tlHashtags() || '';
+}
+
+function tlHashtags() {
+  return TL_CATEGORIES
+    .filter(c => state.tlCategories.has(c.cat))
+    .map(c => c.tag)
+    .join(' ');
+}
 
 // ============== Auth ==============
 async function signIn() {
@@ -457,6 +578,12 @@ async function checkAdminAndShow() {
   else        initBlank();
 
   renderAll();
+
+  // Destination: ?dest=report opens Report mode; default is Timeline.
+  // Editing an existing report (?id=...) forces Report mode.
+  renderTlCategoryChips();
+  const destParam = url.searchParams.get('dest');
+  setDestination(editId || destParam === 'report' ? 'report' : 'timeline');
 }
 
 // ============== Admin Action ==============
@@ -968,7 +1095,7 @@ function switchLang(lang) {
   document.getElementById('tab-ru').classList.toggle('active', lang==='ru');
   document.getElementById('tab-en').classList.toggle('active', lang==='en');
   document.querySelectorAll('.lang-pane').forEach(p => {
-    p.classList.toggle('active', p.dataset.lang === lang || (!p.dataset.lang && p.id === 'pane-'+lang));
+    p.classList.toggle('active', p.dataset.lang === lang || p.dataset.tlLang === lang || (!p.dataset.lang && !p.dataset.tlLang && p.id === 'pane-'+lang));
   });
   renderSections();
   renderStatus();
@@ -1242,7 +1369,131 @@ async function onEmailTest(lang) {
   showTopMsg('Тестовое письмо отправлено ✓', 'ok');
 }
 
+// ============== Timeline post (→ analysis_posts) ==============
+function collectTimelineData(status) {
+  const headlineRu = document.getElementById('tl-headline-ru').value.trim();
+  const headlineEn = document.getElementById('tl-headline-en').value.trim();
+  const bodyRu = document.getElementById('tl-body-ru').value.trim();
+  const bodyEn = document.getElementById('tl-body-en').value.trim();
+  const source = document.getElementById('tl-source').value.trim();
+  const cats = Array.from(state.tlCategories);
+  return {
+    destination: 'timeline',
+    ticker: null,
+    company_name: null,
+    post_type: null,
+    greeting_ru: null, greeting_en: null,
+    tradingview_url: null,
+    headline_ru: headlineRu || null,
+    headline_en: headlineEn || null,
+    body_ru: bodyRu || null,
+    body_en: bodyEn || null,
+    source: source || null,
+    categories: cats,
+    hashtags: tlHashtags() || null,
+    publish_to_ru: document.getElementById('cb-lang-ru').checked,
+    publish_to_en: document.getElementById('cb-lang-en').checked,
+    status: status,
+  };
+}
+
+function validateTimeline(forPublish) {
+  const d = collectTimelineData('draft');
+  if (!d.categories.length) return 'выберите хотя бы одну категорию';
+  if (!d.headline_ru && !d.headline_en) return 'введите заголовок (RU или EN)';
+  if (forPublish) {
+    const skipTg = document.getElementById('cb-skip-tg').checked;
+    if (!d.publish_to_ru && !d.publish_to_en) return 'выберите хотя бы один язык (RU/EN)';
+    if (d.publish_to_ru && !d.headline_ru) return 'RU заголовок пуст';
+    if (d.publish_to_en && !d.headline_en) return 'EN заголовок пуст';
+  }
+  return null;
+}
+
+async function saveTimelinePost(returnId) {
+  const err = validateTimeline(false);
+  if (err) { showTopMsg('Не сохранено: ' + err, 'err'); return null; }
+  document.getElementById('btn-save').disabled = true;
+  showTopMsg('Сохранение…', 'info');
+  const payload = collectTimelineData(state.status === 'published' ? 'published' : 'draft');
+  try {
+    let id = state.id;
+    if (id) {
+      const { error } = await sb.from('analysis_posts').update(payload).eq('id', id);
+      if (error) throw error;
+    } else {
+      const { data, error } = await sb.from('analysis_posts').insert(payload).select('id,slug').maybeSingle();
+      if (error) throw error;
+      id = data.id; state.id = id; state.slug = data.slug || null;
+    }
+    document.getElementById('btn-save').disabled = false;
+    showTopMsg('Сохранено ✓', 'ok');
+    renderStatus();
+    return id;
+  } catch (e) {
+    document.getElementById('btn-save').disabled = false;
+    showTopMsg('Сохранение не удалось: ' + (e.message || e), 'err');
+    return null;
+  }
+}
+
+async function publishTimelinePost() {
+  const err = validateTimeline(true);
+  if (err) { showTopMsg('Нельзя опубликовать: ' + err, 'err'); return; }
+  const test = document.getElementById('cb-test-mode').checked;
+  const skipTg = document.getElementById('cb-skip-tg').checked;
+  const chans = [
+    document.getElementById('cb-lang-ru').checked ? 'RU' : '',
+    document.getElementById('cb-lang-en').checked ? 'EN' : '',
+  ].filter(Boolean).join('+');
+  const tgPart = skipTg ? 'Только сайт (TG пропущен)' : 'Пост ' + chans + ' уйдёт в TG' + (test ? ' (test → личка)' : ' (PROD → каналы)');
+  if (!confirm('Опубликовать пост в ленту?\n• ' + tgPart)) return;
+
+  document.getElementById('btn-publish').disabled = true;
+
+  // SITE-ONLY (skip TG): save the row directly as published -> appears on site feed.
+  if (skipTg) {
+    state.status = 'published';
+    const idOnly = await saveTimelinePost(true);
+    document.getElementById('btn-publish').disabled = false;
+    if (!idOnly) return;
+    showTopMsg('Опубликовано на сайте ✓ (TG пропущен)', 'ok');
+    renderStatus();
+    return;
+  }
+
+  // TG PATH: save as DRAFT first (analysis-publish rejects already-published rows,
+  // then flips status to 'published' itself after a successful TG send).
+  state.status = 'draft';
+  const id = await saveTimelinePost(true);
+  if (!id) { document.getElementById('btn-publish').disabled = false; return; }
+
+  // broadcast to Telegram via analysis-publish edge fn (handles slug, TG text, web link, sets status=published)
+  showTopMsg('Публикация в Telegram…', 'info');
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/analysis-publish`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ action: 'publish', post_id: id }),
+    });
+    const data = await res.json().catch(() => ({}));
+    document.getElementById('btn-publish').disabled = false;
+    if (!res.ok || data.ok === false || data.error) {
+      showTopMsg('TG публикация не удалась: ' + (data.error || res.status) + ' (но пост уже на сайте)', 'err');
+      return;
+    }
+    if (data.slug) state.slug = data.slug;
+    showTopMsg('Опубликовано ✓ ' + chans + ' (сайт + Telegram)', 'ok');
+    renderStatus();
+  } catch (e) {
+    document.getElementById('btn-publish').disabled = false;
+    showTopMsg('TG публикация не удалась: ' + (e.message || e) + ' (но пост уже на сайте)', 'err');
+  }
+}
+
 async function onSaveDraft() {
+  if (state.destination === 'timeline') return saveTimelinePost(false);
   document.getElementById('btn-save').disabled = true;
   showTopMsg('Сохранение…', 'info');
   const r = await adminAction(buildPayload(state.status === 'published' ? 'published' : 'draft'));
@@ -1286,6 +1537,7 @@ function updatePublishHint() {
 }
 
 async function onPublish() {
+  if (state.destination === 'timeline') return publishTimelinePost();
   const skipTg = document.getElementById('cb-skip-tg').checked;
   const langs = selectedLangs();
 
