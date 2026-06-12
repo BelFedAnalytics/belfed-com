@@ -119,6 +119,8 @@ async function handleMagicLink() {
 
 async function handleSignUp() {
   var email = document.getElementById('suEmail').value.trim();
+  var nameEl = document.getElementById('suName');
+  var displayName = nameEl ? nameEl.value.trim() : '';
   var pw  = document.getElementById('suPassword').value;
   var pw2 = document.getElementById('suPassword2').value;
   var consentBox = document.getElementById('suConsent');
@@ -144,12 +146,22 @@ async function handleSignUp() {
     var res = await supaClient.auth.signUp({
       email: email,
       password: pw,
-      options: { emailRedirectTo: window.location.origin + '/confirm.html' }
+      options: {
+        emailRedirectTo: window.location.origin + '/confirm.html',
+        data: displayName ? { display_name: displayName } : {}
+      }
     });
     if (res.error) throw res.error;
 
     var userId = res.data && res.data.user ? res.data.user.id : null;
     var consentNow = new Date().toISOString();
+
+    // Persist the display name to the profile (best-effort).
+    if (userId && displayName) {
+      try {
+        await supaClient.from('profiles').update({ display_name: displayName }).eq('id', userId);
+      } catch (e) { /* display name is best-effort */ }
+    }
 
     // Activate the 7-day trial immediately — no Telegram step required.
     if (userId) {

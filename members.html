@@ -289,6 +289,7 @@
         </div>
       </div>
       <div id="signupForm" style="display:none">
+        <input type="text" id="suName" placeholder="What should we call you?" autocomplete="name">
         <input type="email" id="suEmail" placeholder="Email">
         <input type="password" id="suPassword" placeholder="Password (min 6 characters)">
         <input type="password" id="suPassword2" placeholder="Repeat password">
@@ -349,6 +350,14 @@
       <div id="trialBanner" class="bf-trial-banner" style="display:none">
         <span class="bf-trial-badge">&#127873; Trial access</span>
         You have <b id="trialDaysLeft">7</b> days of full access. No card on file — your trial ends automatically.
+      </div>
+
+      <!-- Set-password banner (shown only when the account has no password yet) -->
+      <div id="setPasswordBanner" class="bf-trial-banner" style="display:none">
+        <span class="bf-trial-badge">&#128272; Set a password</span>
+        You signed in via a one-time link. <b>Set a password</b> to sign in any time with your email and password.
+        <a href="#" id="setPasswordLink" style="text-decoration:underline;color:inherit;font-weight:700;margin-left:6px">Set password &rarr;</a>
+        <span id="setPasswordStatus" style="display:block;margin-top:8px;font-size:13px;color:var(--gray)"></span>
       </div>
 
       <!-- Subscription / Telegram Stars -->
@@ -651,6 +660,7 @@
           document.getElementById('acctSince').textContent = created.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         }
         loadEmailPref();
+        maybeShowSetPasswordBanner();
         if (profile) {
           var st = entitlement.status;
           var badge = document.getElementById('acctStatus');
@@ -679,6 +689,51 @@
         if (errEl) { errEl.textContent = 'Error: ' + e.message; errEl.style.display = 'block'; }
       }
     }
+    // Show the "set a password" banner only for accounts that have no password
+    // yet (i.e. users who arrived via a one-time / magic link from the bot).
+    async function maybeShowSetPasswordBanner() {
+      try {
+        var r = await supaClient.rpc('current_user_has_password');
+        var hasPw = (r && r.data === true);
+        var banner = document.getElementById('setPasswordBanner');
+        if (!banner || hasPw) return;
+        banner.style.display = 'block';
+        var link = document.getElementById('setPasswordLink');
+        if (link && !link._wired) {
+          link._wired = true;
+          link.addEventListener('click', onSetPassword);
+        }
+      } catch (e) { /* best-effort; hide on error */ }
+    }
+
+    async function onSetPassword(e) {
+      if (e) e.preventDefault();
+      var status = document.getElementById('setPasswordStatus');
+      var pw = window.prompt('Choose a password (min 6 characters):');
+      if (pw === null) return;
+      pw = pw.trim();
+      if (pw.length < 6) {
+        if (status) { status.textContent = 'Password must be at least 6 characters.'; status.style.color = '#a14040'; }
+        return;
+      }
+      var pw2 = window.prompt('Repeat the password:');
+      if (pw2 === null) return;
+      if (pw.trim() !== pw2.trim()) {
+        if (status) { status.textContent = 'Passwords do not match.'; status.style.color = '#a14040'; }
+        return;
+      }
+      if (status) { status.textContent = 'Saving…'; status.style.color = 'var(--gray)'; }
+      try {
+        var res = await supaClient.auth.updateUser({ password: pw });
+        if (res.error) throw res.error;
+        if (status) { status.textContent = 'Password set. You can now sign in with your email and password.'; status.style.color = '#1a7a1a'; }
+        var banner = document.getElementById('setPasswordBanner');
+        if (banner) setTimeout(function(){ banner.style.display = 'none'; }, 4000);
+      } catch (err) {
+        if (status) { status.textContent = 'Could not set password: ' + (err.message || 'error'); status.style.color = '#a14040'; }
+      }
+    }
+
     function onAuthSignedOut() {
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('membersContent').style.display = 'none';
