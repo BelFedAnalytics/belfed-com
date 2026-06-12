@@ -59,6 +59,11 @@ td.actions .btn{padding:5px 10px;font-size:10px;letter-spacing:1px;margin-right:
 .admin-nav a:hover{border-color:#f5f2eb}
 .admin-nav a.active{background:#f5f2eb;color:#000;border-color:#f5f2eb}
 .admin-nav .sep{color:#666;padding:6px 0}
+
+.tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid #000}
+.tabs button{font-family:'Courier New',monospace;font-size:12px;letter-spacing:2px;padding:10px 22px;border:1px solid #000;border-bottom:none;background:#f5f2eb;cursor:pointer;color:#000;margin-right:-1px;margin-bottom:-1px}
+.tabs button.sel{background:#000;color:#f5f2eb}
+td.cats small{display:inline-block;background:#f0ede4;border:1px solid #000;padding:1px 6px;margin:1px 3px 1px 0;font-size:9px;letter-spacing:1px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -90,15 +95,20 @@ td.actions .btn{padding:5px 10px;font-size:10px;letter-spacing:1px;margin-right:
 
 <header>
   <h2><a href="/admin.html">— BELFED_ ADMIN <span class="admin-badge">ADMIN</span> —</a></h2>
-  <h1>— АНАЛИТИКА: СПИСОК ОТЧЁТОВ —</h1>
+  <h1 id="page-h1">— АНАЛИТИКА: СПИСОК ОТЧЁТОВ —</h1>
 </header>
+
+<div class="tabs">
+  <button id="tab-reports"  class="sel" onclick="setTab('reports')">[ ОТЧЁТЫ ]</button>
+  <button id="tab-timeline" onclick="setTab('timeline')">[ ЛЕНТА ]</button>
+</div>
 
 <div class="toolbar">
   <div>
     <button class="btn" onclick="signOut()">[ ВЫЙТИ ]</button>
   </div>
   <div class="toolbar-right">
-    <a class="btn primary" href="/admin-analytics.html">[ + НОВЫЙ ОТЧЁТ ]</a>
+    <a id="btn-new" class="btn primary" href="/admin-analytics.html?dest=report">[ + НОВЫЙ ОТЧЁТ ]</a>
   </div>
 </div>
 
@@ -175,10 +185,35 @@ async function adminAction(payload) {
   }
 }
 
+// ===== Tabs: 'reports' (analytics_reports) | 'timeline' (analysis_posts) =====
+let currentTab = 'reports';
+
+function setTab(tab) {
+  currentTab = (tab === 'timeline') ? 'timeline' : 'reports';
+  document.getElementById('tab-reports').classList.toggle('sel', currentTab === 'reports');
+  document.getElementById('tab-timeline').classList.toggle('sel', currentTab === 'timeline');
+
+  const isTl = currentTab === 'timeline';
+  // Type filter only applies to Reports; hide it for Timeline.
+  document.getElementById('f-type').style.display = isTl ? 'none' : '';
+  document.getElementById('page-h1').textContent = isTl
+    ? '— ЛЕНТА: ПОСТЫ —'
+    : '— АНАЛИТИКА: СПИСОК ОТЧЁТОВ —';
+  const btnNew = document.getElementById('btn-new');
+  btnNew.textContent = isTl ? '[ + НОВЫЙ ПОСТ ]' : '[ + НОВЫЙ ОТЧЁТ ]';
+  btnNew.href = isTl ? '/admin-analytics.html' : '/admin-analytics.html?dest=report';
+  reload();
+}
+
 let timer;
 function debouncedReload() { clearTimeout(timer); timer = setTimeout(reload, 250); }
 
 async function reload() {
+  if (currentTab === 'timeline') return reloadTimeline();
+  return reloadReports();
+}
+
+async function reloadReports() {
   const host = document.getElementById('list-host');
   host.innerHTML = '<div class="empty">Загрузка…</div>';
   const r = await adminAction({
@@ -208,6 +243,92 @@ async function reload() {
   `;
   const tb = document.getElementById('rows');
   items.forEach(it => tb.appendChild(renderRow(it)));
+}
+
+// ===== Timeline posts (analysis_posts, destination='timeline') =====
+// Read directly via the anon client; admin RLS (admin_all_analysis_posts /
+// analysis_posts_admin_read) lets an authenticated admin read drafts too.
+async function reloadTimeline() {
+  const host = document.getElementById('list-host');
+  host.innerHTML = '<div class="empty">Загрузка…</div>';
+
+  const q       = document.getElementById('f-q').value.trim().toLowerCase();
+  const statusF = document.getElementById('f-status').value;
+
+  let query = sb.from('analysis_posts')
+    .select('id,slug,status,headline_ru,headline_en,categories,report_slug,created_at,updated_at,published_at')
+    .eq('destination', 'timeline')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (statusF && statusF !== 'all') query = query.eq('status', statusF);
+
+  const { data, error } = await query;
+  if (error) { host.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(error.message)}</div>`; return; }
+
+  let items = data || [];
+  if (q) {
+    items = items.filter(it =>
+      (it.headline_ru || '').toLowerCase().includes(q) ||
+      (it.headline_en || '').toLowerCase().includes(q) ||
+      (it.slug || '').toLowerCase().includes(q));
+  }
+  if (items.length === 0) { host.innerHTML = '<div class="empty">— Ничего не найдено —</div>'; return; }
+
+  host.innerHTML = `
+    <table>
+      <thead><tr>
+        <th style="width:14%">ДАТА</th>
+        <th style="width:16%">КАТЕГОРИИ</th>
+        <th>ЗАГОЛОВОК</th>
+        <th style="width:14%">СТАТУС</th>
+        <th style="width:24%">ДЕЙСТВИЯ</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  `;
+  const tb = document.getElementById('rows');
+  items.forEach(it => tb.appendChild(renderTimelineRow(it)));
+}
+
+function renderTimelineRow(it) {
+  const tr = document.createElement('tr');
+  const date  = (it.created_at || '').slice(0,10);
+  const title = it.headline_ru || it.headline_en || '(без заголовка)';
+  const subEn = (it.headline_en && it.headline_ru) ? it.headline_en : '';
+  const slug  = it.slug || '';
+  const cats  = Array.isArray(it.categories) ? it.categories : [];
+  const fromReport = !!it.report_slug;
+
+  const catsHtml = cats.length
+    ? cats.map(c => `<small>${escapeHtml(c)}</small>`).join('')
+    : '<small style="opacity:.5">—</small>';
+
+  tr.innerHTML = `
+    <td>${escapeHtml(date)}${fromReport ? '<br><small style="opacity:.5">из отчёта</small>' : ''}</td>
+    <td class="cats">${catsHtml}</td>
+    <td class="title">
+      <b>${escapeHtml(title)}</b>
+      ${subEn ? `<small>${escapeHtml(subEn.slice(0,120))}${subEn.length>120?'…':''}</small>` : ''}
+      <small style="display:block;margin-top:4px;font-family:monospace">${escapeHtml(slug)}</small>
+    </td>
+    <td><span class="status-pill ${it.status}">${labelStatus(it.status)}</span></td>
+    <td class="actions">
+      <a class="btn" href="/admin-analytics.html?id=${encodeURIComponent(it.id)}&type=timeline">[ РЕД ]</a>
+      ${(slug && it.status === 'published') ? `<a class="btn" target="_blank" href="/analytics.html?post=${encodeURIComponent(slug)}">[ САЙТ ]</a>` : ''}
+      ${it.status === 'draft' ? `<button class="btn danger" data-act="del" data-id="${it.id}">[ × ]</button>` : ''}
+    </td>
+  `;
+  const del = tr.querySelector('[data-act="del"]');
+  if (del) del.onclick = () => deleteTimelineRow(it.id);
+  return tr;
+}
+
+async function deleteTimelineRow(id) {
+  if (!confirm('Удалить черновик поста навсегда?')) return;
+  const { error } = await sb.from('analysis_posts').delete().eq('id', id).eq('status', 'draft');
+  if (error) { topMsg('Удаление не удалось: ' + error.message, 'err'); return; }
+  topMsg('Удалено', 'ok');
+  reload();
 }
 
 function renderRow(it) {
