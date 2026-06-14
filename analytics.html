@@ -146,8 +146,10 @@ a.card{text-decoration:none;color:#000}
 .expired-box p{font-size:13px;line-height:1.8;margin-bottom:16px}
 
 @media (max-width:600px){
+  html,body{max-width:100%;overflow-x:hidden}
   body{padding:14px 12px}
-  .filter-group input,.filter-group select{min-width:100%;width:100%}
+  .container{max-width:100%}
+  .filter-group input,.filter-group select{min-width:0;width:100%}
   .filter-group{width:100%}
   header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px;padding-bottom:16px}
   header h2{font-size:12px;letter-spacing:2.5px;margin-bottom:0}
@@ -159,17 +161,35 @@ a.card{text-decoration:none;color:#000}
   .filters{padding:14px 14px}
   .filters-row{gap:12px}
   .pager button{padding:8px 14px;font-size:11px;letter-spacing:1px}
-  .seg{gap:26px;justify-content:flex-start}
-  .tl-bar{flex-direction:column;align-items:stretch;gap:14px;margin-bottom:20px}
-  .tl-filter{gap:14px 18px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:8px}
-  .tl-filter button{white-space:nowrap}
-  .tl-search{width:100%}
+  .seg{gap:22px;justify-content:flex-start;margin-bottom:18px}
+  .seg button{font-size:11px;letter-spacing:2px;padding:0 1px 8px}
+
+  /* Timeline filter bar: stack search above a single-row scrollable chip strip */
+  .tl-bar{flex-direction:column;align-items:stretch;gap:12px;margin-bottom:18px}
+  .tl-search{order:-1;width:100%}
   .tl-search input{width:100%}
-  .tl{padding-left:18px;margin-left:2px}
+  /* Scroll strip: min-width:0 lets the flex item shrink to the viewport so the
+     page itself never overflows; the strip scrolls internally instead. */
+  .tl-filter{display:flex;flex-wrap:nowrap;gap:8px;min-width:0;max-width:100%;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;
+    padding:2px 0 8px;margin:0 -12px;padding-left:12px;padding-right:12px;
+    scrollbar-width:none}
+  .tl-filter::-webkit-scrollbar{display:none}
+  .tl-filter button{white-space:nowrap;flex:0 0 auto;scroll-snap-align:start;
+    border:1px solid #d9d4c7;border-radius:2px;padding:6px 12px;letter-spacing:1.5px;
+    font-size:10.5px;background:#fff;color:#7a7363}
+  .tl-filter button:hover{color:#000}
+  .tl-filter button.active{color:#f5f2eb;background:#000;border-color:#000}
+
+  .tl{padding-left:18px;margin-left:2px;max-width:100%}
   .item::before{left:-18px}
   .item{margin-bottom:28px}
+  .phead{font-size:15px}
   .ic p{font-size:15px;line-height:1.75}
+  .ic .charts.multi{grid-template-columns:1fr}
   .ic .chart{max-width:100%}
+  .ifoot{gap:8px}
+  .disclaimer{padding:14px 14px;margin-top:28px}
 }
 </style>
 </head>
