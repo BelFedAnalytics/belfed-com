@@ -146,6 +146,13 @@ a.card{text-decoration:none;color:#000}
 .expired-box h2{font-size:16px;letter-spacing:2px;color:#c50000;margin-bottom:12px}
 .expired-box p{font-size:13px;line-height:1.8;margin-bottom:16px}
 
+/* Stack the centered header actions on tablet/narrow widths, matching dashboard & asset-analysis. */
+@media (max-width:900px){
+  header{display:flex;flex-direction:column;align-items:center;gap:6px}
+  header h1{max-width:100%;overflow-wrap:anywhere}
+  .header-actions{display:flex;justify-content:center;gap:10px;margin-top:10px;padding-top:12px;width:100%;max-width:340px;margin-left:auto;margin-right:auto;border-top:1px solid #d9d4c7}
+  .members-link,.logout-btn{position:static;transform:none;flex:1 1 0;max-width:160px;display:inline-flex;align-items:center;justify-content:center;min-height:40px;font-size:11px;letter-spacing:1px;padding:0 12px;line-height:1}
+}
 @media (max-width:600px){
   html,body{max-width:100%;overflow-x:hidden}
   body{padding:14px 12px}
@@ -155,8 +162,8 @@ a.card{text-decoration:none;color:#000}
   header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px;padding-bottom:16px}
   header h2{font-size:12px;letter-spacing:2.5px;margin-bottom:0}
   header h1{font-size:clamp(13px,4vw,14px);letter-spacing:1px;line-height:1.35;margin:0;max-width:100%;overflow-wrap:anywhere}
-  .header-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:4px;width:100%}
-  .members-link,.logout-btn{position:static;transform:none;display:inline-flex;align-items:center;justify-content:center;min-height:34px;min-width:104px;font-size:10px;letter-spacing:.8px;padding:7px 12px;line-height:1}
+  .header-actions{display:flex;justify-content:center;gap:10px;margin-top:10px;padding-top:12px;width:100%;max-width:340px;margin-left:auto;margin-right:auto;border-top:1px solid #d9d4c7}
+  .members-link,.logout-btn{position:static;transform:none;flex:1 1 0;max-width:160px;display:inline-flex;align-items:center;justify-content:center;min-height:40px;font-size:11px;letter-spacing:1px;padding:0 12px;line-height:1}
   .sub-nav{justify-content:center;row-gap:4px;margin-bottom:20px}
   .sub-nav a{font-size:11px;letter-spacing:1px;padding:9px 10px}
   .filters{padding:14px 14px}
