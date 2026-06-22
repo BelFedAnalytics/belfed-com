@@ -293,6 +293,7 @@ function renderGroups(groups){
         '</div>';
     }).join('');
     const oldestId = (g.requests && g.requests.length) ? g.requests[0].id : '';
+    _groupsMap[oldestId] = g; // store for openClarify lookup
     return '<div class="group-card">' +
       '<div class="group-head">' +
         '<div class="left">' +
@@ -302,7 +303,7 @@ function renderGroups(groups){
         '</div>' +
         '<div class="group-actions">' +
           '<a class="btn primary small" href="/admin-analysis-posts.html?fulfill_req='+encodeURIComponent(oldestId)+'&ticker='+encodeURIComponent(g.ticker)+(g.asset_class?'&asset_class='+encodeURIComponent(g.asset_class):'')+'">[ FULFILL → EDITOR ]</a>' +
-          '<button class="btn small warn" onclick="openClarify(\''+oldestId+'\', \''+escapeHtml(g.ticker)+'\', '+JSON.stringify(g.requests||[])+')">[ CLARIFY? ]</button>' +
+          '<button class="btn small warn" onclick="openClarify(\''+oldestId+'\', \''+escapeHtml(g.ticker)+'\')">[ CLARIFY? ]</button>' +
           '<button class="btn small danger" onclick="openReject(\''+oldestId+'\', \''+escapeHtml(g.ticker)+'\')">[ REJECT ]</button>' +
         '</div>' +
       '</div>' +
@@ -331,10 +332,11 @@ function renderRecent(recent){
 
 let clarifyTargetId = null;
 let clarifyRequests = [];
+const _groupsMap = {}; // keyed by oldestId → full group object
 
-function openClarify(id, ticker, requests){
+function openClarify(id, ticker){
   clarifyTargetId = id;
-  clarifyRequests = requests;
+  clarifyRequests = (_groupsMap[id] && _groupsMap[id].requests) || [];
   $('#clarifyTitle').textContent = '— CLARIFY $' + ticker + ' —';
   $('#clarifyMessage').value = '';
   $('#clarifyBtn').disabled = false;
