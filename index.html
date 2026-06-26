@@ -168,6 +168,23 @@
     .btn-ghost { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
     .btn-ghost:hover { border-color: var(--black); color: var(--black); }
     .btn-sm { padding: 8px 14px; font-size: 11px; }
+    .btn-track {
+      background: var(--green-strong); color: var(--white);
+      border-color: var(--green-strong);
+      padding: 16px 28px; font-size: 13px;
+      box-shadow: 0 4px 18px #1a6b3a1f;
+    }
+    .btn-track:hover {
+      background: var(--black); border-color: var(--black); color: var(--white);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px #1a6b3a33;
+    }
+    .btn-track .arrow { display: inline-block; margin-left: 8px; transition: transform .2s ease; }
+    .btn-track:hover .arrow { transform: translateX(4px); }
+    .track-cta-wrap {
+      margin-top: 28px; display: flex; justify-content: center;
+      padding-top: 28px; border-top: 1px dashed var(--rule-strong);
+    }
 
     /* HERO */
     .hero {
@@ -1000,7 +1017,11 @@
       <span class="dot-live"></span>
       <span>Stats update automatically the moment a new trade closes.</span>
       <span class="auto-beam" aria-hidden="true"></span>
-      <a href="https://belfed.com/trades.html" target="_blank" rel="noopener" style="color:var(--green-strong);">View full closed-trade history →</a>
+    </div>
+    <div class="track-cta-wrap">
+      <a href="/trades.html" target="_blank" rel="noopener" class="btn btn-track">
+        View full closed-trade history <span class="arrow">→</span>
+      </a>
     </div>
     <div class="record-foot" style="margin-top:18px;border-top:none;padding-top:0;">
       <span>// Every entry, exit, and result logged publicly since 2025.</span>
