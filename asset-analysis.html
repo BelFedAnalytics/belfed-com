@@ -783,7 +783,7 @@ function reqStatusLabel(s) {
 }
 function reqErrLabel(code) {
   switch (code) {
-    case 'quota_exceeded': return 'Daily limit of 3 requests reached. Try again later.';
+    case 'quota_exceeded': return 'Daily limit reached. Try again later.';
     case 'invalid_ticker': return 'Invalid ticker (1–8 letters/digits).';
     case 'not_paid':       return 'Available to paid subscribers only.';
     case 'unauthorized':   return 'Session expired. Refresh the page.';
