@@ -330,6 +330,23 @@ function onAuthSignedOut() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.body.style.visibility = 'visible';
 }
+// A signed-in user has a Supabase session persisted in localStorage. Guests do
+// not — so reveal the lock screen for them immediately instead of waiting on the
+// async auth check, which can stall on supabase-js's navigator.locks acquisition
+// and leave the page blank (body stays visibility:hidden) past the failsafe.
+function hasStoredSupabaseSession() {
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('sb-') === 0 && k.indexOf('-auth-token') !== -1) {
+        var v = localStorage.getItem(k);
+        if (v && v !== 'null' && v.indexOf('access_token') !== -1) return true;
+      }
+    }
+  } catch (e) {}
+  return false;
+}
+if (!hasStoredSupabaseSession()) { try { onAuthSignedOut(); } catch (e) {} }
 function showExpired() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainContainer').style.display = 'none';
