@@ -163,7 +163,7 @@ async function handleSignUp() {
       } catch (e) { /* display name is best-effort */ }
     }
 
-    // Activate the 14-day trial immediately — no Telegram step required.
+    // Activate the 7-day trial immediately — no Telegram step required.
     if (userId) {
       try {
         await supaClient.rpc('start_web_trial', {
@@ -193,16 +193,21 @@ async function handleSignUp() {
     // Get an optional one-time Telegram deep-link for live alerts (not required).
     var deepLink = 'https://t.me/BelfedBot?start=trial_link';
     try {
+      var intentBody = {
+        email: email,
+        lang: 'en',
+        source: 'web_signup',
+        accept_privacy: true,
+        accept_terms: true
+      };
+      if (window.BelfedAnalytics) {
+        var _u = window.BelfedAnalytics.utmFields();
+        for (var _k in _u) { if (_u.hasOwnProperty(_k)) intentBody[_k] = _u[_k]; }
+      }
       var intentRes = await fetch(SUPABASE_URL + '/functions/v1/trial-intent-create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          lang: 'en',
-          source: 'web_signup',
-          accept_privacy: true,
-          accept_terms: true
-        })
+        body: JSON.stringify(intentBody)
       });
       var intentData = await intentRes.json();
       if (intentData && intentData.ok && intentData.deep_link) deepLink = intentData.deep_link;
@@ -211,12 +216,17 @@ async function handleSignUp() {
     msgEl.innerHTML = ''
       + '<div class="signup-success">'
       + '  <h3>Account created — your trial is active</h3>'
-      + '  <p>Your member area is open for 14 days. We sent a confirmation email to <b>' + email + '</b> — please verify your address to receive notifications.</p>'
+      + '  <p>Your member area is open for 7 days. We sent a confirmation email to <b>' + email + '</b> — please verify your address to receive notifications.</p>'
       + '  <p style="margin-top:12px"><b>No email?</b> Check your spam folder or <a href="#" onclick="resendConfirmation(\'' + email.replace(/'/g, "\\'") + '\');return false;">resend it</a>.</p>'
       + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Connect Telegram alerts (optional)</a>'
       + '  <div class="signup-success-note">Telegram delivers live trade alerts. Your member area works without it. Link is single-use and valid for 15 minutes.</div>'
       + '</div>';
     msgEl.style.display = 'block';
+
+    if (typeof window.belfedTrack === 'function') {
+      window.belfedTrack('signup_complete', { method: 'web', email_domain: (email.split('@')[1] || '') });
+      window.belfedTrack('trial_started', { method: 'web', trial_days: 7 });
+    }
 
     if (res.data.session) {
       await checkProfile();
@@ -225,12 +235,17 @@ async function handleSignUp() {
     var emsg = err.message || 'Sign up failed';
     if (/already registered|already been registered|User already/i.test(emsg)) {
       errEl.innerHTML = 'This email is already registered. <a href="#" onclick="showAuthTab(\'signin\');return false;" style="text-decoration:underline">Sign in</a> or <a href="#" onclick="if(document.getElementById(\'forgotPasswordLink\'))document.getElementById(\'forgotPasswordLink\').click();return false;" style="text-decoration:underline">reset your password</a>.';
+    } else if (/invalid/i.test(emsg) && /email/i.test(emsg)) {
+      errEl.textContent = 'That email address looks invalid. Please double-check it and try again.';
     } else {
       errEl.textContent = emsg;
     }
     errEl.style.display = 'block';
+    if (typeof window.belfedTrack === 'function') {
+      window.belfedTrack('signup_error', { message: emsg });
+    }
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = prevBtnText || 'START FREE TRIAL'; }
+    if (btn) { btn.disabled = false; btn.textContent = prevBtnText || 'Start free trial'; }
   }
 }
 

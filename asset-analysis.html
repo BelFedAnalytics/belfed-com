@@ -198,7 +198,7 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
       <input type="password" id="suPassword" placeholder="Password (min 6 chars)">
       <input type="password" id="suPassword2" placeholder="Confirm password">
       <button class="login-btn" onclick="handleSignUp()">START FREE TRIAL</button>
-      <div class="trial-note">14 days free access &bull; No credit card required</div>
+      <div class="trial-note">7 days free access &bull; No credit card required</div>
     </div>
     <div id="magiclinkForm" style="display:none">
       <input type="email" id="mlEmail" placeholder="Email address">
@@ -214,8 +214,8 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 <div id="expiredScreen">
   <div class="expired-box">
     <h2>TRIAL EXPIRED</h2>
-    <p>Your 14-day free trial has ended.<br>Subscribe to continue accessing live trade signals and analytics.</p>
-    <a href="https://belfed.com/#subscribe" class="login-btn">VIEW PLANS</a>
+    <p>Your 7-day free trial has ended.<br>Subscribe to continue accessing live trade signals and analytics.</p>
+    <a href="https://belfed.com/#pricing" class="login-btn">VIEW PLANS</a>
     <button class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" onclick="handleLogout()">SIGN OUT</button>
   </div>
 </div>
@@ -300,13 +300,21 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="belfed-analytics.js"></script>
 <script src="belfed-auth.js"></script>
 <script>
 // Page callbacks expected by belfed-auth.js
 function onAuthReady(profile, session, entitlement) {
   if (entitlement && entitlement.access) showMain();
-  else showExpired();
+  else { showExpired(); if (window.belfedTrack) window.belfedTrack('trial_expired', { page: 'asset-analysis' }); }
 }
+// Failsafe: never leave a blank page if the auth check stalls or its script
+// fails to load — reveal the locked login screen after a short wait.
+setTimeout(function () {
+  if (document.body.style.visibility !== 'visible') {
+    try { onAuthSignedOut(); } catch (e) { document.body.style.visibility = 'visible'; }
+  }
+}, 3500);
 function onAuthSignedOut() {
   document.getElementById('mainContainer').style.display = 'none';
   document.getElementById('expiredScreen').style.display = 'none';
