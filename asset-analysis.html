@@ -109,7 +109,11 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 #loginScreen{display:flex;justify-content:center;align-items:center;min-height:80vh}
 .login-box{background:#fff;border:2px solid #000;padding:40px;max-width:420px;width:100%;text-align:center}
 .login-box h2{font-size:18px;letter-spacing:3px;margin-bottom:8px}
-.login-box .login-sub{font-size:11px;opacity:0.5;margin-bottom:24px;letter-spacing:1px}
+.login-box .login-sub{font-size:11px;opacity:0.5;margin-bottom:18px;letter-spacing:1px}
+.lock-intro{margin-bottom:22px;padding-bottom:18px;border-bottom:1px dashed #ccc}
+.lock-intro .lock-title{font-size:20px;letter-spacing:1px;font-weight:bold;margin-bottom:10px}
+.lock-intro .lock-msg{font-size:12px;line-height:1.7;color:#555}
+.lock-intro .lock-trial{display:block;margin-top:12px;font-size:11px;font-weight:bold;letter-spacing:1px;color:#1a7a1a}
 .auth-tabs{display:flex;margin-bottom:24px;border-bottom:1px solid #000}
 .auth-tab{flex:1;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;letter-spacing:2px;padding:8px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;color:#999}
 .auth-tab.active{color:#000;border-bottom-color:#000}
@@ -176,6 +180,11 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
   <div class="login-box">
     <h2><a href="/" style="color:#000;text-decoration:none">— BELFED_ —</a></h2>
     <div class="login-sub">MEMBER ACCESS</div>
+    <div class="lock-intro">
+      <div class="lock-title">Sign in required</div>
+      <p class="lock-msg">Asset analysis &amp; chart requests are available to registered members. Sign in or register to continue.</p>
+      <span class="lock-trial">START YOUR 14-DAY FREE TRIAL &bull; NO CREDIT CARD REQUIRED</span>
+    </div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="showAuthTab('signin')">SIGN IN</button>
       <button class="auth-tab" onclick="showAuthTab('signup')">SIGN UP</button>
