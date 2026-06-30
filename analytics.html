@@ -242,7 +242,7 @@ a.card{text-decoration:none;color:#000}
     <div class="cta-row">
       <div class="or">— OR —</div>
       <a class="login-btn alt" href="https://t.me/BelfedBot?start=auth" target="_blank" rel="noopener" data-i18n="ctaTelegram">SUBSCRIBE VIA TELEGRAM</a>
-      <a class="login-btn alt" href="https://belfed.com/#subscribe" data-i18n="ctaPlans">VIEW PLANS</a>
+      <a class="login-btn alt" href="https://belfed.com/#pricing" data-i18n="ctaPlans">VIEW PLANS</a>
     </div>
   </div>
 </div>
@@ -252,7 +252,7 @@ a.card{text-decoration:none;color:#000}
   <div class="expired-box">
     <h2 data-i18n="expiredTitle">SUBSCRIPTION REQUIRED</h2>
     <p data-i18n="expiredText">The analytics feed and full reports are available to active subscribers.</p>
-    <a href="https://belfed.com/#subscribe" class="login-btn" data-i18n="ctaPlans">VIEW PLANS</a>
+    <a href="https://belfed.com/#pricing" class="login-btn" data-i18n="ctaPlans">VIEW PLANS</a>
     <a href="https://t.me/BelfedBot?start=auth" target="_blank" rel="noopener" class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" data-i18n="ctaTelegram">SUBSCRIBE VIA TELEGRAM</a>
     <button class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" onclick="handleLogout()" data-i18n="signOut">SIGN OUT</button>
   </div>
@@ -365,6 +365,7 @@ a.card{text-decoration:none;color:#000}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="belfed-analytics.js"></script>
 <script src="belfed-auth.js"></script>
 <script>
 // SUPABASE_URL, SUPABASE_KEY (anon) and supaClient provided by belfed-auth.js
@@ -832,6 +833,7 @@ function onAuthReady(profile, session, entitlement) {
   } else {
     hasAccess = false;
     showExpiredScreen();
+    if (window.belfedTrack) window.belfedTrack('trial_expired', { page: 'analytics' });
   }
 }
 function onAuthSignedOut() {
@@ -891,6 +893,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyI18n();
   // belfed-auth.js triggers onAuthReady / onAuthSignedOut after session check.
+  // Failsafe: never leave a blank page if the auth check stalls or the auth
+  // script fails to load. Reveal the locked login screen after a short wait.
+  setTimeout(function () {
+    if (document.body.style.visibility !== 'visible') {
+      try { showLoginScreen(); } catch (e) { document.body.style.visibility = 'visible'; }
+    }
+  }, 3500);
 });
 </script>
 

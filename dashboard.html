@@ -144,7 +144,7 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 <div class="expired-box">
 <h2>TRIAL EXPIRED</h2>
 <p>Your 14-day free trial has ended.<br>Subscribe to continue accessing live trade signals and analytics.</p>
-<a href="https://belfed.com/#subscribe" class="login-btn">VIEW PLANS</a>
+<a href="https://belfed.com/#pricing" class="login-btn">VIEW PLANS</a>
 <button class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" onclick="handleLogout()">SIGN OUT</button>
 </div>
 </div>
@@ -276,6 +276,7 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 <footer>Educational purposes only. belfed.com</footer>
 </div><!-- container -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="belfed-analytics.js"></script>
 <script src="belfed-auth.js"></script>
 <script>
   // Auth gate: show "Sign in required" overlay if not signed in
@@ -284,7 +285,7 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
       document.body.style.visibility = 'hidden';
       var msg = document.createElement('div');
       msg.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Courier Prime,monospace;visibility:visible;z-index:99999';
-      msg.innerHTML = '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:14px">// Members area</div><h1 style="font-size:24px;margin-bottom:14px">Sign in required</h1><p style="font-size:13px;color:#555;margin-bottom:24px;max-width:420px;text-align:center;line-height:1.7">Live trade tracker is available to registered members. Start your 14-day free trial — no credit card required.</p><a href="/members.html" style="background:#111;color:#fff;padding:12px 24px;text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase">Sign in / Register</a>';
+      msg.innerHTML = '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:14px">// Members area</div><h1 style="font-size:24px;margin-bottom:14px">Sign in required</h1><p style="font-size:13px;color:#555;margin-bottom:24px;max-width:420px;text-align:center;line-height:1.7">Live trade tracker is available to registered members. Start your 14-day free trial — no credit card required.</p><a href="/members.html#signup" style="background:#111;color:#fff;padding:12px 24px;text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase">Sign in / Register</a>';
       document.body.appendChild(msg);
     }
     window.addEventListener('load', function () {
@@ -358,7 +359,7 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
   // --- Dashboard page callbacks ---
 function onAuthReady(profile, session, entitlement) {
   if (entitlement.access) { showDashboard(); }
-  else { showExpired(); }
+  else { showExpired(); if (window.belfedTrack) window.belfedTrack('trial_expired', { page: 'dashboard' }); }
 }
 function onAuthSignedOut() {
       if (window.tokenAccess) return;

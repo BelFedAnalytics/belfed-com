@@ -247,7 +247,7 @@
       <li><a href="/about.html">About</a></li>
       <li><a href="https://belfed.ru" target="_blank">RU</a></li>
     </ul>
-    <button class="nav-cta" id="navAuthBtn" onclick="handleLogout()" style="display:none">Sign out</button>
+    <button class="nav-cta" id="navAuthBtn" onclick="handleNavAuth()">Login / Register</button>
     <button class="hamburger" id="hamb" aria-label="Menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -365,10 +365,10 @@
         <h2>// My subscription</h2>
         <div class="waitlist-card">
           <div class="tag">// Active</div>
-          <h3>⭐️ Founding Member — $10.5 / month (−30% forever)</h3>
+          <h3>⭐️ Founding Member — $10.50 / month (−30% forever)</h3>
           <p>Secure your founding price via Tribute. Recurring billing, cancel any time.</p>
           <p style="color:var(--gray);font-size:13px;margin-top:14px">Your 14-day free trial runs first — no card needed. Pay here or right inside the bot — access updates automatically.</p>
-          <p style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap"><a href="https://web.tribute.tg/s/XIq" target="_blank" rel="noopener" style="display:inline-block;padding:12px 22px;border:1px solid var(--black);color:var(--black);text-decoration:none;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Subscribe &mdash; $10.5 / mo &rarr;</a><a href="https://t.me/tribute/app?startapp=sXIq" target="_blank" rel="noopener" style="display:inline-block;padding:12px 22px;border:1px solid var(--gray);color:var(--gray);text-decoration:none;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Pay in Telegram</a></p>
+          <p style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap"><a href="https://web.tribute.tg/s/XIq" target="_blank" rel="noopener" style="display:inline-block;padding:12px 22px;border:1px solid var(--black);color:var(--black);text-decoration:none;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Subscribe &mdash; $10.50 / mo &rarr;</a><a href="https://t.me/tribute/app?startapp=sXIq" target="_blank" rel="noopener" style="display:inline-block;padding:12px 22px;border:1px solid var(--gray);color:var(--gray);text-decoration:none;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Pay in Telegram</a></p>
           <p style="color:var(--gray);font-size:12px;margin-top:14px">Manage your subscription and cancel renewal anytime in <a href="https://t.me/tribute" target="_blank" rel="noopener" style="text-decoration:underline;color:inherit">Tribute</a>.</p>
         </div>
       </div>
@@ -448,7 +448,8 @@
     </footer>
   </div>
 
-  <script src="belfed-auth.js"></script>
+  <script src="belfed-analytics.js"></script>
+<script src="belfed-auth.js"></script>
   <script>
     // --- Members page callbacks ---
     // ===== Email preferences =====
@@ -653,7 +654,7 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('membersContent').style.display = 'block';
         var navAuth = document.getElementById('navAuthBtn');
-        if (navAuth) navAuth.style.display = 'block';
+        if (navAuth) { navAuth.style.display = 'block'; navAuth.textContent = 'Sign out'; navAuth.dataset.authed = '1'; }
         if (session && session.user) {
           document.getElementById('acctEmail').textContent = session.user.email;
           var created = new Date(session.user.created_at);
@@ -738,7 +739,15 @@
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('membersContent').style.display = 'none';
       var navAuth = document.getElementById('navAuthBtn');
-      if (navAuth) navAuth.style.display = 'none';
+      if (navAuth) { navAuth.style.display = 'block'; navAuth.textContent = 'Login / Register'; navAuth.dataset.authed = '0'; }
+    }
+    // Nav CTA: sign out when authenticated, otherwise jump to the Register form.
+    function handleNavAuth() {
+      var navAuth = document.getElementById('navAuthBtn');
+      if (navAuth && navAuth.dataset.authed === '1') { handleLogout(); return; }
+      if (typeof showAuthTab === 'function') { try { showAuthTab('signup'); } catch (e) {} }
+      var box = document.querySelector('.login-box');
+      if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     (function() {
       var hamb = document.getElementById('hamb');

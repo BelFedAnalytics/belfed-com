@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="belfed-analytics.js"></script>
   <style>
     :root {
       --font-mono: 'Courier Prime', 'Courier New', ui-monospace, monospace;
@@ -1456,6 +1457,9 @@
 </footer>
 
 <script>
+  // Funnel: record the landing view (UTM fields auto-attached by belfed-analytics.js)
+  if (window.belfedTrack) window.belfedTrack('landing_view', { path: location.pathname });
+
   // Theme toggle
   var themeBtn = document.getElementById('themeBtn');
   themeBtn.addEventListener('click', function () {
@@ -1514,6 +1518,14 @@
     var origLabel = submitBtn.innerHTML;
     submitBtn.disabled = true; submitBtn.innerHTML = 'Sending…';
 
+    var leadPayload = {
+      email: email, ticker: ticker, asset_class: assetClass, timeframe: timeframe,
+      note: note || null, consent: consent, lang: 'en', source: 'landing', website: honeypot
+    };
+    if (window.BelfedAnalytics) {
+      var _utm = window.BelfedAnalytics.utmFields();
+      for (var _k in _utm) { if (_utm.hasOwnProperty(_k)) leadPayload[_k] = _utm[_k]; }
+    }
     fetch(SUPA_URL + '/functions/v1/landing-lead-create', {
       method: 'POST',
       headers: {
@@ -1521,14 +1533,12 @@
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY
       },
-      body: JSON.stringify({
-        email: email, ticker: ticker, asset_class: assetClass, timeframe: timeframe,
-        note: note || null, consent: consent, lang: 'en', source: 'landing', website: honeypot
-      })
+      body: JSON.stringify(leadPayload)
     }).then(function (r) { return r.json().then(function (d) { return { status: r.status, body: d }; }); })
       .then(function (res) {
         submitBtn.disabled = false; submitBtn.innerHTML = origLabel;
         if (res.body && res.body.ok) {
+          if (window.belfedTrack) window.belfedTrack('lead_submitted', { ticker: ticker });
           document.getElementById('thanksTicker').textContent = '$' + ticker;
           document.getElementById('thanksEmail').textContent = email;
           form.classList.add('submitted');
