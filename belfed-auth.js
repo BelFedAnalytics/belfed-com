@@ -163,7 +163,7 @@ async function handleSignUp() {
       } catch (e) { /* display name is best-effort */ }
     }
 
-    // Activate the 7-day trial immediately — no Telegram step required.
+    // Activate the 14-day trial immediately — no Telegram step required.
     if (userId) {
       try {
         await supaClient.rpc('start_web_trial', {
@@ -216,7 +216,7 @@ async function handleSignUp() {
     msgEl.innerHTML = ''
       + '<div class="signup-success">'
       + '  <h3>Account created — your trial is active</h3>'
-      + '  <p>Your member area is open for 7 days. We sent a confirmation email to <b>' + email + '</b> — please verify your address to receive notifications.</p>'
+      + '  <p>Your member area is open for 14 days. We sent a confirmation email to <b>' + email + '</b> — please verify your address to receive notifications.</p>'
       + '  <p style="margin-top:12px"><b>No email?</b> Check your spam folder or <a href="#" onclick="resendConfirmation(\'' + email.replace(/'/g, "\\'") + '\');return false;">resend it</a>.</p>'
       + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Connect Telegram alerts (optional)</a>'
       + '  <div class="signup-success-note">Telegram delivers live trade alerts. Your member area works without it. Link is single-use and valid for 15 minutes.</div>'
@@ -225,7 +225,7 @@ async function handleSignUp() {
 
     if (typeof window.belfedTrack === 'function') {
       window.belfedTrack('signup_complete', { method: 'web', email_domain: (email.split('@')[1] || '') });
-      window.belfedTrack('trial_started', { method: 'web', trial_days: 7 });
+      window.belfedTrack('trial_started', { method: 'web', trial_days: 14 });
     }
 
     if (res.data.session) {
