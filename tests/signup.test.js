@@ -38,7 +38,7 @@ function makeEl(props) {
 // Build a fresh sandbox + module instance for each scenario.
 function load(opts) {
   opts = opts || {};
-  const captures = { rpc: [], fetch: [], track: [], signup: [] };
+  const captures = { rpc: [], fetch: [], track: [], signup: [], update: [] };
 
   const els = {
     suEmail:    makeEl({ value: opts.email || 'qa@example.com' }),
@@ -80,9 +80,16 @@ function load(opts) {
       async setSession() { return {}; }
     },
     rpc(name, params) { captures.rpc.push({ name, params }); return hang(); },
-    from() {
-      return { update() { return { eq() { return hang(); } }; },
-               select() { return { eq() { return { single() { return hang(); } }; } }; } };
+    from(table) {
+      return {
+        update(patch) {
+          return { eq(col, val) {
+            captures.update.push({ table: table, patch: patch, col: col, val: val });
+            return Promise.resolve({ data: null, error: opts.updateError || null });
+          } };
+        },
+        select() { return { eq() { return { single() { return hang(); } }; } }; }
+      };
     }
   };
 
@@ -131,6 +138,13 @@ function load(opts) {
     assert(trial && typeof trial.params.p_privacy_consent_at === 'string' && trial.params.p_privacy_consent_at.length > 0, 'privacy consent timestamp is set');
     assert(trial && typeof trial.params.p_terms_consent_at === 'string' && trial.params.p_terms_consent_at.length > 0, 'terms consent timestamp is set');
 
+    const su = captures.signup[0];
+    assert(su && su.options && su.options.data, 'signUp includes user metadata');
+    assert(su && su.options.data.privacy_consent_at && su.options.data.terms_consent_at, 'signUp metadata carries privacy + terms consent timestamps');
+    assert(su && su.options.data.consent_locale === 'en', 'signUp metadata carries consent locale');
+    assert(su && ('consent_user_agent' in su.options.data), 'signUp metadata carries consent user agent');
+    assert(su && su.options.data.display_name === 'QA Tester', 'signUp metadata preserves display name');
+
     const tracked = captures.track.map(t => t.name);
     assert(tracked.includes('trial_started'), 'trial_started analytics event fired');
     const trialEvt = captures.track.find(t => t.name === 'trial_started');
@@ -162,6 +176,42 @@ function load(opts) {
     await ctx.handleSignUp();
     assert(/do not match/i.test(els.loginError.textContent), 'mismatched passwords are rejected');
     assert(captures.signup.length === 0, 'signUp is not called when validation fails');
+  }
+
+  // 4) Consent backfill writes metadata timestamps onto a profile with NULL consent.
+  {
+    const { ctx, captures } = load();
+    const session = { user: { id: 'u9', user_metadata: {
+      privacy_consent_at: '2026-07-01T10:00:00.000Z',
+      terms_consent_at: '2026-07-01T10:00:00.000Z',
+      consent_locale: 'en'
+    } } };
+    const profile = { privacy_consent_at: null, terms_consent_at: null };
+    await ctx.backfillConsentFromMetadata(session, profile);
+    const upd = captures.update.find(u => u.patch && (u.patch.privacy_consent_at || u.patch.terms_consent_at));
+    assert(!!upd, 'backfill writes consent to profiles when columns are NULL');
+    assert(upd && upd.patch.privacy_consent_at === '2026-07-01T10:00:00.000Z', 'backfill uses the metadata privacy timestamp');
+    assert(upd && upd.patch.terms_consent_at === '2026-07-01T10:00:00.000Z', 'backfill uses the metadata terms timestamp');
+    assert(upd && upd.val === 'u9', 'backfill targets the signed-in user row');
+    assert(profile.privacy_consent_at === '2026-07-01T10:00:00.000Z', 'backfill updates the in-memory profile');
+  }
+
+  // 5) Backfill is a no-op when consent is already present (idempotent).
+  {
+    const { ctx, captures } = load();
+    const session = { user: { id: 'u9', user_metadata: { privacy_consent_at: 'x', terms_consent_at: 'x' } } };
+    const profile = { privacy_consent_at: '2025-01-01T00:00:00Z', terms_consent_at: '2025-01-01T00:00:00Z' };
+    await ctx.backfillConsentFromMetadata(session, profile);
+    const upd = captures.update.find(u => u.patch && (u.patch.privacy_consent_at || u.patch.terms_consent_at));
+    assert(!upd, 'backfill is a no-op when consent is already recorded');
+  }
+
+  // 6) Backfill does nothing without consent metadata (e.g. legacy users).
+  {
+    const { ctx, captures } = load();
+    const session = { user: { id: 'u9', user_metadata: {} } };
+    await ctx.backfillConsentFromMetadata(session, { privacy_consent_at: null, terms_consent_at: null });
+    assert(captures.update.length === 0, 'backfill is a no-op when no consent metadata exists');
   }
 
   console.log(failures === 0 ? '\nAll signup tests passed.' : '\n' + failures + ' assertion(s) failed.');
