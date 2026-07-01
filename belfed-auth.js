@@ -211,13 +211,28 @@ async function handleSignUp() {
   var prevBtnText = null;
   if (btn) { prevBtnText = btn.textContent; btn.disabled = true; btn.textContent = 'Creating account...'; }
 
+  // Capture consent at the moment the box was submitted. Stamping it into the
+  // auth user's metadata makes it durable and available on the first
+  // authenticated load (there is no session yet when email confirmation is
+  // required), so the profile can be backfilled even if the trial RPC does not
+  // persist the consent columns server-side.
+  var consentNow = new Date().toISOString();
+  var consentUA = (typeof navigator !== 'undefined' && navigator.userAgent) ? String(navigator.userAgent).slice(0, 500) : '';
+  var signupMeta = {
+    privacy_consent_at: consentNow,
+    terms_consent_at: consentNow,
+    consent_locale: 'en',
+    consent_user_agent: consentUA
+  };
+  if (displayName) signupMeta.display_name = displayName;
+
   try {
     var res = await supaClient.auth.signUp({
       email: email,
       password: pw,
       options: {
         emailRedirectTo: window.location.origin + '/confirm.html',
-        data: displayName ? { display_name: displayName } : {}
+        data: signupMeta
       }
     });
     if (res.error) throw res.error;
@@ -231,7 +246,6 @@ async function handleSignUp() {
     }
 
     var userId = user ? user.id : null;
-    var consentNow = new Date().toISOString();
     var deepLink = 'https://t.me/BelfedBot?start=trial_link';
 
     // Render the outcome immediately. Best-effort side-effects run afterwards
@@ -335,6 +349,27 @@ async function getEntitlement(uid) {
   return { access: false, reason: 'expired', status: p.subscription_status || 'none', profile: p };
 }
 
+// Self-heal consent: if the signup RPC did not persist the consent columns,
+// copy the timestamps captured in the auth user's metadata onto the profile
+// once we have an authenticated session. Idempotent and best-effort — it only
+// writes columns that are still empty and never blocks the UI.
+async function backfillConsentFromMetadata(session, profile) {
+  try {
+    if (!session || !session.user || !profile) return;
+    var meta = session.user.user_metadata || {};
+    if (!meta.privacy_consent_at && !meta.terms_consent_at) return;
+    var patch = {};
+    if (meta.privacy_consent_at && !profile.privacy_consent_at) patch.privacy_consent_at = meta.privacy_consent_at;
+    if (meta.terms_consent_at && !profile.terms_consent_at) patch.terms_consent_at = meta.terms_consent_at;
+    if (Object.keys(patch).length === 0) return;
+    var res = await supaClient.from('profiles').update(patch).eq('id', session.user.id);
+    if (!res.error) {
+      profile.privacy_consent_at = profile.privacy_consent_at || patch.privacy_consent_at;
+      profile.terms_consent_at = profile.terms_consent_at || patch.terms_consent_at;
+    }
+  } catch (e) { /* best-effort */ }
+}
+
 async function checkProfile() {
   var sess = await supaClient.auth.getSession();
   if (!sess.data.session) {
@@ -348,6 +383,7 @@ async function checkProfile() {
     if (pr.data) currentProfile = pr.data;
   }
   currentSubscription = ent.subscription || null;
+  backfillConsentFromMetadata(sess.data.session, currentProfile);
   if (typeof onAuthReady === 'function') onAuthReady(currentProfile, sess.data.session, ent);
 }
 
