@@ -18,5 +18,9 @@ jobs:
           node-version: '20'
       - name: Syntax check belfed-auth.js
         run: node --check belfed-auth.js
+      - name: Syntax check belfed-confirm.js
+        run: node --check belfed-confirm.js
       - name: Run signup flow tests
         run: node tests/signup.test.js
+      - name: Run email confirmation tests
+        run: node tests/confirm.test.js

@@ -3,39 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Email confirmed — BelFed Analytics</title>
+<title>Confirming your email — BelFed Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background-color:#f5f2eb;font-family:'Courier New',Courier,monospace;color:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
 .confirm-box{background:#fff;border:2px solid #000;padding:50px 40px;max-width:480px;width:100%;text-align:center}
 .confirm-box h1{font-size:18px;letter-spacing:3px;margin-bottom:8px}
 .confirm-box .sub{font-size:11px;opacity:0.5;margin-bottom:30px;letter-spacing:1px}
-.checkmark{font-size:64px;margin-bottom:20px}
-.confirm-box h2{font-size:16px;letter-spacing:2px;margin-bottom:12px;color:#1a7a1a}
-.confirm-box p{font-size:13px;line-height:1.8;margin-bottom:20px;opacity:0.7}
+.icon{font-size:64px;margin-bottom:20px}
+.confirm-box h2{font-size:16px;letter-spacing:2px;margin-bottom:12px}
+.confirm-box h2.ok{color:#1a7a1a}
+.confirm-box h2.err{color:#c50000}
+.confirm-box p{font-size:13px;line-height:1.8;margin-bottom:20px;opacity:0.75}
 .confirm-box .countdown{font-size:12px;opacity:0.5;margin-bottom:20px}
 .confirm-box .go-btn{font-family:'Courier New',monospace;display:inline-block;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:2px;background:#000;color:#f5f2eb;border:none;cursor:pointer;text-decoration:none}
 .confirm-box .go-btn:hover{background:#222}
+.resend{margin-top:22px;border-top:1px solid #e2ddd2;padding-top:20px}
+.resend input{font-family:inherit;width:100%;padding:11px 14px;font-size:13px;border:1px solid #cfc9bd;background:#fff;margin-bottom:10px;outline:none}
+.resend input:focus{border-color:#000}
+.resend .note{font-size:11px;opacity:0.6;margin-top:12px}
+.hidden{display:none}
 </style>
 </head>
 <body>
 <div class="confirm-box">
 <h1>— BELFED_ —</h1>
 <div class="sub">MEMBER AREA</div>
-<div class="checkmark">&#9989;</div>
-<h2>EMAIL CONFIRMED</h2>
-<p>Your account is verified. Your 14-day free trial is now active.</p>
-<div class="countdown" id="countdown">Redirecting to member area in 5 seconds&hellip;</div>
-<a href="/members.html" class="go-btn" id="goBtn">GO TO MEMBER AREA</a>
+
+<div id="pending">
+  <div class="icon">&#8987;</div>
+  <h2>CONFIRMING&hellip;</h2>
+  <p>Verifying your email confirmation link. One moment&hellip;</p>
 </div>
+
+<div id="success" class="hidden">
+  <div class="icon">&#9989;</div>
+  <h2 class="ok">EMAIL CONFIRMED</h2>
+  <p>Your account is verified. Your 14-day free trial is now active.</p>
+  <div class="countdown" id="countdown">Redirecting to member area in 5 seconds&hellip;</div>
+  <a href="/members.html" class="go-btn" id="goBtn">GO TO MEMBER AREA</a>
+</div>
+
+<div id="failure" class="hidden">
+  <div class="icon">&#9888;&#65039;</div>
+  <h2 class="err" id="failTitle">CONFIRMATION FAILED</h2>
+  <p id="failMsg">This confirmation link is invalid or has expired.</p>
+  <div class="resend">
+    <p style="margin-bottom:12px">Enter your email to receive a fresh confirmation link:</p>
+    <input type="email" id="resendEmail" placeholder="you@example.com" autocomplete="email">
+    <a href="#" class="go-btn" id="resendBtn" style="width:100%">RESEND CONFIRMATION</a>
+    <div class="note" id="resendNote"></div>
+    <div class="note"><a href="/members.html#signin" style="color:inherit">Already confirmed? Sign in</a></div>
+  </div>
+</div>
+
+</div>
+<script src="/belfed-confirm.js"></script>
 <script>
-var seconds=5;
-var el=document.getElementById('countdown');
-var timer=setInterval(function(){
-seconds--;
-if(seconds<=0){clearInterval(timer);window.location.href='/members.html';return;}
-el.textContent='Redirecting to member area in '+seconds+' seconds…';
-},1000);
+(function () {
+  var SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idWpxdnFxbXlmY2ZmbGhxdnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDgxNjYsImV4cCI6MjA4OTkyNDE2Nn0.syl4YBLbf8aBitxyK3gCL51pPYxWjEW99mMTXJaQQ8w';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function show(id) {
+    ['pending', 'success', 'failure'].forEach(function (s) {
+      var el = document.getElementById(s);
+      if (el) el.className = (s === id) ? '' : 'hidden';
+    });
+  }
+
+  function prefillEmail(params) {
+    // Supabase does not echo the email back in every flow, but the failure
+    // redirect sometimes does; prefill it to make resend one click.
+    var e = params.email || '';
+    if (e) { var el = document.getElementById('resendEmail'); if (el) el.value = e; }
+  }
+
+  function startCountdown() {
+    var seconds = 5;
+    var el = document.getElementById('countdown');
+    var timer = setInterval(function () {
+      seconds--;
+      if (seconds <= 0) { clearInterval(timer); window.location.href = '/members.html'; return; }
+      if (el) el.textContent = 'Redirecting to member area in ' + seconds + ' seconds…';
+    }, 1000);
+  }
+
+  function wireResend() {
+    var btn = document.getElementById('resendBtn');
+    var note = document.getElementById('resendNote');
+    if (!btn) return;
+    btn.addEventListener('click', async function (ev) {
+      ev.preventDefault();
+      var email = (document.getElementById('resendEmail').value || '').trim();
+      if (!email) { note.style.color = '#c50000'; note.textContent = 'Please enter your email address.'; return; }
+      note.style.color = '#666';
+      note.textContent = 'Sending…';
+      try {
+        var r = await sb.auth.resend({
+          type: 'signup',
+          email: email,
+          options: { emailRedirectTo: window.location.origin + '/confirm.html' }
+        });
+        if (r && r.error) throw r.error;
+        note.style.color = '#1a7a1a';
+        note.textContent = 'A fresh confirmation email is on its way to ' + email + '. Check your inbox (and spam).';
+      } catch (e) {
+        note.style.color = '#c50000';
+        note.textContent = (e && e.message) || 'Could not resend the confirmation email. Please try again shortly.';
+      }
+    });
+  }
+
+  async function run() {
+    wireResend();
+    var params = window.BelfedConfirm.parseAuthParams(window.location);
+    prefillEmail(params);
+    var cls = window.BelfedConfirm.classifyConfirmation(params);
+    var result = await window.BelfedConfirm.resolveConfirmation(sb, cls);
+
+    // Strip tokens from the URL so they are not left in history / referer.
+    try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+
+    if (result.ok) {
+      show('success');
+      startCountdown();
+      return;
+    }
+
+    document.getElementById('failTitle').textContent = result.expired ? 'LINK EXPIRED' : 'CONFIRMATION FAILED';
+    document.getElementById('failMsg').textContent = result.expired
+      ? 'This confirmation link has expired. Confirmation links are single-use and time-limited — request a fresh one below.'
+      : (result.message || 'This confirmation link is invalid or has expired.');
+    show('failure');
+  }
+
+  run();
+})();
 </script>
 </body>
 </html>
