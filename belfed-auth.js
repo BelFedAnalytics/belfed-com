@@ -117,6 +117,75 @@ async function handleMagicLink() {
   }
 })();
 
+// Race a promise against a timeout so a slow or hanging network call can never
+// keep the signup flow pending. Resolves to { __timeout: true } on timeout.
+function withTimeout(promise, ms) {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise(function (resolve) { setTimeout(function () { resolve({ __timeout: true }); }, ms); })
+  ]);
+}
+
+// Activate the canonical 14-day trial and stamp privacy/terms consent via the
+// SECURITY DEFINER RPC. The profiles row is created by an auth trigger, so the
+// RPC can lose a race with row creation immediately after signUp — retry a few
+// times so trial_start/trial_end/consent are reliably set.
+async function startWebTrial(userId, consentAt) {
+  for (var attempt = 0; attempt < 3; attempt++) {
+    try {
+      var res = await withTimeout(supaClient.rpc('start_web_trial', {
+        p_user_id: userId,
+        p_lang: 'en',
+        p_source: 'web_signup',
+        p_privacy_consent_at: consentAt,
+        p_terms_consent_at: consentAt,
+        p_consent_locale: 'en'
+      }), 8000);
+      if (!res || res.__timeout) return;   // gave up waiting — best-effort
+      if (!res.error) return;              // trial activated
+    } catch (e) { /* fall through to retry */ }
+    await new Promise(function (r) { setTimeout(r, 600); });
+  }
+}
+
+// Best-effort side-effects that must NOT block the signup UI. Each network call
+// is time-boxed and its failure swallowed. The Telegram CTA is upgraded in
+// place if/when a one-time deep-link comes back.
+function runSignupSideEffects(email, userId, displayName, consentAt) {
+  // Persist the display name to the profile (requires a session; no-op otherwise).
+  if (userId && displayName) {
+    withTimeout(supaClient.from('profiles').update({ display_name: displayName }).eq('id', userId), 8000)
+      .catch(function () {});
+  }
+
+  // Canonical 14-day trial + consent timestamps.
+  if (userId) { startWebTrial(userId, consentAt).catch(function () {}); }
+
+  // Welcome email (rate-limited server-side).
+  withTimeout(fetch(SUPABASE_URL + '/functions/v1/welcome-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY },
+    body: JSON.stringify({ email: email, lang: 'en' })
+  }), 8000).catch(function () {});
+
+  // Optional one-time Telegram deep-link for live alerts.
+  var intentBody = { email: email, lang: 'en', source: 'web_signup', accept_privacy: true, accept_terms: true };
+  if (window.BelfedAnalytics) {
+    var u = window.BelfedAnalytics.utmFields();
+    for (var k in u) { if (u.hasOwnProperty(k)) intentBody[k] = u[k]; }
+  }
+  withTimeout(fetch(SUPABASE_URL + '/functions/v1/trial-intent-create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY },
+    body: JSON.stringify(intentBody)
+  }).then(function (r) { return r.json(); }), 8000).then(function (data) {
+    if (data && !data.__timeout && data.ok && data.deep_link) {
+      var a = document.querySelector('#loginMsg .cta-tg');
+      if (a) a.setAttribute('href', data.deep_link);
+    }
+  }).catch(function () {});
+}
+
 async function handleSignUp() {
   var email = document.getElementById('suEmail').value.trim();
   var nameEl = document.getElementById('suName');
@@ -153,66 +222,21 @@ async function handleSignUp() {
     });
     if (res.error) throw res.error;
 
-    var userId = res.data && res.data.user ? res.data.user.id : null;
+    // Supabase returns a user with an empty `identities` array when the email
+    // is already registered (obfuscated to prevent enumeration). Route it to
+    // the normal "already registered" path instead of a false success.
+    var user = res.data && res.data.user;
+    if (user && Array.isArray(user.identities) && user.identities.length === 0) {
+      throw { message: 'User already registered' };
+    }
+
+    var userId = user ? user.id : null;
     var consentNow = new Date().toISOString();
-
-    // Persist the display name to the profile (best-effort).
-    if (userId && displayName) {
-      try {
-        await supaClient.from('profiles').update({ display_name: displayName }).eq('id', userId);
-      } catch (e) { /* display name is best-effort */ }
-    }
-
-    // Activate the 14-day trial immediately — no Telegram step required.
-    if (userId) {
-      try {
-        await supaClient.rpc('start_web_trial', {
-          p_user_id: userId,
-          p_lang: 'en',
-          p_source: 'web_signup',
-          p_privacy_consent_at: consentNow,
-          p_terms_consent_at: consentNow,
-          p_consent_locale: 'en'
-        });
-      } catch (e) { /* trial activation is best-effort; cabinet still works */ }
-    }
-
-    // Send the welcome email immediately (best-effort, rate-limited server-side).
-    try {
-      await fetch(SUPABASE_URL + '/functions/v1/welcome-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_KEY,
-          Authorization: 'Bearer ' + SUPABASE_KEY
-        },
-        body: JSON.stringify({ email: email, lang: 'en' })
-      });
-    } catch (e) { /* welcome email is best-effort */ }
-
-    // Get an optional one-time Telegram deep-link for live alerts (not required).
     var deepLink = 'https://t.me/BelfedBot?start=trial_link';
-    try {
-      var intentBody = {
-        email: email,
-        lang: 'en',
-        source: 'web_signup',
-        accept_privacy: true,
-        accept_terms: true
-      };
-      if (window.BelfedAnalytics) {
-        var _u = window.BelfedAnalytics.utmFields();
-        for (var _k in _u) { if (_u.hasOwnProperty(_k)) intentBody[_k] = _u[_k]; }
-      }
-      var intentRes = await fetch(SUPABASE_URL + '/functions/v1/trial-intent-create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(intentBody)
-      });
-      var intentData = await intentRes.json();
-      if (intentData && intentData.ok && intentData.deep_link) deepLink = intentData.deep_link;
-    } catch (e) { /* deep-link is optional */ }
 
+    // Render the outcome immediately. Best-effort side-effects run afterwards
+    // and must never gate this UI — a slow edge function previously left the
+    // button stuck on "Creating account..." with no success or error shown.
     msgEl.innerHTML = ''
       + '<div class="signup-success">'
       + '  <h3>Account created — your trial is active</h3>'
@@ -228,9 +252,11 @@ async function handleSignUp() {
       window.belfedTrack('trial_started', { method: 'web', trial_days: 14 });
     }
 
-    if (res.data.session) {
-      await checkProfile();
-    }
+    runSignupSideEffects(email, userId, displayName, consentNow);
+
+    // If the project auto-confirms accounts a session is returned — enter the
+    // member area. Otherwise the user verifies via the emailed link.
+    if (res.data && res.data.session) { checkProfile().catch(function () {}); }
   } catch (err) {
     var emsg = err.message || 'Sign up failed';
     if (/already registered|already been registered|User already/i.test(emsg)) {
