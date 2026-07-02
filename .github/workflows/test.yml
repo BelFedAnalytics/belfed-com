@@ -24,3 +24,5 @@ jobs:
         run: node tests/signup.test.js
       - name: Run email confirmation tests
         run: node tests/confirm.test.js
+      - name: Run telegram connect tests
+        run: node tests/telegram-link.test.js

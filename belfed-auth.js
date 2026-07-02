@@ -302,6 +302,29 @@ async function resendConfirmation(email) {
   } catch (e) { /* ignore */ }
 }
 
+// Web-first Telegram connect. A logged-in member needs a deep link the bot can
+// tie back to THIS profile — the static ?start=members_en link carries no
+// identity, so the bot can't tell which web account to attach and falls back to
+// whatever account the Telegram user was last seen as. This mints a single-use,
+// per-user token via the telegram-link-start Edge Function and returns
+// https://t.me/BelfedBot?start=<token>. Best-effort + time-boxed: resolves to a
+// deep-link string, or null so callers keep the static link as a fallback.
+// NOTE: the Edge Function authenticates the caller with getUser(), so this MUST
+// send the user's access token (not the anon key) as the Bearer credential.
+async function fetchTelegramConnectLink() {
+  try {
+    var sess = await supaClient.auth.getSession();
+    var accessToken = sess && sess.data && sess.data.session && sess.data.session.access_token;
+    if (!accessToken) return null;
+    var res = await withTimeout(fetch(SUPABASE_URL + '/functions/v1/telegram-link-start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: 'Bearer ' + accessToken }
+    }).then(function (r) { return r.json(); }), 8000);
+    if (res && !res.__timeout && res.deep_link) return res.deep_link;
+  } catch (e) { /* best-effort — fall back to the static link */ }
+  return null;
+}
+
 async function handleForgotPassword() {
   var email = document.getElementById('resetEmail').value.trim();
   var statusEl = document.getElementById('resetStatus');
