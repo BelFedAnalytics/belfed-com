@@ -90,7 +90,11 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 .expired-box{background:#fff;border:2px solid #c50000;padding:40px;max-width:460px;width:100%;text-align:center}
 .expired-box h2{font-size:16px;letter-spacing:2px;color:#c50000;margin-bottom:12px}
 .expired-box p{font-size:13px;line-height:1.8;margin-bottom:16px}
-.expired-box .login-btn{font-family:'Courier New',monospace;width:100%;padding:12px;font-size:13px;font-weight:bold;letter-spacing:2px;background:#000;color:#f5f2eb;border:none;cursor:pointer;margin-top:6px;text-decoration:none;display:block}
+.expired-box .login-btn{font-family:'Courier New',monospace;width:100%;padding:12px;font-size:13px;font-weight:bold;letter-spacing:2px;background:#000;color:#f5f2eb;border:none;cursor:pointer;margin-top:6px;text-decoration:none;display:block;transition:background .18s ease,transform .18s ease,box-shadow .18s ease}
+.expired-box .login-btn-primary{background:#1a6b3a;color:#fff;padding:14px 16px;font-size:14px;letter-spacing:2.5px;box-shadow:0 4px 14px rgba(26,107,58,.22)}
+.expired-box .login-btn-primary:hover{background:#14542d;transform:translateY(-1px);box-shadow:0 8px 22px rgba(20,84,45,.28)}
+.expired-box .login-btn-primary .cta-arrow{display:inline-block;transition:transform .18s ease}
+.expired-box .login-btn-primary:hover .cta-arrow{transform:translateX(3px)}
 .tg-bar{background:#fff;border:1px solid #000;padding:14px 20px;margin-bottom:30px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px}
 .tg-bar input{font-family:'Courier New',monospace;padding:6px 10px;font-size:12px;border:1px solid #000;background:#f5f2eb;width:200px;outline:none}
 .tg-bar button{font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;padding:6px 14px;background:#000;color:#f5f2eb;border:none;cursor:pointer}
@@ -142,9 +146,9 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 <!-- EXPIRED SCREEN -->
 <div id="expiredScreen">
 <div class="expired-box">
-<h2>TRIAL EXPIRED</h2>
-<p>Your 14-day free trial has ended.<br>Subscribe to continue accessing live trade signals and analytics.</p>
-<a href="https://belfed.com/#pricing" class="login-btn">VIEW PLANS</a>
+<h2>TRIAL PERIOD ENDED</h2>
+<p>Subscribe to regain access to signals, reviews and asset analyses.</p>
+<a href="https://web.tribute.tg/s/ZH2" data-tribute-cta target="_blank" rel="noopener" class="login-btn login-btn-primary">SUBSCRIBE <span class="cta-arrow">&rarr;</span></a>
 <button class="login-btn" style="background:none;color:#000;border:1px solid #000;margin-top:10px" onclick="handleLogout()">SIGN OUT</button>
 </div>
 </div>
@@ -367,10 +371,18 @@ function onAuthSignedOut() {
   document.getElementById('dashboardContainer').style.display='none';
   document.getElementById('expiredScreen').style.display='none';
 }
+function wireTributeCtas() {
+  var tg = 'https://t.me/tribute/app?startapp=sZH2';
+  var web = 'https://web.tribute.tg/s/ZH2';
+  document.querySelectorAll('[data-tribute-cta]').forEach(function (el) {
+    el.href = /Telegram/i.test(navigator.userAgent) ? tg : web;
+  });
+}
 function showExpired() {
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('dashboardContainer').style.display='none';
   document.getElementById('expiredScreen').style.display='flex';
+  wireTributeCtas();
 }
 function showDashboard() {
   document.getElementById('loginScreen').style.display='none';
