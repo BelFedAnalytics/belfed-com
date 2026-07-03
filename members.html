@@ -364,10 +364,10 @@
       <div class="bf-section">
         <h2>// My subscription</h2>
         <div class="waitlist-card">
-          <div class="tag">// Active</div>
-          <h3>⭐️ Subscriber — $15 / month</h3>
-          <p>Subscribe via Tribute. Recurring billing, cancel any time.</p>
-          <p style="color:var(--gray);font-size:13px;margin-top:14px">Your 14-day free trial runs first — no card needed. Pay here or right inside the bot — access updates automatically.</p>
+          <div class="tag" id="subTag">// Subscription</div>
+          <h3 id="subHeading">⭐️ Subscriber — $15 / month</h3>
+          <p id="subLead">Subscribe via Tribute. Recurring billing, cancel any time.</p>
+          <p id="subSubLead" style="color:var(--gray);font-size:13px;margin-top:14px">Your 14-day free trial runs first — no card needed. Pay here or right inside the bot — access updates automatically.</p>
           <p style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap"><a href="https://web.tribute.tg/s/ZH2" target="_blank" rel="noopener" style="display:inline-block;padding:12px 22px;border:1px solid var(--black);color:var(--black);text-decoration:none;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Subscribe &mdash; $15 / mo &rarr;</a><a href="https://t.me/tribute/app?startapp=sZH2" target="_blank" rel="noopener" style="display:inline-block;padding:12px 22px;border:1px solid var(--gray);color:var(--gray);text-decoration:none;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Pay in Telegram</a></p>
           <p style="color:var(--gray);font-size:12px;margin-top:14px">Manage your subscription and cancel renewal anytime in <a href="https://t.me/tribute" target="_blank" rel="noopener" style="text-decoration:underline;color:inherit">Tribute</a>.</p>
         </div>
@@ -671,6 +671,33 @@
           badge.className = 'status-badge';
           if (st === 'expired' || st === 'none') badge.classList.add('expired');
           if (st === 'trial') badge.classList.add('trial');
+          // Sync the subscription-card label with the actual account status so
+          // an expired/none account never sees a stale "// Active" tag.
+          try {
+            var subTag = document.getElementById('subTag');
+            var subHeading = document.getElementById('subHeading');
+            var subLead = document.getElementById('subLead');
+            var subSubLead = document.getElementById('subSubLead');
+            if (subTag && subHeading && subLead && subSubLead) {
+              if (st === 'active' || st === 'admin') {
+                subTag.textContent = '// Active';
+                subHeading.textContent = '\u2B50\uFE0F Subscriber — $15 / month';
+                subLead.textContent = 'Your subscription is active. Manage or cancel any time in Tribute.';
+                subSubLead.style.display = 'none';
+              } else if (st === 'trial') {
+                subTag.textContent = '// Trial';
+                subHeading.textContent = '\u2B50\uFE0F Subscriber — $15 / month';
+                subLead.textContent = 'Subscribe via Tribute. Recurring billing, cancel any time.';
+                subSubLead.style.display = '';
+              } else {
+                // expired / none / anything else -> show renew state
+                subTag.textContent = '// Expired';
+                subHeading.textContent = 'Subscription ended — renew for $15 / month';
+                subLead.textContent = 'Your access has ended. Renew via Tribute to restore live signals and analytics.';
+                subSubLead.style.display = 'none';
+              }
+            }
+          } catch (labelErr) { console.warn('sub-label sync failed:', labelErr); }
           if (st === 'trial' && profile.trial_end) {
             var row = document.getElementById('acctTrialRow');
             if (row) row.style.display = 'block';
