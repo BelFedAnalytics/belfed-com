@@ -5,6 +5,7 @@
 <title id="page-title">Crypto Trades | BelFed Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="trade-review.css">
 <style>
 
 /* ==== Belfed shared brand tokens + header/footer (mirrors index.html) ==== */
@@ -231,6 +232,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
 </footer>
 
 
+<script src="trade-review.js"></script>
 <script>
 (function(){
   var SHEET_ID = '1bBpKZP74HEVrLZJlazz7gY7jbuBj9R5rPBcV2KklwDo';
@@ -283,8 +285,17 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     return(n>0?'+':'')+n.toFixed(2)+'R';
   }
 
-  fetch(csvUrl).then(function(r){return r.text();}).then(function(text){
-    var rows=parseCSV(text);
+  var FALLBACK_URL='trades-fallback-crypto.json';
+  function showError(){
+    var tb=document.querySelector('tbody');
+    if(tb)tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:#888;letter-spacing:1px;font-size:12px;">Trades are temporarily unavailable.</td></tr>';
+  }
+  function fetchWithTimeout(url,ms){
+    if(typeof AbortController==='undefined')return fetch(url);
+    var ctl=new AbortController();var id=setTimeout(function(){ctl.abort();},ms);
+    return fetch(url,{signal:ctl.signal}).then(function(r){clearTimeout(id);return r;},function(e){clearTimeout(id);throw e;});
+  }
+  function handleRows(rows){
     // Find header row (row with "Number" or "Ticker" in col B)
     var dataRows=[];
     for(var i=0;i<rows.length;i++){
@@ -325,9 +336,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
       var dirClass=dir.toLowerCase()==='long'?'badge-long':'badge-short';
       var rClass=makeRClass(result);
       var rDisplay=formatR(result);
-      var analysisCell=tvLink&&tvLink.startsWith('http')
-        ?'<a class="tv-link" href="'+tvLink+'" target="_blank">TV <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 9L9 1M9 1H3M9 1V7"/></svg></a>'
-        :'<span class="no-link">—</span>';
+      var analysisCell='';
 
       var tr=document.createElement('tr');
       tr.innerHTML='<td class="num">'+(idx+1).toString().padStart(2,'0')+'</td>'
@@ -340,6 +349,12 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
         +'<td class="'+rClass+'">'+rDisplay+'</td>'
         +'<td>'+analysisCell+'</td>';
       tbody.appendChild(tr);
+      if(window.BelfedReview){
+        window.BelfedReview.attachButton(tr.lastElementChild,{
+          ticker:ticker,dir:dir,entryDate:entryDate,exitDate:exitDate,
+          entryP:entryP,exitP:exitP,result:result,tvLink:tvLink
+        });
+      }
     });
 
     // Update stats-bar
@@ -369,7 +384,12 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     if(saw)saw.textContent=(avgWin>0?'+':'')+avgWin.toFixed(2)+'R';
     if(sal)sal.textContent=avgLoss.toFixed(2)+'R';
 
-  }).catch(function(e){console.error('Failed to load trades:',e);});
+  }
+  fetchWithTimeout(csvUrl,7000)
+    .then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.text();})
+    .then(function(text){handleRows(parseCSV(text));})
+    .catch(function(){return fetch(FALLBACK_URL).then(function(r){return r.json();}).then(function(rows){handleRows(rows);});})
+    .catch(function(e){console.error('Failed to load trades:',e);showError();});
 })();
 </script>
 
