@@ -11,12 +11,14 @@
   <meta property="og:description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
   <meta property="og:url" content="https://belfed.com/" />
   <meta property="og:image" content="https://belfed.com/og-belfed.png" />
+  <meta property="og:image:alt" content="Belfed — independent global investment research and market analytics" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Belfed — Independent Market Analytics &amp; Trade Ideas" />
   <meta name="twitter:description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
   <meta name="twitter:image" content="https://belfed.com/og-belfed.png" />
+  <meta name="twitter:image:alt" content="Belfed — independent global investment research and market analytics" />
   <meta name="description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +26,10 @@
   <!-- JSON-LD content-match guardrail: every value below maps to visible on-page content.
        Organization.name/logo -> Belfed wordmark & brand image; sameAs -> footer social links;
        Service/Offer -> visible "Subscriber $15 / month" pricing card and its members.html#signup CTA.
-       If pricing or social links change on-page, update this block in the same edit. -->
+       If pricing or social links change on-page, update this block in the same edit.
+       Offer.priceValidUntil is intentionally omitted: the $15/month price has no
+       published expiration date, so asserting one would be unverifiable. Add it only
+       when a real end date exists. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -34,11 +39,11 @@
         "@id": "https://belfed.com/#organization",
         "name": "Belfed",
         "url": "https://belfed.com/",
-        "logo": "https://belfed.com/og-belfed.png",
+        "logo": "https://belfed.com/logo-belfed-512.png",
         "sameAs": [
           "https://t.me/BelFedFreeEN",
           "https://t.me/BelFedFreeRU",
-          "https://www.tradingview.com/u/BelFed_Analytics/",
+          "https://tradingview.com/u/BelFed_Analytics",
           "https://x.com/art_the_trader"
         ]
       },
