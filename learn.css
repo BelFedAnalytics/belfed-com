@@ -108,9 +108,9 @@ p { text-wrap: pretty; }
 .nav-links a { font-family: var(--font-mono); font-size: 13px; color: var(--gray-soft); letter-spacing: 0.04em; }
 .nav-links a:hover, .nav-links a.active { color: var(--black); }
 .nav-right { display: flex; align-items: center; gap: 14px; }
-.theme-btn { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; color: var(--gray-soft); }
+.theme-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--gray-soft); }
 .theme-btn:hover { color: var(--black); background: var(--paper); }
-.hamburger { display: none; width: 36px; height: 36px; align-items: center; justify-content: center; color: var(--gray-soft); border-radius: 4px; }
+.hamburger { display: none; width: 44px; height: 44px; align-items: center; justify-content: center; color: var(--gray-soft); border-radius: 6px; }
 
 /* Buttons */
 .btn {

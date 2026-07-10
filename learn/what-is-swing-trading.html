@@ -25,9 +25,12 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="/learn.css" />
 
-  <!-- Content-match guardrail: Article headline/description/dates match the visible page;
-       author=Organization Belfed. No FAQPage schema by design (content pack §4.5).
-       FINRA margin section reflects the June 2026 intraday-margin rule; re-verify at publish. -->
+  <!-- Content-match guardrail: Article headline/description/dates match the visible page.
+       Visible byline is "By the Belfed Research Team"; schema author is the Belfed
+       Organization (@id #organization) — an organizational author, not an invented person.
+       No FAQPage schema by design (content pack §4.5).
+       FINRA margin section reflects the June 4, 2026 intraday-margin rule (Notice 26-10);
+       re-verify against FINRA at publish. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -68,7 +71,7 @@
     <li><a href="/#tour">What you get</a></li>
     <li><a href="/#how">How it works</a></li>
     <li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record ↗</a></li>
-    <li><a href="/learn/" class="active">Learn</a></li>
+    <li><a href="/learn/" class="active" aria-current="page">Learn</a></li>
     <li><a href="/#pricing">Pricing</a></li>
     <li><a href="/#faq">FAQ</a></li>
   </ul>
@@ -130,7 +133,7 @@
             </tbody>
           </table>
         </div>
-        <p><strong>Day trading</strong> is defined under FINRA rules as buying and selling (or selling and buying) the same security on the same day in a margin account (<a href="https://www.finra.org/rules-guidance/rulebooks/finra-rules/4210" target="_blank" rel="noopener">FINRA Rule 4210</a>). For years, US day traders in margin accounts who executed four or more day trades within five business days were designated "pattern day traders" and required to maintain a minimum of $25,000 in account equity. As of June 4, 2026, FINRA replaced that framework with a new "intraday margin" regime: the pattern-day-trader designation and the $25,000 minimum equity requirement have been eliminated, and margin is now assessed against real-time intraday exposure instead of a trade-count threshold, with an implementation transition period running through October 20, 2027 (<a href="https://www.finra.org/investors/insights/intraday-margin-requirements" target="_blank" rel="noopener">FINRA: Understanding the New Intraday Margin Requirements</a>). This change affects margin-account day trading specifically; it does not apply to swing or position trading, which do not involve same-day round-trip trades and are not subject to these margin provisions. Traders should confirm current requirements directly with their broker, since firms can impose stricter "house" requirements than the regulatory minimum (<a href="https://www.finra.org/investors/insights/frequent-intraday-trading" target="_blank" rel="noopener">FINRA: Frequent Intraday Trading</a>).</p>
+        <p><strong>Day trading</strong> is defined under FINRA rules as buying and selling (or selling and buying) the same security on the same day in a margin account (<a href="https://www.finra.org/rules-guidance/rulebooks/finra-rules/4210" target="_blank" rel="noopener">FINRA Rule 4210</a>). For years, US day traders in margin accounts who executed four or more day trades within five business days were designated "pattern day traders" and required to maintain a minimum of $25,000 in account equity. FINRA's new "intraday margin" standards became effective on June 4, 2026, replacing that framework: under the new regime the pattern-day-trader count designation and its $25,000 minimum equity requirement are eliminated, and margin is instead assessed against real-time intraday exposure rather than a trade-count threshold (<a href="https://www.finra.org/rules-guidance/notices/26-10" target="_blank" rel="noopener">FINRA Regulatory Notice 26-10</a>; <a href="https://www.finra.org/investors/insights/intraday-margin-requirements" target="_blank" rel="noopener">FINRA: Understanding the New Intraday Margin Requirements</a>). Firms may continue transitioning to the new requirements through October 20, 2027, so which rules apply at any given broker during this period depends on that firm's implementation status — this is not necessarily a universal, immediate change across every brokerage. This change affects margin-account day trading specifically; it does not apply to swing or position trading, which do not involve same-day round-trip trades and are not subject to these margin provisions. Traders should confirm current requirements directly with their broker, since firms can impose stricter "house" requirements than the regulatory minimum (<a href="https://www.finra.org/investors/insights/frequent-intraday-trading" target="_blank" rel="noopener">FINRA: Frequent Intraday Trading</a>).</p>
         <p><strong>Position trading</strong> sits at the opposite end from day trading: positions are held for weeks, months, or longer, and the trader is focused on major trend direction — interest rates, industry cycles, earnings growth, structural shifts — rather than short-term price fluctuation (<a href="https://www.ebc.com/forex/position-trading-vs-swing-trading-10-key-differences" target="_blank" rel="noopener">EBC Financial Group: Position Trading vs Swing Trading</a>). Neither style is inherently superior; the right choice depends on available time, temperament, and objective — for example, generating more frequent, smaller realized results versus compounding a smaller number of larger, slower-developing moves (<a href="https://www.vectorvest.com/blog/swing-trading/position-trading-vs-swing-trading/" target="_blank" rel="noopener">VectorVest: Position Trading vs Swing Trading</a>).</p>
 
         <h2>What a swing setup typically looks like</h2>

@@ -25,8 +25,9 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="/learn.css" />
 
-  <!-- Content-match guardrail: Article headline/description/dates match the visible page;
-       author=Organization Belfed (no named byline is asserted on the live site).
+  <!-- Content-match guardrail: Article headline/description/dates match the visible page.
+       Visible byline is "By the Belfed Research Team"; schema author is the Belfed
+       Organization (@id #organization) — an organizational author, not an invented person.
        No FAQPage schema by design (see Belfed SEO/GEO Phase 2 content pack §3.5).
        Additive to the homepage Organization/WebSite @id graph. -->
   <script type="application/ld+json">
@@ -69,7 +70,7 @@
     <li><a href="/#tour">What you get</a></li>
     <li><a href="/#how">How it works</a></li>
     <li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record ↗</a></li>
-    <li><a href="/learn/" class="active">Learn</a></li>
+    <li><a href="/learn/" class="active" aria-current="page">Learn</a></li>
     <li><a href="/#pricing">Pricing</a></li>
     <li><a href="/#faq">FAQ</a></li>
   </ul>
