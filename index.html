@@ -1011,14 +1011,14 @@
             <span class="perf-live">Live · auto-updated</span>
           </div>
           <div class="perf-controls">
-            <div class="perf-seg" role="tablist" aria-label="Market">
-              <button class="active" data-market="eq" type="button">Equities</button>
-              <button data-market="cr" type="button">Crypto</button>
+            <div class="perf-seg" role="group" aria-label="Market">
+              <button class="active" data-market="eq" type="button" aria-pressed="true">Equities</button>
+              <button data-market="cr" type="button" aria-pressed="false">Crypto</button>
             </div>
-            <div class="perf-seg" role="tablist" aria-label="Year">
-              <button data-year="2025" type="button">2025</button>
-              <button class="active" data-year="2026" type="button">2026 YTD</button>
-              <button data-year="all" type="button">All</button>
+            <div class="perf-seg" role="group" aria-label="Year">
+              <button data-year="2025" type="button" aria-pressed="false">2025</button>
+              <button class="active" data-year="2026" type="button" aria-pressed="true">2026 YTD</button>
+              <button data-year="all" type="button" aria-pressed="false">All</button>
             </div>
           </div>
           <div class="perf-stats" id="perfStats"></div>
@@ -1925,16 +1925,18 @@
     // Wire buttons
     document.querySelectorAll('.perf-seg button[data-market]').forEach(function(b){
       b.addEventListener('click', function(){
-        document.querySelectorAll('.perf-seg button[data-market]').forEach(function(x){ x.classList.remove('active'); });
+        document.querySelectorAll('.perf-seg button[data-market]').forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed','true');
         state.market = b.getAttribute('data-market');
         render();
       });
     });
     document.querySelectorAll('.perf-seg button[data-year]').forEach(function(b){
       b.addEventListener('click', function(){
-        document.querySelectorAll('.perf-seg button[data-year]').forEach(function(x){ x.classList.remove('active'); });
+        document.querySelectorAll('.perf-seg button[data-year]').forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed','true');
         state.year = b.getAttribute('data-year');
         render();
       });
