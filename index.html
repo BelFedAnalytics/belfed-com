@@ -21,6 +21,51 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- JSON-LD content-match guardrail: every value below maps to visible on-page content.
+       Organization.name/logo -> Belfed wordmark & brand image; sameAs -> footer social links;
+       Service/Offer -> visible "Subscriber $15 / month" pricing card and its members.html#signup CTA.
+       If pricing or social links change on-page, update this block in the same edit. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://belfed.com/#organization",
+        "name": "Belfed",
+        "url": "https://belfed.com/",
+        "logo": "https://belfed.com/og-belfed.png",
+        "sameAs": [
+          "https://t.me/BelFedFreeEN",
+          "https://t.me/BelFedFreeRU",
+          "https://www.tradingview.com/u/BelFed_Analytics/",
+          "https://x.com/art_the_trader"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://belfed.com/#website",
+        "name": "Belfed",
+        "url": "https://belfed.com/",
+        "publisher": { "@id": "https://belfed.com/#organization" }
+      },
+      {
+        "@type": "Service",
+        "name": "Belfed Subscriber Membership",
+        "serviceType": "Investment research and market analytics",
+        "provider": { "@id": "https://belfed.com/#organization" },
+        "url": "https://belfed.com/members.html#signup",
+        "offers": {
+          "@type": "Offer",
+          "price": "15",
+          "priceCurrency": "USD",
+          "url": "https://belfed.com/members.html#signup",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    ]
+  }
+  </script>
   <script src="belfed-analytics.js"></script>
   <style>
     :root {
