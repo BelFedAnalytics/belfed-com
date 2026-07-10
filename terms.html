@@ -50,9 +50,12 @@
     footer a:hover { color: var(--black); }
     .footer-links { display:flex; gap:20px; }
     @media(max-width:768px) { nav { padding:0 20px; } .nav-links { display:none; } .legal-content { padding:40px 20px 60px; } footer { flex-direction:column; gap:12px; text-align:center; } }
+    .skip-link{position:absolute;left:-9999px;top:0;z-index:1000;background:var(--black);color:var(--white);padding:10px 16px;border-radius:0 0 6px 0;font-weight:700;text-decoration:none}
+    .skip-link:focus{left:0}
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <nav>
     <a href="/" class="nav-logo">BELFED_</a>
     <ul class="nav-links">
@@ -65,7 +68,7 @@
     <a href="/dashboard.html" class="nav-cta">Member Login</a>
   </nav>
 
-  <main>
+  <main id="main-content">
     <div class="legal-content">
       <div class="legal-tag">// Legal</div>
       <h1>Terms of Service</h1>

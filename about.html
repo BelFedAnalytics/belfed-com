@@ -62,9 +62,12 @@
     footer a:hover { color: var(--black); }
     .footer-links { display: flex; gap: 20px; }
     @media (max-width: 700px) { nav { padding: 0 20px; } .nav-links { display: none; } .nav-actions { display: none; } .hamburger { display: flex; } .menu-dropdown { display: block; } .bottom-bar { display: grid; } body { padding-bottom: 76px; } .about-section { padding: 60px 20px 60px; } footer { padding: 20px; } }
+    .skip-link{position:absolute;left:-9999px;top:0;z-index:1000;background:var(--black);color:var(--white);padding:10px 16px;border-radius:0 0 6px 0;font-weight:700;text-decoration:none}
+    .skip-link:focus{left:0}
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <nav>
     <a href="/" class="nav-logo">BELFED_</a>
     <ul class="nav-links">
@@ -96,7 +99,7 @@
     <a href="/members.html" class="secondary">Member login</a>
     <a href="/trial.html?source=trial_about_bottom_en" class="primary">Open in Telegram</a>
   </div>
-  <main>
+  <main id="main-content">
     <section class="about-section">
       <p class="about-tag">// About</p>
       <h1>Research-driven trading, transparently tracked.</h1>

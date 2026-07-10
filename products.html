@@ -60,7 +60,7 @@
     .product-card { border: 1px solid var(--border); padding: 32px; background: var(--white); transition: border-color 0.2s; }
     .product-card:hover { border-color: var(--black); }
     .product-card .label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; }
-    .product-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .product-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
     .product-card p { font-size: 14px; color: #333; line-height: 1.7; margin-bottom: 12px; }
     .product-card .meta { font-size: 12px; color: var(--gray); margin-top: 14px; }
 
@@ -76,9 +76,12 @@
     footer a:hover { color: var(--black); }
     .footer-links { display: flex; gap: 20px; }
     @media (max-width: 700px) { nav { padding: 0 20px; } .nav-links { display: none; } .nav-actions { display: none; } .hamburger { display: flex; } .menu-dropdown { display: block; } .bottom-bar { display: grid; } body { padding-bottom: 76px; } .products-hero, .pricing { padding-left: 20px; padding-right: 20px; } .product-grid { padding: 20px; } .product-card { padding: 24px 22px; } footer { padding: 20px; } }
+    .skip-link{position:absolute;left:-9999px;top:0;z-index:1000;background:var(--black);color:var(--white);padding:10px 16px;border-radius:0 0 6px 0;font-weight:700;text-decoration:none}
+    .skip-link:focus{left:0}
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <nav>
     <a href="/" class="nav-logo">BELFED_</a>
     <ul class="nav-links">
@@ -110,7 +113,7 @@
     <a href="/members.html" class="secondary">Member login</a>
     <a href="/trial.html?source=trial_products_bottom_en" class="primary">Open in Telegram</a>
   </div>
-  <main>
+  <main id="main-content">
     <section class="products-hero">
       <p class="tag">// Products</p>
       <h1>What you get with Belfed Analytics</h1>
@@ -120,25 +123,25 @@
     <section class="product-grid">
       <div class="product-card">
         <div class="label">// 01 — Trade Ideas</div>
-        <h3>Stocks &amp; Crypto setups</h3>
+        <h2>Stocks &amp; Crypto setups</h2>
         <p>Long and short ideas on US equities and major crypto. Each idea includes thesis, entry, stop, and target. Position sizing is normalized to risk.</p>
         <div class="meta">Published as they trigger</div>
       </div>
       <div class="product-card">
         <div class="label">// 02 — Research</div>
-        <h3>Weekly market notes</h3>
+        <h2>Weekly market notes</h2>
         <p>Weekly commentary on market structure, sector rotation, liquidity, and the macro context that drives price action.</p>
         <div class="meta">Every week, no filler</div>
       </div>
       <div class="product-card">
         <div class="label">// 03 — Performance</div>
-        <h3>Public track record</h3>
+        <h2>Public track record</h2>
         <p>Open positions, real-time P&amp;L, closed trades, and weekly/yearly statistics. Wins and losses both published — full transparency.</p>
         <div class="meta">Updated continuously</div>
       </div>
       <div class="product-card">
         <div class="label">// 04 — Distribution</div>
-        <h3>Telegram + member area</h3>
+        <h2>Telegram + member area</h2>
         <p>Today, ideas and notes are distributed via our Telegram channel and bot. Web member area is in active rollout — your account works on both.</p>
         <div class="meta">@BelfedBot &middot; web</div>
       </div>
