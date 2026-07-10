@@ -11,12 +11,14 @@
   <meta property="og:description" content="Browse Belfed's public equities trade record. Every closed stock position is logged in R-multiples for a transparent, verifiable track record." />
   <meta property="og:url" content="https://belfed.com/equities-trades.html" />
   <meta property="og:image" content="https://belfed.com/og-belfed.png" />
+  <meta property="og:image:alt" content="Belfed — independent global investment research and market analytics" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Belfed Public Trade Record — Equities" />
   <meta name="twitter:description" content="Browse Belfed's public equities trade record. Every closed stock position is logged in R-multiples for a transparent, verifiable track record." />
   <meta name="twitter:image" content="https://belfed.com/og-belfed.png" />
+  <meta name="twitter:image:alt" content="Belfed — independent global investment research and market analytics" />
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="trade-review.css">
@@ -50,6 +52,8 @@ img,svg,video{display:block;max-width:100%;height:auto}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 :focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:1000;background:var(--green);color:var(--white);padding:10px 16px;border-radius:0 0 6px 0;font-weight:600;text-decoration:none}
+.skip-link:focus{left:0}
 /* NAV — copied from index.html */
 .nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in oklab,var(--white) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
 .logo{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.22em;color:var(--black);white-space:nowrap}
@@ -79,7 +83,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 footer{padding:48px 0 32px;background:var(--paper);color:var(--ink);border-top:1px solid var(--rule);margin-top:48px}
 .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:36px}
 .foot-brand p{font-family:var(--font-sans);font-size:12px;color:var(--gray-soft);margin-top:12px;max-width:32ch;line-height:1.7;letter-spacing:.005em}
-.foot-col h5{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-soft);margin-bottom:14px}
+.foot-col h2{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-soft);margin-bottom:14px}
 .foot-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
 .foot-col a{font-family:var(--font-mono);font-size:13px;color:var(--ink-2)}
 .foot-col a:hover{color:var(--green-strong)}
@@ -143,6 +147,8 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <nav class="nav" aria-label="Primary">
   <a href="/" class="logo" aria-label="Belfed home">BELFED<span class="cursor">_</span></a>
   <ul class="nav-links" role="list">
@@ -168,6 +174,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     </button>
   </div>
 </nav>
+<main id="main-content">
 <div class="page-header">
   <div class="page-label">// Track Record · All Closed Positions · Equities</div>
   <h1 class="page-title">Equities Trades</h1>
@@ -299,6 +306,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     New to R-multiples? <a href="/disclaimer.html" style="color:#888;text-decoration:underline;text-underline-offset:2px;">How we measure performance</a> &mdash; a short explainer on how to read this table.
   Past results do not guarantee future performance. R-multiples are calculated relative to initial risk per trade (1R = amount risked). This page is updated manually after each position is closed. No positions are removed or edited retroactively.
 </div>
+</main>
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -307,15 +315,15 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
         <p>Independent global investment research. Market analytics and trade ideas across equities, crypto and commodities.</p>
       </div>
       <div class="foot-col">
-        <h5>Product</h5>
+        <h2>Product</h2>
         <ul><li><a href="/#tour">What you get</a></li><li><a href="/#how">How it works</a></li><li><a href="/#pricing">Pricing</a></li><li><a href="/trades.html">Track record</a></li><li><a href="/#free-analysis">Free analysis</a></li></ul>
       </div>
       <div class="foot-col">
-        <h5>Community</h5>
+        <h2>Community</h2>
         <ul><li><a href="https://t.me/BelFedFreeEN" target="_blank" rel="noopener">Telegram · EN</a></li><li><a href="https://t.me/BelFedFreeRU" target="_blank" rel="noopener">Telegram · RU</a></li><li><a href="https://tradingview.com/u/BelFed_Analytics" target="_blank" rel="noopener">TradingView</a></li><li><a href="https://x.com/art_the_trader" target="_blank" rel="noopener">X / Twitter</a></li></ul>
       </div>
       <div class="foot-col">
-        <h5>Legal</h5>
+        <h2>Legal</h2>
         <ul><li><a href="/terms.html">Terms of service</a></li><li><a href="/privacy.html">Privacy policy</a></li><li><a href="/disclaimer.html">Risk disclaimer</a></li><li><a href="mailto:hello@belfed.com">Contact</a></li></ul>
       </div>
     </div>
