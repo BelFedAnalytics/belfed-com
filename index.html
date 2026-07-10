@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/logo-belfed-512.png" />
   <title>Belfed — Independent Market Analytics &amp; Trade Ideas</title>
   <link rel="canonical" href="https://belfed.com/" />
   <meta property="og:type" content="website" />
@@ -22,7 +23,8 @@
   <meta name="description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <!-- JSON-LD content-match guardrail: every value below maps to visible on-page content.
        Organization.name/logo -> Belfed wordmark & brand image; sameAs -> footer social links;
        Service/Offer -> visible "Subscriber $15 / month" pricing card and its members.html#signup CTA.
@@ -98,6 +100,7 @@
       --green-strong: #14542d;
       --red: #8b1a1a;
       --gold: #b8860b;
+      --gold-ink: #7e6300;      /* accessible gold for text on light surfaces (AA) */
 
       --shadow-soft: 0 1px 0 #1a1a1a0d, 0 8px 24px #1a1a1a0a;
       --shadow-frame: 0 1px 0 #1a1a1a14, 0 12px 40px #1a1a1a12;
@@ -129,6 +132,7 @@
       --green-strong: #46c277;
       --red: #d65a5a;
       --gold: #d6a020;
+      --gold-ink: #d6a020;      /* bright gold already meets AA as text on dark surfaces */
       --shadow-soft: 0 1px 0 #00000040, 0 8px 24px #00000040;
       --shadow-frame: 0 1px 0 #00000060, 0 12px 40px #00000060;
       --glow: 0 0 0 1px #2fa05a33, 0 16px 60px #2fa05a1a;
@@ -431,7 +435,7 @@
       pointer-events: none;
     }
     .lead-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; position: relative; }
-    .lead .eyebrow { color: var(--gold); }
+    .lead .eyebrow { color: var(--gold-ink); }
     .lead .eyebrow .pulse { background: var(--gold); }
     .lead h2 { margin-bottom: 18px; }
     .lead-sub { font-family: var(--font-sans); font-size: 14px; line-height: 1.7; color: var(--ink-2); max-width: 50ch; letter-spacing: 0.005em; }
@@ -531,7 +535,7 @@
     .step { padding: 32px 24px; border-right: 1px solid var(--rule); }
     .step:last-child { border-right: none; }
     .step-n {
-      font-family: var(--font-mono); font-size: 11px; color: var(--gray-faint); letter-spacing: 0.16em;
+      font-family: var(--font-mono); font-size: 11px; color: var(--gray); letter-spacing: 0.16em;
       margin-bottom: 16px;
     }
     .step h3 { font-size: 16px; margin-bottom: 8px; }
@@ -551,7 +555,7 @@
     }
     .price-tag {
       position: absolute; top: -12px; left: 32px;
-      background: var(--gold); color: var(--white);
+      background: var(--gold); color: #0a0a0a;
       font-family: var(--font-mono); font-size: 10px; font-weight: 700;
       letter-spacing: 0.16em; text-transform: uppercase;
       padding: 4px 12px; border-radius: 99px;
@@ -950,7 +954,7 @@
       line-height: 1.55; display: none;
     }
     .form-msg.show { display: block; }
-    .form-msg.dup { background: #b8860b14; border: 1px solid #b8860b40; color: var(--gold); }
+    .form-msg.dup { background: #b8860b14; border: 1px solid #b8860b40; color: var(--gold-ink); }
     .form-msg.dup b { color: var(--ink); }
     .form-msg.dup a { color: var(--green-strong); font-weight: 700; }
     .form-msg.dup a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -1055,7 +1059,7 @@
   <div class="wrap">
     <div class="record-grid">
       <div class="record-col">
-        <span class="label">2026 Equities <span style="opacity:.6;font-weight:400;">YTD</span></span>
+        <span class="label">2026 Equities <span style="font-weight:400;">YTD</span></span>
         <div class="record-r">+90.70R</div>
         <div class="record-meta">
           <span><b>56.1%</b> win rate</span>
@@ -1073,7 +1077,7 @@
         </div>
       </div>
       <div class="record-col">
-        <span class="label">Crypto <span style="opacity:.6;font-weight:400;">all-time</span></span>
+        <span class="label">Crypto <span style="font-weight:400;">all-time</span></span>
         <div class="record-r">+99.12R</div>
         <div class="record-meta">
           <span><b>43.2%</b> win rate</span>
@@ -1151,7 +1155,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / dashboard</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/dashboard.jpg" aria-label="Belfed dashboard preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/dashboard.jpg" aria-label="Belfed dashboard preview">
               <source data-src="video/dashboard.mp4" type="video/mp4">
             </video>
           </div>
@@ -1175,7 +1179,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / analytics / timeline</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/timeline.jpg" aria-label="Belfed analytics timeline preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/timeline.jpg" aria-label="Belfed analytics timeline preview">
               <source data-src="video/timeline.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1193,7 +1197,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / analytics / reports</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/reports.jpg" aria-label="Belfed analytics reports library preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/reports.jpg" aria-label="Belfed analytics reports library preview">
               <source data-src="video/reports.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1216,7 +1220,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / asset-analysis</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/asset.jpg" aria-label="Belfed asset analysis preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/asset.jpg" aria-label="Belfed asset analysis preview">
               <source data-src="video/asset.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1243,7 +1247,7 @@
             <span class="url" style="margin-left:8px;">t.me/BelFedFreeEN — Belfed channel</span>
           </div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/telegram.jpg" aria-label="Belfed Telegram channel preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/telegram.jpg" aria-label="Belfed Telegram channel preview">
               <source data-src="video/telegram.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1716,6 +1720,7 @@
     var vids = document.querySelectorAll('video.lazy-video');
     function loadVideo(v) {
       if (v.dataset.loaded) return;
+      if (v.dataset.poster) { v.poster = v.dataset.poster; v.removeAttribute('data-poster'); }
       v.querySelectorAll('source[data-src]').forEach(function (s) {
         s.src = s.dataset.src;
         s.removeAttribute('data-src');
