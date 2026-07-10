@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://belfed.com/sitemap.xml
