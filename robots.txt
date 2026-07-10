@@ -1,4 +1,23 @@
 User-agent: *
 Allow: /
 
+# Private application, admin, and auth shells (not public content)
+Disallow: /admin.html
+Disallow: /admin-analysis.html
+Disallow: /admin-analysis-posts.html
+Disallow: /admin-analytics.html
+Disallow: /admin-analytics-list.html
+Disallow: /admin-chart-requests.html
+Disallow: /admin-positions.html
+Disallow: /admin-roster.html
+Disallow: /dashboard.html
+Disallow: /analytics.html
+Disallow: /analytics-view.html
+Disallow: /asset-analysis.html
+Disallow: /stock-analysis.html
+Disallow: /auth.html
+Disallow: /confirm.html
+Disallow: /reset-password.html
+Disallow: /upgrade-email.html
+
 Sitemap: https://belfed.com/sitemap.xml
