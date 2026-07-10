@@ -382,6 +382,40 @@
     .why-card p { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.005em; }
     .why-card .ic { width: 28px; height: 28px; color: var(--green-strong); margin-bottom: 18px; }
 
+    /* R-MULTIPLE HERO FRAMING */
+    .perf-framing {
+      font-family: var(--font-sans); font-size: 12.5px; line-height: 1.6;
+      color: var(--gray); letter-spacing: 0.005em; margin-bottom: 14px;
+    }
+    .perf-framing a { color: var(--green-strong); font-weight: 700; white-space: nowrap; }
+    .perf-framing a:hover { text-decoration: underline; }
+
+    /* HOW RESEARCH BECOMES A TRADE */
+    .how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .how-step { padding: 36px 32px; border-right: 1px solid var(--rule); }
+    .how-step:last-child { border-right: none; }
+    .how-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid var(--rule-strong); color: var(--green-strong);
+      font-family: var(--font-mono); font-size: 14px; font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .how-step h3 { font-size: 17px; margin-bottom: 10px; }
+    .how-step p { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.005em; }
+    .how-step a { color: var(--green-strong); font-weight: 700; }
+    .how-step a:hover { text-decoration: underline; }
+
+    /* TWO READER PATHS */
+    .path-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 880px; margin: 0 auto; }
+    .path-card {
+      padding: 32px; border: 1px solid var(--rule-strong); border-radius: var(--radius-lg);
+      background: var(--white); display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .path-card h3 { font-size: 18px; margin-bottom: 12px; }
+    .path-card p { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.005em; margin-bottom: 20px; }
+    .path-card .btn { margin-top: auto; }
+
     /* PRODUCT TOUR */
     .tour-row {
       display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
@@ -659,7 +693,7 @@
       .about-pillars { grid-template-columns: 1fr; gap: 16px; }
       .about-pillar { padding: 20px; }
       .tour-row.flip .tour-text { order: 0; }
-      .why-grid, .steps, .record-grid { grid-template-columns: 1fr; }
+      .why-grid, .steps, .record-grid, .how-steps, .path-grid { grid-template-columns: 1fr; }
       .why-card, .step, .record-col { border-right: none; border-bottom: 1px solid var(--rule); }
       .why-card:last-child, .step:last-child, .record-col:last-child { border-bottom: none; }
       .price-grid { grid-template-columns: 1fr; }
@@ -976,6 +1010,7 @@
     <li><a href="#tour" data-spy="tour">What you get</a></li>
     <li><a href="#how" data-spy="how">How it works</a></li>
     <li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record ↗</a></li>
+    <li><a href="/learn/">Learn</a></li>
     <li><a href="#pricing" data-spy="pricing">Pricing</a></li>
     <li><a href="#faq" data-spy="faq">FAQ</a></li>
   </ul>
@@ -1003,9 +1038,9 @@
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <div class="eyebrow"><span class="pulse"></span>Market analytics &amp; trading platform</div>
-        <h1>Market context and <span class="acc">trading opportunities</span> to support your decisions.</h1>
-        <p class="hero-sub">Daily analytics and trading opportunities across global equities, crypto and commodities markets.<br><br>All in one convenient dashboard, by email and on Telegram.</p>
+        <div class="eyebrow"><span class="pulse"></span>Independent market research &amp; trade ideas</div>
+        <h1>Understand the market. <span class="acc">Then trade it.</span></h1>
+        <p class="hero-sub">Independent research that turns macro and technical context into trade-ready setups — published with entry, stop, and target, and tracked in public so you can verify every call before you pay.</p>
         <div class="hero-cta">
           <a href="#pricing" class="btn btn-primary">Start 14-day free access →</a>
           <a href="https://belfed.com/trades.html" target="_blank" rel="noopener" class="btn btn-ghost">See public track record</a>
@@ -1017,6 +1052,7 @@
         </div>
       </div>
       <div class="r">
+        <p class="perf-framing">Every result below is measured in R-multiples — a trade's gain or loss expressed as a multiple of what was actually risked, so a $500 position and a $50,000 position that both hit target are equally comparable. <a href="/learn/r-multiple-explained.html">See how R-multiples work →</a></p>
         <div class="perf-chart" aria-label="Hypothetical $100,000 performance vs benchmark">
           <div class="perf-head">
             <div class="perf-head-l">
@@ -1125,6 +1161,56 @@
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
         <h3>Clear methodology</h3>
         <p>We show the trend structure we track and explain the thesis behind every setup. No black-box calls. You learn to read price action, not just copy signals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW RESEARCH BECOMES A TRADE ============ -->
+<section class="sec how-research" id="how-research" style="background: var(--paper);">
+  <div class="wrap">
+    <div class="sec-head" style="text-align:center;margin-inline:auto;">
+      <span class="label">Methodology</span>
+      <h2>How research becomes a trade.</h2>
+      <p class="sec-sub">Every idea starts as analysis, not a tip. Here is the path from market context to a published setup.</p>
+    </div>
+    <div class="how-steps">
+      <div class="how-step r">
+        <span class="how-num">1</span>
+        <h3>Read the context.</h3>
+        <p>We track macro drivers, inter-market flows, and trend structure across equities, crypto, FX, and commodities — the same analysis published daily and weekly in the members area and Telegram.</p>
+      </div>
+      <div class="how-step r">
+        <span class="how-num">2</span>
+        <h3>Form and size the thesis.</h3>
+        <p>When context points to an opportunity, we define the setup: entry, stop, and target — sized as a fixed unit of risk (1R), not a fixed dollar amount, so every idea is comparable regardless of position size.</p>
+      </div>
+      <div class="how-step r">
+        <span class="how-num">3</span>
+        <h3>Publish and track it, long or short.</h3>
+        <p>The idea goes out on Telegram and into the members dashboard the moment it triggers. Once closed, it is logged permanently on the <a href="https://belfed.com/trades.html" target="_blank" rel="noopener">public track record</a> — result and all.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TWO READER PATHS ============ -->
+<section class="sec reader-paths" id="reader-paths">
+  <div class="wrap">
+    <div class="sec-head" style="text-align:center;margin-inline:auto;">
+      <span class="label">Who this is for</span>
+      <h2>Two ways to use Belfed.</h2>
+    </div>
+    <div class="path-grid">
+      <div class="path-card r">
+        <h3>If you're an active trader</h3>
+        <p>You want entry, stop, and target levels you can act on quickly, sized by risk rather than by dollar amount, with instant Telegram delivery and a public record you can audit before you subscribe.</p>
+        <a href="#tour" class="btn btn-ghost btn-sm">See the trade tracker →</a>
+      </div>
+      <div class="path-card r">
+        <h3>If you're a longer-term investor</h3>
+        <p>You want the macro and technical context behind where capital is moving — daily and weekly market analytics, asset deep-dives, and top-down views on positioning — with the trade ideas as evidence of the research, not the only thing on offer.</p>
+        <a href="#how-research" class="btn btn-ghost btn-sm">See the reports library →</a>
       </div>
     </div>
   </div>
@@ -1513,7 +1599,7 @@
       </div>
       <div class="foot-col">
         <h3>Product</h3>
-        <ul><li><a href="#tour">What you get</a></li><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record</a></li><li><a href="#free-analysis">Free analysis</a></li></ul>
+        <ul><li><a href="#tour">What you get</a></li><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record</a></li><li><a href="#free-analysis">Free analysis</a></li><li><a href="/learn/">Learn</a></li></ul>
       </div>
       <div class="foot-col">
         <h3>Community</h3>

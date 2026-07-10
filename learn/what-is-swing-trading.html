@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/logo-belfed-512.png" />
+  <title>What Is Swing Trading? Strategy, Timeframes &amp; Risks</title>
+  <meta name="description" content="A neutral guide to swing trading: how it differs from day and position trading, realistic risks, position sizing, and worked examples." />
+  <link rel="canonical" href="https://belfed.com/learn/what-is-swing-trading.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Belfed" />
+  <meta property="og:title" content="What Is Swing Trading? Strategy, Timeframes &amp; Risks" />
+  <meta property="og:description" content="A neutral guide to swing trading: how it differs from day and position trading, realistic risks, position sizing, and worked examples." />
+  <meta property="og:url" content="https://belfed.com/learn/what-is-swing-trading.html" />
+  <meta property="og:image" content="https://belfed.com/og-belfed.png" />
+  <meta property="og:image:alt" content="Belfed Learn — trading and market research guides" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="What Is Swing Trading? Strategy, Timeframes &amp; Risks" />
+  <meta name="twitter:description" content="A neutral guide to swing trading: how it differs from day and position trading, realistic risks, position sizing, and worked examples." />
+  <meta name="twitter:image" content="https://belfed.com/og-belfed.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="/learn.css" />
+
+  <!-- Content-match guardrail: Article headline/description/dates match the visible page.
+       Visible byline is "By the Belfed Research Team"; schema author is the Belfed
+       Organization (@id #organization) — an organizational author, not an invented person.
+       No FAQPage schema by design (content pack §4.5).
+       FINRA margin section reflects the June 4, 2026 intraday-margin rule (Notice 26-10);
+       re-verify against FINRA at publish. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": "https://belfed.com/learn/what-is-swing-trading.html#article",
+    "headline": "What Is Swing Trading? Strategy, Timeframes, Risks and Examples",
+    "description": "A neutral guide to swing trading: how it differs from day and position trading, realistic risks, position sizing, and worked examples.",
+    "url": "https://belfed.com/learn/what-is-swing-trading.html",
+    "datePublished": "2026-07-10",
+    "dateModified": "2026-07-10",
+    "author": { "@type": "Organization", "@id": "https://belfed.com/#organization", "name": "Belfed" },
+    "publisher": { "@id": "https://belfed.com/#organization" },
+    "mainEntityOfPage": "https://belfed.com/learn/what-is-swing-trading.html",
+    "image": "https://belfed.com/og-belfed.png",
+    "articleSection": "Trading strategy & timeframes",
+    "inLanguage": "en"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://belfed.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Learn", "item": "https://belfed.com/learn/" },
+      { "@type": "ListItem", "position": 3, "name": "What Is Swing Trading?", "item": "https://belfed.com/learn/what-is-swing-trading.html" }
+    ]
+  }
+  </script>
+  <script src="/learn.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="nav" aria-label="Primary">
+  <a href="/" class="logo" aria-label="Belfed home">BELFED<span class="cursor">_</span></a>
+  <ul class="nav-links" role="list">
+    <li><a href="/#tour">What you get</a></li>
+    <li><a href="/#how">How it works</a></li>
+    <li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record ↗</a></li>
+    <li><a href="/learn/" class="active" aria-current="page">Learn</a></li>
+    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <a href="/members.html" class="btn btn-ghost btn-sm nav-login">Login</a>
+    <a href="/#pricing" class="btn btn-primary btn-sm">Start free access</a>
+    <button class="hamburger" id="ham" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<main id="main-content">
+  <div class="wrap-narrow">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href="/learn/">Learn</a></li>
+        <li><span aria-current="page">What Is Swing Trading?</span></li>
+      </ol>
+    </nav>
+
+    <article class="article">
+      <header class="page-head">
+        <span class="label">Trading strategy &amp; timeframes</span>
+        <h1>What Is Swing Trading? Strategy, Timeframes, Risks and Examples</h1>
+        <div class="article-meta-row">
+          <span class="byline">By the Belfed Research Team</span>
+          <span>Published July 10, 2026</span>
+          <span>Last updated July 10, 2026</span>
+        </div>
+      </header>
+
+      <p class="article-disclaimer-top">Educational content. Nothing in this article is investment, financial, or trading advice, and it should not be relied on to make investment decisions. Trading and investing involve substantial risk of loss, including loss of principal, and past performance does not guarantee future results. Always do your own research and consider consulting a licensed financial professional before making investment decisions.</p>
+
+      <div class="article-body">
+        <p>Swing trading sits between day trading and position trading in almost every dimension that matters: how long you hold a position, how much screen time it demands, and how much of a market move you're trying to capture. This guide explains what swing trading actually is, how it differs from the trading styles on either side of it, the realistic risks involved, and what a swing setup looks like in practice.</p>
+
+        <h2>What swing trading means</h2>
+        <p>Swing trading is a technical and often fundamentally-informed strategy that aims to profit from a market move — a "swing" — that plays out over several days to several weeks, rather than within a single trading session or over months and years (<a href="https://www.investopedia.com/terms/s/swing.asp" target="_blank" rel="noopener">Investopedia: What Is a Swing?</a>). A swing trader typically holds a position through one identified move: a breakout, a pullback within a larger trend, or a reversal, then exits once the move has played out or the thesis is invalidated (<a href="https://www.home.saxo/learn/guides/trading-strategies/what-is-swing-trading" target="_blank" rel="noopener">Saxo: What is Swing Trading</a>).</p>
+        <p>The style works across asset classes — equities, crypto, FX, and commodities all exhibit multi-day directional swings — which is one reason it's a common approach for traders who follow more than one market rather than specializing in a single instrument.</p>
+
+        <h2>Swing trading vs. day trading vs. position trading</h2>
+        <p>The three styles are best understood as a spectrum of holding period and required attention, not as strictly better or worse approaches:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th scope="col">Dimension</th><th scope="col">Day trading</th><th scope="col">Swing trading</th><th scope="col">Position trading</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Typical holding period</th><td>Intraday; positions closed same day</td><td>Several days to a few weeks</td><td>Weeks to months, sometimes years</td></tr>
+              <tr><th scope="row">Primary driver</th><td>Intraday price action, order flow</td><td>Multi-day technical structure, catalysts</td><td>Macro trend, fundamentals, secular themes</td></tr>
+              <tr><th scope="row">Screen time required</th><td>High; near-continuous monitoring during market hours</td><td>Moderate; periodic check-ins</td><td>Low; infrequent review</td></tr>
+              <tr><th scope="row">Overnight/weekend risk</th><td>Generally avoided by design</td><td>Accepted as part of the strategy</td><td>Accepted and expected</td></tr>
+              <tr><th scope="row">Regulatory considerations (US)</th><td>Historically subject to FINRA's pattern-day-trader margin rules</td><td>Not subject to day-trading-specific margin rules</td><td>Not subject to day-trading-specific margin rules</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Day trading</strong> is defined under FINRA rules as buying and selling (or selling and buying) the same security on the same day in a margin account (<a href="https://www.finra.org/rules-guidance/rulebooks/finra-rules/4210" target="_blank" rel="noopener">FINRA Rule 4210</a>). For years, US day traders in margin accounts who executed four or more day trades within five business days were designated "pattern day traders" and required to maintain a minimum of $25,000 in account equity. FINRA's new "intraday margin" standards became effective on June 4, 2026, replacing that framework: under the new regime the pattern-day-trader count designation and its $25,000 minimum equity requirement are eliminated, and margin is instead assessed against real-time intraday exposure rather than a trade-count threshold (<a href="https://www.finra.org/rules-guidance/notices/26-10" target="_blank" rel="noopener">FINRA Regulatory Notice 26-10</a>; <a href="https://www.finra.org/investors/insights/intraday-margin-requirements" target="_blank" rel="noopener">FINRA: Understanding the New Intraday Margin Requirements</a>). Firms may continue transitioning to the new requirements through October 20, 2027, so which rules apply at any given broker during this period depends on that firm's implementation status — this is not necessarily a universal, immediate change across every brokerage. This change affects margin-account day trading specifically; it does not apply to swing or position trading, which do not involve same-day round-trip trades and are not subject to these margin provisions. Traders should confirm current requirements directly with their broker, since firms can impose stricter "house" requirements than the regulatory minimum (<a href="https://www.finra.org/investors/insights/frequent-intraday-trading" target="_blank" rel="noopener">FINRA: Frequent Intraday Trading</a>).</p>
+        <p><strong>Position trading</strong> sits at the opposite end from day trading: positions are held for weeks, months, or longer, and the trader is focused on major trend direction — interest rates, industry cycles, earnings growth, structural shifts — rather than short-term price fluctuation (<a href="https://www.ebc.com/forex/position-trading-vs-swing-trading-10-key-differences" target="_blank" rel="noopener">EBC Financial Group: Position Trading vs Swing Trading</a>). Neither style is inherently superior; the right choice depends on available time, temperament, and objective — for example, generating more frequent, smaller realized results versus compounding a smaller number of larger, slower-developing moves (<a href="https://www.vectorvest.com/blog/swing-trading/position-trading-vs-swing-trading/" target="_blank" rel="noopener">VectorVest: Position Trading vs Swing Trading</a>).</p>
+
+        <h2>What a swing setup typically looks like</h2>
+        <p>A disciplined swing trade generally has three defined elements decided before entry, not improvised after:</p>
+        <ol>
+          <li><strong>Entry</strong> — the price level or condition that confirms the thesis (for example, a breakout above resistance, or a pullback to a defined support level within an established trend).</li>
+          <li><strong>Stop-loss</strong> — the price at which the thesis is considered wrong and the position is closed to limit the loss. This defines the trade's initial risk.</li>
+          <li><strong>Target</strong> — the price level at which the thesis is expected to have played out, used to plan the exit and to calculate the trade's risk-to-reward ratio before entry.</li>
+        </ol>
+        <p><strong>Worked example.</strong> A swing trader identifies a stock in an uptrend that has pulled back to a prior support level at $80. They buy at $80.50, place a stop at $77 (defining risk of $3.50 per share), and set a target at $91 based on the prior swing high. The trade's planned reward-to-risk ratio is roughly 3:1 before the position is ever opened ($10.50 potential gain versus $3.50 defined risk). If the stock reverses and hits the stop, the loss is contained to the pre-defined $3.50 per share; if it reaches the target, the gain is roughly three times the amount risked. Expressing that outcome as a multiple of risk (an "R-multiple") is a standard way to evaluate the trade afterward — see our companion guide, <a href="/learn/r-multiple-explained.html">What Is an R-Multiple?</a>, for how that calculation works and why it matters more than a raw win rate.</p>
+
+        <h2>Common swing trading approaches</h2>
+        <ul>
+          <li><strong>Trend-following pullback entries</strong> — buying dips within an established uptrend (or selling rallies within a downtrend), on the view that the dominant trend will resume (<a href="https://www.ig.com/en/trading-opportunities/a-beginner_s-guide-to-swing-trading-39725-170830" target="_blank" rel="noopener">IG: Beginner's Guide to Swing Trading</a>).</li>
+          <li><strong>Breakout entries</strong> — entering when price moves decisively beyond a defined range or resistance/support level, anticipating continuation.</li>
+          <li><strong>Reversal setups</strong> — entering against the recent short-term trend at a level where technical or fundamental evidence suggests the move has exhausted itself, generally the highest-risk of the three since it trades against recent momentum.</li>
+          <li><strong>Chart-pattern reading</strong> — using price and volume patterns (ranges, channels, moving averages) to time entries and exits within the broader thesis, a skill Charles Schwab's investor education notes takes practice and does not guarantee outcomes even when patterns "look" clean (<a href="https://www.schwab.com/learn/story/how-to-read-stock-charts-and-trading-patterns" target="_blank" rel="noopener">Charles Schwab: How to Read Stock Charts and Trading Patterns</a>).</li>
+        </ul>
+
+        <h2>Risk management in swing trading</h2>
+        <p>Because a swing position is held across multiple sessions, it's exposed to overnight and weekend risk that a day trade is not — news, earnings, or macro events can move a market while it's closed, causing a gap through a stop-loss level rather than an orderly fill at it. This is a structural risk of the style, and one reason position sizing matters as much as trade selection.</p>
+        <p>Two practices are near-universal in disciplined swing trading:</p>
+        <ol>
+          <li><strong>Fixed fractional risk per trade.</strong> Many traders risk a small, consistent percentage of account capital on any single idea (commonly cited ranges are around 1% to 2%), so that no single loss is capital-threatening and a losing streak does not compound into an outsized drawdown (<a href="https://www.tradezella.com/blog/position-size-calculator" target="_blank" rel="noopener">TradeZella: Position Size Calculator</a>).</li>
+          <li><strong>A pre-defined stop before entry.</strong> Deciding the exit-on-failure point before opening the position removes the temptation to move a stop further away after the trade has already gone against you.</li>
+        </ol>
+        <p>Neither practice eliminates risk. Gaps, slippage, and periods where a strategy simply stops working (regime change, a shift in volatility) are real and can affect even a well-designed, historically sound approach. A strategy's historical statistics — including win rate, average risk-to-reward, and even a real, published R-multiple track record — describe what has happened, not what is guaranteed to happen next.</p>
+
+        <h2>Realistic limitations of swing trading</h2>
+        <p>Swing trading is often marketed as a lower-commitment alternative to day trading, but it comes with limitations worth stating plainly:</p>
+        <ul>
+          <li><strong>It requires patience through open drawdown.</strong> A swing trader will regularly watch an open position move against the entry before (if the thesis holds) recovering, or before the stop is hit and the loss is realized — psychologically harder for some traders than the faster resolution of a day trade.</li>
+          <li><strong>It is not a passive strategy.</strong> Positions still need monitoring for stop and target management, and market conditions (low volatility, choppy range-bound markets) can reduce the frequency and quality of clean setups.</li>
+          <li><strong>A profitable-looking short sample proves little.</strong> A handful of winning swing trades says little about long-run viability; the number that matters is expectancy across a meaningful sample of closed trades, not a short streak (see <a href="/learn/r-multiple-explained.html">What Is an R-Multiple?</a> for why win rate alone is unreliable).</li>
+          <li><strong>Costs compound.</strong> Spreads, financing costs on leveraged or overnight positions, and platform fees all reduce realized returns relative to the theoretical price move, and should be accounted for before assuming a backtest will translate directly into real trading results.</li>
+        </ul>
+
+        <h2>How Belfed approaches swing trading</h2>
+        <p>Belfed's published trade ideas are multi-day-to-multi-week swing setups across equities, crypto, FX, and commodities, published with a defined entry, stop, and target and sized as a fixed unit of risk — the same structure described in the worked example above (<a href="https://belfed.com/">Belfed</a>). Every closed idea, long or short, is logged with its result on our <a href="https://belfed.com/trades.html">public track record</a>, and the reasoning behind each setup — the trend structure and thesis, not just the levels — is explained at the time of publication rather than delivered as an unexplained alert.</p>
+      </div>
+
+      <section class="faq" aria-label="Frequently asked questions">
+        <h2>Frequently asked questions</h2>
+        <div class="faq-item">
+          <h3>Is swing trading safer than day trading?</h3>
+          <p>Neither style is inherently "safer" — they carry different risk profiles. Day trading avoids overnight gap risk but requires rapid decision-making and, historically, was subject to stricter margin rules for frequent traders; swing trading avoids that intensity but is exposed to gap risk from news or events that occur while the position is held overnight or over a weekend.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How much capital do I need to start swing trading?</h3>
+          <p>There's no fixed minimum imposed by the strategy itself, though brokerage margin account minimums and your own risk-per-trade sizing (commonly a small percentage of account equity per idea) will determine what position sizes are practical. Because swing trading is not subject to the day-trading-specific margin provisions described above, it does not require the equity thresholds historically associated with frequent day trading (<a href="https://www.finra.org/investors/insights/frequent-intraday-trading" target="_blank" rel="noopener">FINRA: Frequent Intraday Trading</a>).</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can swing trading be combined with longer-term investing?</h3>
+          <p>Yes. Many self-directed investors hold a core long-term portfolio while allocating a separate, smaller portion of capital to swing setups; the two are not mutually exclusive, though they typically warrant separate risk budgets and separate performance evaluation.</p>
+        </div>
+      </section>
+
+      <div class="article-next">
+        <span class="label">Keep reading</span>
+        <a href="/learn/r-multiple-explained.html">What Is an R-Multiple? A Plain-English Guide →</a>
+      </div>
+
+      <p class="article-disclaimer-bottom">This article is for educational purposes only and does not constitute investment advice or a recommendation to buy or sell any security, cryptoasset, or other instrument. Trading involves risk, including the potential loss of your entire investment. Consult a licensed financial professional before making investment decisions.</p>
+    </article>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <span class="logo">BELFED<span class="cursor">_</span></span>
+        <p>Independent global investment research. Market analytics and trade ideas across equities, crypto and commodities.</p>
+      </div>
+      <div class="foot-col">
+        <h3>Product</h3>
+        <ul><li><a href="/#tour">What you get</a></li><li><a href="/#how">How it works</a></li><li><a href="/#pricing">Pricing</a></li><li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record</a></li><li><a href="/#free-analysis">Free analysis</a></li><li><a href="/learn/">Learn</a></li></ul>
+      </div>
+      <div class="foot-col">
+        <h3>Community</h3>
+        <ul><li><a href="https://t.me/BelFedFreeEN" target="_blank" rel="noopener">Telegram · EN</a></li><li><a href="https://t.me/BelFedFreeRU" target="_blank" rel="noopener">Telegram · RU</a></li><li><a href="https://tradingview.com/u/BelFed_Analytics" target="_blank" rel="noopener">TradingView</a></li><li><a href="https://x.com/art_the_trader" target="_blank" rel="noopener">X / Twitter</a></li></ul>
+      </div>
+      <div class="foot-col">
+        <h3>Legal</h3>
+        <ul><li><a href="/terms.html">Terms of service</a></li><li><a href="/privacy.html">Privacy policy</a></li><li><a href="/disclaimer.html">Risk disclaimer</a></li><li><a href="mailto:hello@belfed.com">Contact</a></li></ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Belfed Analytics. All rights reserved. · Payments by Tribute.</span>
+      <span class="foot-disclaim">Risk disclaimer: Trading involves substantial risk of loss. Past performance is not indicative of future results. Nothing on this site is financial advice.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
