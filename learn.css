@@ -112,6 +112,22 @@ p { text-wrap: pretty; }
 .theme-btn:hover { color: var(--black); background: var(--paper); }
 .hamburger { display: none; width: 44px; height: 44px; align-items: center; justify-content: center; color: var(--gray-soft); border-radius: 6px; }
 
+/* Learn — subtle "beta" product-status annotation above the nav label */
+.nav-learn { position: relative; }
+.nav-learn .nav-learn-label { position: relative; display: inline-block; }
+.nav-learn .beta-tag {
+  position: absolute; left: 50%; bottom: 100%;
+  transform: translateX(-50%); margin-bottom: 1px;
+  font-family: var(--font-mono); font-size: 8px; line-height: 1;
+  font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gold-ink); white-space: nowrap; pointer-events: none;
+}
+/* Keep the Learn tap target at >=44px without shifting the label baseline */
+.nav-learn::before {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%); width: 100%; min-width: 44px; height: 44px;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px;
