@@ -66,7 +66,7 @@
     ]
   }
   </script>
-  <script src="belfed-analytics.js"></script>
+  <script src="belfed-analytics.js" defer></script>
   <style>
     :root {
       --font-mono: 'Courier Prime', 'Courier New', ui-monospace, monospace;
@@ -145,6 +145,8 @@
     input, textarea, select { font: inherit; color: inherit; }
     ::selection { background: var(--green); color: var(--white); }
     :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 1000; background: var(--green); color: var(--white); padding: 10px 16px; border-radius: 0 0 6px 0; font-weight: 600; text-decoration: none; }
+    .skip-link:focus { left: 0; }
 
     .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
     .wrap-narrow { max-width: var(--maxw-narrow); margin: 0 auto; padding: 0 28px; }
@@ -956,6 +958,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <!-- ============ NAV ============ -->
 <nav class="nav" aria-label="Primary">
   <a href="/" class="logo" aria-label="Belfed home">BELFED<span class="cursor">_</span></a>
@@ -982,6 +986,8 @@
     </button>
   </div>
 </nav>
+
+<main id="main-content">
 
 <!-- ============ HERO ============ -->
 <header class="hero">
@@ -1486,6 +1492,8 @@
   </div>
 </section>
 
+</main>
+
 <!-- ============ FOOTER ============ -->
 <footer>
   <div class="wrap">
@@ -1515,8 +1523,11 @@
 </footer>
 
 <script>
-  // Funnel: record the landing view (UTM fields auto-attached by belfed-analytics.js)
-  if (window.belfedTrack) window.belfedTrack('landing_view', { path: location.pathname });
+  // Funnel: record the landing view (UTM fields auto-attached by belfed-analytics.js).
+  // Wrapped in DOMContentLoaded so the deferred analytics script is guaranteed loaded first.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.belfedTrack) window.belfedTrack('landing_view', { path: location.pathname });
+  });
 
   // Theme toggle
   var themeBtn = document.getElementById('themeBtn');
