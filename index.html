@@ -3,12 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/logo-belfed-512.png" />
   <title>Belfed — Independent Market Analytics &amp; Trade Ideas</title>
+  <link rel="canonical" href="https://belfed.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Belfed" />
+  <meta property="og:title" content="Belfed — Independent Market Analytics &amp; Trade Ideas" />
+  <meta property="og:description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
+  <meta property="og:url" content="https://belfed.com/" />
+  <meta property="og:image" content="https://belfed.com/og-belfed.png" />
+  <meta property="og:image:alt" content="Belfed — independent global investment research and market analytics" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Belfed — Independent Market Analytics &amp; Trade Ideas" />
+  <meta name="twitter:description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
+  <meta name="twitter:image" content="https://belfed.com/og-belfed.png" />
+  <meta name="twitter:image:alt" content="Belfed — independent global investment research and market analytics" />
   <meta name="description" content="Belfed is an independent global investment research firm. Daily and weekly market analytics, trade ideas, and a public track record across equities, crypto, FX and commodities. 14-day free access, no card required." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="belfed-analytics.js"></script>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  <!-- JSON-LD content-match guardrail: every value below maps to visible on-page content.
+       Organization.name/logo -> Belfed wordmark & brand image; sameAs -> footer social links;
+       Service/Offer -> visible "Subscriber $15 / month" pricing card and its members.html#signup CTA.
+       If pricing or social links change on-page, update this block in the same edit.
+       Offer.priceValidUntil is intentionally omitted: the $15/month price has no
+       published expiration date, so asserting one would be unverifiable. Add it only
+       when a real end date exists. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://belfed.com/#organization",
+        "name": "Belfed",
+        "url": "https://belfed.com/",
+        "logo": "https://belfed.com/logo-belfed-512.png",
+        "sameAs": [
+          "https://t.me/BelFedFreeEN",
+          "https://t.me/BelFedFreeRU",
+          "https://tradingview.com/u/BelFed_Analytics",
+          "https://x.com/art_the_trader"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://belfed.com/#website",
+        "name": "Belfed",
+        "url": "https://belfed.com/",
+        "publisher": { "@id": "https://belfed.com/#organization" }
+      },
+      {
+        "@type": "Service",
+        "name": "Belfed Subscriber Membership",
+        "serviceType": "Investment research and market analytics",
+        "provider": { "@id": "https://belfed.com/#organization" },
+        "url": "https://belfed.com/members.html#signup",
+        "offers": {
+          "@type": "Offer",
+          "price": "15",
+          "priceCurrency": "USD",
+          "url": "https://belfed.com/members.html#signup",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    ]
+  }
+  </script>
+  <script src="belfed-analytics.js" defer></script>
   <style>
     :root {
       --font-mono: 'Courier Prime', 'Courier New', ui-monospace, monospace;
@@ -26,8 +91,8 @@
       --black: #0a0a0a;
       --ink: #161614;
       --ink-2: #2a2a26;
-      --gray: #888888;
-      --gray-soft: #6b6b6b;
+      --gray: #66665f;
+      --gray-soft: #57574f;
       --gray-faint: #b3b3a8;
 
       --green: #1a6b3a;
@@ -35,6 +100,7 @@
       --green-strong: #14542d;
       --red: #8b1a1a;
       --gold: #b8860b;
+      --gold-ink: #7e6300;      /* accessible gold for text on light surfaces (AA) */
 
       --shadow-soft: 0 1px 0 #1a1a1a0d, 0 8px 24px #1a1a1a0a;
       --shadow-frame: 0 1px 0 #1a1a1a14, 0 12px 40px #1a1a1a12;
@@ -66,6 +132,7 @@
       --green-strong: #46c277;
       --red: #d65a5a;
       --gold: #d6a020;
+      --gold-ink: #d6a020;      /* bright gold already meets AA as text on dark surfaces */
       --shadow-soft: 0 1px 0 #00000040, 0 8px 24px #00000040;
       --shadow-frame: 0 1px 0 #00000060, 0 12px 40px #00000060;
       --glow: 0 0 0 1px #2fa05a33, 0 16px 60px #2fa05a1a;
@@ -87,6 +154,8 @@
     input, textarea, select { font: inherit; color: inherit; }
     ::selection { background: var(--green); color: var(--white); }
     :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 1000; background: var(--green); color: var(--white); padding: 10px 16px; border-radius: 0 0 6px 0; font-weight: 600; text-decoration: none; }
+    .skip-link:focus { left: 0; }
 
     .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
     .wrap-narrow { max-width: var(--maxw-narrow); margin: 0 auto; padding: 0 28px; }
@@ -366,7 +435,7 @@
       pointer-events: none;
     }
     .lead-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; position: relative; }
-    .lead .eyebrow { color: var(--gold); }
+    .lead .eyebrow { color: var(--gold-ink); }
     .lead .eyebrow .pulse { background: var(--gold); }
     .lead h2 { margin-bottom: 18px; }
     .lead-sub { font-family: var(--font-sans); font-size: 14px; line-height: 1.7; color: var(--ink-2); max-width: 50ch; letter-spacing: 0.005em; }
@@ -381,11 +450,11 @@
       padding: 32px;
       box-shadow: var(--shadow-frame), var(--glow);
     }
-    .form-card h4 {
+    .form-card h3 {
       font-size: 13px; letter-spacing: 0.12em; color: var(--gray-soft);
       text-transform: uppercase; margin-bottom: 22px;
     }
-    .form-card h4::before { content: "// "; color: var(--gray-faint); }
+    .form-card h3::before { content: "// "; color: var(--gray-faint); }
     .field { margin-bottom: 18px; }
     .field label {
       display: block; font-family: var(--font-mono); font-size: 11px;
@@ -466,10 +535,10 @@
     .step { padding: 32px 24px; border-right: 1px solid var(--rule); }
     .step:last-child { border-right: none; }
     .step-n {
-      font-family: var(--font-mono); font-size: 11px; color: var(--gray-faint); letter-spacing: 0.16em;
+      font-family: var(--font-mono); font-size: 11px; color: var(--gray); letter-spacing: 0.16em;
       margin-bottom: 16px;
     }
-    .step h4 { font-size: 16px; margin-bottom: 8px; }
+    .step h3 { font-size: 16px; margin-bottom: 8px; }
     .step p { font-family: var(--font-sans); font-size: 12.5px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.005em; }
 
     /* PRICING */
@@ -486,7 +555,7 @@
     }
     .price-tag {
       position: absolute; top: -12px; left: 32px;
-      background: var(--gold); color: var(--white);
+      background: var(--gold); color: #0a0a0a;
       font-family: var(--font-mono); font-size: 10px; font-weight: 700;
       letter-spacing: 0.16em; text-transform: uppercase;
       padding: 4px 12px; border-radius: 99px;
@@ -577,7 +646,7 @@
     footer { padding: 48px 0 32px; background: var(--paper); }
     .foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 36px; }
     .foot-brand p { font-family: var(--font-sans); font-size: 12px; color: var(--gray-soft); margin-top: 12px; max-width: 32ch; line-height: 1.7; letter-spacing: 0.005em; }
-    .foot-col h5 { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-soft); margin-bottom: 14px; }
+    .foot-col h3 { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-soft); margin-bottom: 14px; }
     .foot-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
     .foot-col a { font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); }
     .foot-col a:hover { color: var(--green-strong); }
@@ -885,7 +954,7 @@
       line-height: 1.55; display: none;
     }
     .form-msg.show { display: block; }
-    .form-msg.dup { background: #b8860b14; border: 1px solid #b8860b40; color: var(--gold); }
+    .form-msg.dup { background: #b8860b14; border: 1px solid #b8860b40; color: var(--gold-ink); }
     .form-msg.dup b { color: var(--ink); }
     .form-msg.dup a { color: var(--green-strong); font-weight: 700; }
     .form-msg.dup a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -897,6 +966,8 @@
     </style>
 </head>
 <body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <!-- ============ NAV ============ -->
 <nav class="nav" aria-label="Primary">
@@ -924,6 +995,8 @@
     </button>
   </div>
 </nav>
+
+<main id="main-content">
 
 <!-- ============ HERO ============ -->
 <header class="hero">
@@ -953,14 +1026,14 @@
             <span class="perf-live">Live · auto-updated</span>
           </div>
           <div class="perf-controls">
-            <div class="perf-seg" role="tablist" aria-label="Market">
-              <button class="active" data-market="eq" type="button">Equities</button>
-              <button data-market="cr" type="button">Crypto</button>
+            <div class="perf-seg" role="group" aria-label="Market">
+              <button class="active" data-market="eq" type="button" aria-pressed="true">Equities</button>
+              <button data-market="cr" type="button" aria-pressed="false">Crypto</button>
             </div>
-            <div class="perf-seg" role="tablist" aria-label="Year">
-              <button data-year="2025" type="button">2025</button>
-              <button class="active" data-year="2026" type="button">2026 YTD</button>
-              <button data-year="all" type="button">All</button>
+            <div class="perf-seg" role="group" aria-label="Year">
+              <button data-year="2025" type="button" aria-pressed="false">2025</button>
+              <button class="active" data-year="2026" type="button" aria-pressed="true">2026 YTD</button>
+              <button data-year="all" type="button" aria-pressed="false">All</button>
             </div>
           </div>
           <div class="perf-stats" id="perfStats"></div>
@@ -986,7 +1059,7 @@
   <div class="wrap">
     <div class="record-grid">
       <div class="record-col">
-        <span class="label">2026 Equities <span style="opacity:.6;font-weight:400;">YTD</span></span>
+        <span class="label">2026 Equities <span style="font-weight:400;">YTD</span></span>
         <div class="record-r">+90.70R</div>
         <div class="record-meta">
           <span><b>56.1%</b> win rate</span>
@@ -1004,7 +1077,7 @@
         </div>
       </div>
       <div class="record-col">
-        <span class="label">Crypto <span style="opacity:.6;font-weight:400;">all-time</span></span>
+        <span class="label">Crypto <span style="font-weight:400;">all-time</span></span>
         <div class="record-r">+99.12R</div>
         <div class="record-meta">
           <span><b>43.2%</b> win rate</span>
@@ -1082,7 +1155,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / dashboard</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/dashboard.jpg" aria-label="Belfed dashboard preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/dashboard.jpg" aria-label="Belfed dashboard preview">
               <source data-src="video/dashboard.mp4" type="video/mp4">
             </video>
           </div>
@@ -1106,7 +1179,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / analytics / timeline</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/timeline.jpg" aria-label="Belfed analytics timeline preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/timeline.jpg" aria-label="Belfed analytics timeline preview">
               <source data-src="video/timeline.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1124,7 +1197,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / analytics / reports</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/reports.jpg" aria-label="Belfed analytics reports library preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/reports.jpg" aria-label="Belfed analytics reports library preview">
               <source data-src="video/reports.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1147,7 +1220,7 @@
         <div class="frame">
           <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.belfed.com / asset-analysis</span></div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/asset.jpg" aria-label="Belfed asset analysis preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/asset.jpg" aria-label="Belfed asset analysis preview">
               <source data-src="video/asset.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1174,7 +1247,7 @@
             <span class="url" style="margin-left:8px;">t.me/BelFedFreeEN — Belfed channel</span>
           </div>
           <div class="frame-body">
-            <video class="lazy-video" autoplay muted loop playsinline preload="metadata" poster="video/telegram.jpg" aria-label="Belfed Telegram channel preview">
+            <video class="lazy-video" autoplay muted loop playsinline preload="none" data-poster="video/telegram.jpg" aria-label="Belfed Telegram channel preview">
               <source data-src="video/telegram.mp4" type="video/mp4">            </video>
           </div>
         </div>
@@ -1201,7 +1274,7 @@
         <form class="form-card" id="leadForm" novalidate>
           <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true">
           <div class="form-body">
-            <h4>Request your free analysis</h4>
+            <h3>Request your free analysis</h3>
             <div class="field">
               <label for="ticker">Ticker / Asset</label>
               <input id="ticker" name="ticker" type="text" placeholder="e.g. NVDA · BTC · XAU" required />
@@ -1252,7 +1325,7 @@
             <div class="checkmark">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <h4 style="border:none;color:var(--green-strong);">Request received</h4>
+            <h3 style="border:none;color:var(--green-strong);">Request received</h3>
             <h3 style="margin:8px 0 12px;">You're on the list.</h3>
             <p style="font-family:var(--font-sans);font-size:12.5px;color:var(--ink-2);line-height:1.7;letter-spacing:0.005em;">We'll email <span id="thanksEmail" style="color:var(--black);font-family:var(--font-mono);">you</span> within 3 business days with your Belfed analysis on <span id="thanksTicker" style="color:var(--green-strong);font-family:var(--font-mono);font-weight:700;">your ticker</span>.</p>
             <a href="#pricing" class="btn btn-ghost" style="margin-top:20px;">While you wait — start 14-day free access</a>
@@ -1273,22 +1346,22 @@
     <div class="steps">
       <div class="step r">
         <div class="step-n">01 →</div>
-        <h4>Start your 14-day free access</h4>
+        <h3>Start your 14-day free access</h3>
         <p>Sign up with email. No credit card required.</p>
       </div>
       <div class="step r">
         <div class="step-n">02 →</div>
-        <h4>Access the members web area</h4>
+        <h3>Access the members web area</h3>
         <p>Dashboard, analytics, reports, and asset deep-dives unlock instantly.</p>
       </div>
       <div class="step r">
         <div class="step-n">03 →</div>
-        <h4>Connect Telegram</h4>
+        <h3>Connect Telegram</h3>
         <p>Get a private invite to our closed community for instant trade alerts.</p>
       </div>
       <div class="step r">
         <div class="step-n">04 →</div>
-        <h4>Receive analytics &amp; setups</h4>
+        <h3>Receive analytics &amp; setups</h3>
         <p>Daily and weekly market analytics plus the trades we actually take.</p>
       </div>
     </div>
@@ -1428,6 +1501,8 @@
   </div>
 </section>
 
+</main>
+
 <!-- ============ FOOTER ============ -->
 <footer>
   <div class="wrap">
@@ -1437,15 +1512,15 @@
         <p>Independent global investment research. Market analytics and trade ideas across equities, crypto and commodities.</p>
       </div>
       <div class="foot-col">
-        <h5>Product</h5>
+        <h3>Product</h3>
         <ul><li><a href="#tour">What you get</a></li><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record</a></li><li><a href="#free-analysis">Free analysis</a></li></ul>
       </div>
       <div class="foot-col">
-        <h5>Community</h5>
+        <h3>Community</h3>
         <ul><li><a href="https://t.me/BelFedFreeEN" target="_blank" rel="noopener">Telegram · EN</a></li><li><a href="https://t.me/BelFedFreeRU" target="_blank" rel="noopener">Telegram · RU</a></li><li><a href="https://tradingview.com/u/BelFed_Analytics" target="_blank" rel="noopener">TradingView</a></li><li><a href="https://x.com/art_the_trader" target="_blank" rel="noopener">X / Twitter</a></li></ul>
       </div>
       <div class="foot-col">
-        <h5>Legal</h5>
+        <h3>Legal</h3>
         <ul><li><a href="/terms.html">Terms of service</a></li><li><a href="/privacy.html">Privacy policy</a></li><li><a href="/disclaimer.html">Risk disclaimer</a></li><li><a href="mailto:hello@belfed.com">Contact</a></li></ul>
       </div>
     </div>
@@ -1457,8 +1532,11 @@
 </footer>
 
 <script>
-  // Funnel: record the landing view (UTM fields auto-attached by belfed-analytics.js)
-  if (window.belfedTrack) window.belfedTrack('landing_view', { path: location.pathname });
+  // Funnel: record the landing view (UTM fields auto-attached by belfed-analytics.js).
+  // Wrapped in DOMContentLoaded so the deferred analytics script is guaranteed loaded first.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.belfedTrack) window.belfedTrack('landing_view', { path: location.pathname });
+  });
 
   // Theme toggle
   var themeBtn = document.getElementById('themeBtn');
@@ -1642,6 +1720,7 @@
     var vids = document.querySelectorAll('video.lazy-video');
     function loadVideo(v) {
       if (v.dataset.loaded) return;
+      if (v.dataset.poster) { v.poster = v.dataset.poster; v.removeAttribute('data-poster'); }
       v.querySelectorAll('source[data-src]').forEach(function (s) {
         s.src = s.dataset.src;
         s.removeAttribute('data-src');
@@ -1867,16 +1946,18 @@
     // Wire buttons
     document.querySelectorAll('.perf-seg button[data-market]').forEach(function(b){
       b.addEventListener('click', function(){
-        document.querySelectorAll('.perf-seg button[data-market]').forEach(function(x){ x.classList.remove('active'); });
+        document.querySelectorAll('.perf-seg button[data-market]').forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed','true');
         state.market = b.getAttribute('data-market');
         render();
       });
     });
     document.querySelectorAll('.perf-seg button[data-year]').forEach(function(b){
       b.addEventListener('click', function(){
-        document.querySelectorAll('.perf-seg button[data-year]').forEach(function(x){ x.classList.remove('active'); });
+        document.querySelectorAll('.perf-seg button[data-year]').forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed','true');
         state.year = b.getAttribute('data-year');
         render();
       });

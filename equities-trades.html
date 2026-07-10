@@ -2,7 +2,24 @@
 <html lang="en" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://script.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://script.google.com https://docs.google.com; img-src 'self'; frame-src 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Equities Trades | BelFed Analytics</title>
+  <link rel="icon" type="image/png" href="/logo-belfed-512.png">
+<title>Equities Trades | Belfed Analytics</title>
+  <link rel="canonical" href="https://belfed.com/equities-trades.html" />
+  <meta name="description" content="Browse Belfed's public equities trade record. Every closed stock position is logged in R-multiples for a transparent, verifiable track record." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Belfed" />
+  <meta property="og:title" content="Belfed Public Trade Record — Equities" />
+  <meta property="og:description" content="Browse Belfed's public equities trade record. Every closed stock position is logged in R-multiples for a transparent, verifiable track record." />
+  <meta property="og:url" content="https://belfed.com/equities-trades.html" />
+  <meta property="og:image" content="https://belfed.com/og-belfed.png" />
+  <meta property="og:image:alt" content="Belfed — independent global investment research and market analytics" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Belfed Public Trade Record — Equities" />
+  <meta name="twitter:description" content="Browse Belfed's public equities trade record. Every closed stock position is logged in R-multiples for a transparent, verifiable track record." />
+  <meta name="twitter:image" content="https://belfed.com/og-belfed.png" />
+  <meta name="twitter:image:alt" content="Belfed — independent global investment research and market analytics" />
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="trade-review.css">
@@ -15,7 +32,7 @@
   --white:#f5f5f0;--paper:#efefe7;--paper-2:#e7e7dd;
   --rule:#1a1a1a14;--rule-strong:#1a1a1a26;
   --black:#0a0a0a;--ink:#161614;--ink-2:#2a2a26;
-  --gray:#888;--gray-soft:#6b6b6b;--gray-faint:#b3b3a8;
+  --gray:#66665f;--gray-soft:#57574f;--gray-faint:#b3b3a8;
   --green:#1a6b3a;--green-soft:#1a6b3a14;--green-strong:#14542d;
   --red:#8b1a1a;--gold:#b8860b;
   --radius:4px;--radius-lg:8px;
@@ -36,6 +53,8 @@ img,svg,video{display:block;max-width:100%;height:auto}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 :focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:1000;background:var(--green);color:var(--white);padding:10px 16px;border-radius:0 0 6px 0;font-weight:600;text-decoration:none}
+.skip-link:focus{left:0}
 /* NAV — copied from index.html */
 .nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in oklab,var(--white) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
 .logo{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.22em;color:var(--black);white-space:nowrap}
@@ -65,7 +84,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 footer{padding:48px 0 32px;background:var(--paper);color:var(--ink);border-top:1px solid var(--rule);margin-top:48px}
 .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:36px}
 .foot-brand p{font-family:var(--font-sans);font-size:12px;color:var(--gray-soft);margin-top:12px;max-width:32ch;line-height:1.7;letter-spacing:.005em}
-.foot-col h5{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-soft);margin-bottom:14px}
+.foot-col h2{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-soft);margin-bottom:14px}
 .foot-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
 .foot-col a{font-family:var(--font-mono);font-size:13px;color:var(--ink-2)}
 .foot-col a:hover{color:var(--green-strong)}
@@ -96,7 +115,7 @@ thead th{padding:16px 14px;text-align:left;font-size:10px;letter-spacing:1.5px;t
 tbody tr{border-bottom:1px solid var(--rule);transition:background .15s}
 tbody tr:hover{background:var(--paper)}
 tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
-.num{color:var(--gray-faint);font-size:11px}
+.num{color:var(--gray);font-size:11px}
 .ticker{font-weight:700;letter-spacing:1px;font-size:14px}.member-dot{display:inline-block;margin-left:6px;color:var(--ink);font-size:10px;line-height:1;vertical-align:middle}
 .badge{display:inline-block;padding:3px 10px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;border:1px solid var(--ink)}
 .badge-long{background:transparent;color:var(--ink)}
@@ -129,6 +148,8 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <nav class="nav" aria-label="Primary">
   <a href="/" class="logo" aria-label="Belfed home">BELFED<span class="cursor">_</span></a>
   <ul class="nav-links" role="list">
@@ -154,6 +175,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     </button>
   </div>
 </nav>
+<main id="main-content">
 <div class="page-header">
   <div class="page-label">// Track Record · All Closed Positions · Equities</div>
   <h1 class="page-title">Equities Trades</h1>
@@ -282,9 +304,10 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     Track record includes all setups published in public and private channels. Ideas with entry and exit signals delivered to members are marked with &laquo;&#9679;&raquo;.
 </div>
 <div class="disclaimer">
-    New to R-multiples? <a href="/disclaimer.html" style="color:#888;text-decoration:underline;text-underline-offset:2px;">How we measure performance</a> &mdash; a short explainer on how to read this table.
+    New to R-multiples? <a href="/disclaimer.html" style="color:var(--gray);text-decoration:underline;text-underline-offset:2px;">How we measure performance</a> &mdash; a short explainer on how to read this table.
   Past results do not guarantee future performance. R-multiples are calculated relative to initial risk per trade (1R = amount risked). This page is updated manually after each position is closed. No positions are removed or edited retroactively.
 </div>
+</main>
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -293,15 +316,15 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
         <p>Independent global investment research. Market analytics and trade ideas across equities, crypto and commodities.</p>
       </div>
       <div class="foot-col">
-        <h5>Product</h5>
+        <h2>Product</h2>
         <ul><li><a href="/#tour">What you get</a></li><li><a href="/#how">How it works</a></li><li><a href="/#pricing">Pricing</a></li><li><a href="/trades.html">Track record</a></li><li><a href="/#free-analysis">Free analysis</a></li></ul>
       </div>
       <div class="foot-col">
-        <h5>Community</h5>
+        <h2>Community</h2>
         <ul><li><a href="https://t.me/BelFedFreeEN" target="_blank" rel="noopener">Telegram · EN</a></li><li><a href="https://t.me/BelFedFreeRU" target="_blank" rel="noopener">Telegram · RU</a></li><li><a href="https://tradingview.com/u/BelFed_Analytics" target="_blank" rel="noopener">TradingView</a></li><li><a href="https://x.com/art_the_trader" target="_blank" rel="noopener">X / Twitter</a></li></ul>
       </div>
       <div class="foot-col">
-        <h5>Legal</h5>
+        <h2>Legal</h2>
         <ul><li><a href="/terms.html">Terms of service</a></li><li><a href="/privacy.html">Privacy policy</a></li><li><a href="/disclaimer.html">Risk disclaimer</a></li><li><a href="mailto:hello@belfed.com">Contact</a></li></ul>
       </div>
     </div>
@@ -316,7 +339,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
 <script>
 (function(){
 var css=document.createElement('style');
-css.textContent='.pht{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap}.yf{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.yfb{font-family:inherit;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border:1px solid #ccc;background:transparent;color:#888;cursor:pointer;transition:all .2s}.yfb:hover{border-color:#111;color:#111}.yfb.on{background:#111;color:#fff;border-color:#111}@media(max-width:768px){.pht{gap:10px}.page-title{font-size:24px;overflow-wrap:anywhere;min-width:0;flex:1 1 100%}}';
+css.textContent='.pht{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap}.yf{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.yfb{font-family:inherit;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border:1px solid #ccc;background:transparent;color:var(--gray);cursor:pointer;transition:all .2s}.yfb:hover{border-color:#111;color:#111}.yfb.on{background:#111;color:#fff;border-color:#111}@media(max-width:768px){.pht{gap:10px}.page-title{font-size:24px;overflow-wrap:anywhere;min-width:0;flex:1 1 100%}}';
 document.head.appendChild(css);
 var h1=document.querySelector('.page-title');
 var ph=h1.parentNode;
@@ -403,7 +426,7 @@ return results;}
 function makeRClass(val){var n=parseFloat(String(val).replace(',','.'));if(isNaN(n))return'';return n>0?'win':'loss';}
 function formatR(val){var n=parseFloat(String(val).replace(',','.'));if(isNaN(n)||val===''||val===null)return'\u2014';return(n>0?'+':'')+n.toFixed(2)+'R';}
 var FALLBACK_URL='trades-fallback-equities.json';
-function showError(){var tb=document.querySelector('tbody');if(tb)tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:#888;letter-spacing:1px;font-size:12px;">Trades are temporarily unavailable.</td></tr>';}
+function showError(){var tb=document.querySelector('tbody');if(tb)tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray);letter-spacing:1px;font-size:12px;">Trades are temporarily unavailable.</td></tr>';}
 function fetchWithTimeout(url,ms){if(typeof AbortController==='undefined')return fetch(url);var ctl=new AbortController();var id=setTimeout(function(){ctl.abort();},ms);return fetch(url,{signal:ctl.signal}).then(function(r){clearTimeout(id);return r;},function(e){clearTimeout(id);throw e;});}
 function handleRows(rows){
 var dataRows=[];

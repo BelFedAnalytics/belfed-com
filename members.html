@@ -4,7 +4,24 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co; img-src 'self'; frame-src 'none';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Member Area — BelFed Analytics</title>
+  <link rel="icon" type="image/png" href="/logo-belfed-512.png">
+  <title>Member Area — Belfed Analytics</title>
+  <link rel="canonical" href="https://belfed.com/members.html" />
+  <meta name="description" content="Belfed member area — sign in or start a 14-day free trial for research-driven trade ideas, market commentary, and the full performance dashboard." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Belfed" />
+  <meta property="og:title" content="Belfed Member Area" />
+  <meta property="og:description" content="Belfed member area — sign in or start a 14-day free trial for research-driven trade ideas, market commentary, and the full performance dashboard." />
+  <meta property="og:url" content="https://belfed.com/members.html" />
+  <meta property="og:image" content="https://belfed.com/og-belfed.png" />
+  <meta property="og:image:alt" content="Belfed — independent global investment research and market analytics" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Belfed Member Area" />
+  <meta name="twitter:description" content="Belfed member area — sign in or start a 14-day free trial for research-driven trade ideas, market commentary, and the full performance dashboard." />
+  <meta name="twitter:image" content="https://belfed.com/og-belfed.png" />
+  <meta name="twitter:image:alt" content="Belfed — independent global investment research and market analytics" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -14,7 +31,7 @@
     :root {
       --black: #0a0a0a;
       --white: #f5f5f0;
-      --gray: #888;
+      --gray: #66665f;
       --light-gray: #e8e8e3;
       --border: #d0d0ca;
       --green: #1a6b3a;
@@ -88,7 +105,7 @@
       font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
       color: var(--gray); margin-bottom: 12px;
     }
-    .member-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .member-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
     .member-card p { font-size: 13px; color: #555; line-height: 1.6; }
     .member-card .card-arrow {
       margin-top: 16px; font-size: 13px; color: var(--gray); letter-spacing: 0.1em;
@@ -119,7 +136,7 @@
       background: var(--white); border: 1px solid var(--border);
       padding: 48px; max-width: 420px; width: 100%; text-align: center;
     }
-    .login-box h2 { font-size: 18px; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .login-box h1 { font-size: 18px; letter-spacing: 0.1em; margin-bottom: 8px; }
     .login-box .login-sub {
       font-size: 11px; color: var(--gray); margin-bottom: 28px; letter-spacing: 0.08em;
     }
@@ -289,9 +306,9 @@
     <a id="tgConnectBottom" href="https://t.me/BelfedBot?start=members_bottom_en" class="primary">Open in Telegram</a>
   </div>
 
-  <div id="loginScreen">
+  <main id="loginScreen">
     <div class="login-box">
-      <h2>MEMBER AREA</h2>
+      <h1>MEMBER AREA</h1>
       <div class="login-sub">Sign in to access trade ideas &amp; research</div>
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="showAuthTab('signin')">Sign in</button>
@@ -321,7 +338,7 @@
       <div id="loginError" class="login-error"></div>
       <div id="loginMsg" class="login-msg"></div>
     </div>
-  </div>
+  </main>
 
   <div id="membersContent">
     <main>
@@ -341,28 +358,28 @@
       <div class="members-grid">
         <a href="/dashboard.html" class="member-card" style="text-decoration:none;color:inherit;display:block">
           <div class="card-label">// Live tracker</div>
-          <h3>Trades &amp; performance</h3>
+          <h2>Trades &amp; performance</h2>
           <p>Open positions, real-time P&amp;L, closed trades, and weekly/yearly statistics for stocks and crypto.</p>
           <div class="card-arrow">&rarr; Open dashboard</div>
         </a>
 
         <a href="/analytics.html" class="member-card" style="text-decoration:none;color:inherit;display:block">
           <div class="card-label">// Analytics</div>
-          <h3>Reports &amp; deep dives</h3>
+          <h2>Reports &amp; deep dives</h2>
           <p>Daily and weekly commentary on what is moving markets. Charts, key takeaways and themed breakdowns.</p>
           <div class="card-arrow">&rarr; Open analytics</div>
         </a>
 
         <a href="/asset-analysis.html" class="member-card" style="text-decoration:none;color:inherit;display:block">
           <div class="card-label">// Asset analysis</div>
-          <h3>Asset analysis &amp; requests</h3>
+          <h2>Asset analysis &amp; requests</h2>
           <p>Updates on individual tickers across stocks, crypto, commodities and FX. Filter by ticker or asset class, with charts.</p>
           <div class="card-arrow">&rarr; Open asset analysis</div>
         </a>
 
         <div class="member-card" onclick="alert('Account settings — manage email, password, and profile — will appear here soon. For now, manage your subscription directly in Telegram via @BelfedBot.')">
           <div class="card-label">// Account</div>
-          <h3>Settings</h3>
+          <h2>Settings</h2>
           <p>Manage your subscription, email, password, and integrations. For now, subscription management is handled in Telegram.</p>
           <div class="card-arrow">&rarr; Coming soon</div>
         </div>
@@ -429,7 +446,7 @@
 
         <!-- Master enable -->
         <div class="account-info" style="flex-wrap:wrap;gap:12px;align-items:center;border-bottom:1px dashed #e0d8c5;padding-bottom:14px;margin-bottom:14px">
-          <span style="flex:1;min-width:240px;font-weight:600">Receive emails from BelFed</span>
+          <span style="flex:1;min-width:240px;font-weight:600">Receive emails from Belfed</span>
           <label class="bf-toggle">
             <input type="checkbox" id="emailPrefToggle" disabled>
             <span id="emailPrefLabel" style="font-size:13px;color:var(--gray)">—</span>
@@ -438,7 +455,7 @@
 
         <!-- Detailed event toggles, shown only when master is enabled -->
         <div id="emailEventGroup" style="display:none">
-          <h4 style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin:0 0 10px 0;font-family:'Courier New',monospace">// What to send</h4>
+          <h3 style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin:0 0 10px 0;font-family:'Courier New',monospace">// What to send</h3>
 
           <div class="email-pref-row">
             <span class="email-pref-label">Analytics<span class="email-pref-hint">Every new publication: daily and weekly.</span></span>
@@ -478,7 +495,7 @@
     </main>
 
     <footer>
-      <span>&copy; 2025&ndash;2026 BelFed Analytics. All rights reserved.</span>
+      <span>&copy; 2025&ndash;2026 Belfed Analytics. All rights reserved.</span>
       <div class="footer-links">
         <a href="/disclaimer.html">Disclaimer</a>
       <a href="/privacy.html">Privacy</a>
