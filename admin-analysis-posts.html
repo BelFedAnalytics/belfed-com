@@ -637,12 +637,57 @@ async function handleLeadParam(){
     b.innerHTML = '<span>// FREE-LEAD MODE — $' + escapeHtml(ticker) + ' · ' + escapeHtml(lead.email) +
       ' (' + escapeHtml((lead.lang||'en').toUpperCase()) + '). On publish, this lead is marked fulfilled and a marketing email is sent to the requester. ' +
       'Leave BOTH channels unchecked for email-only (no Telegram/website).</span>' +
-      '<button class="btn small" onclick="clearLead()">[ CANCEL ]</button>';
+      '<span style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button class="btn small" onclick="sendTestEmail(this)" title="Saves a draft, then emails the rendered analysis to a test address. Lead stays NEW; requester is NOT emailed.">[ SEND TEST TO ME ]</button>' +
+      '<button class="btn small" onclick="clearLead()">[ CANCEL ]</button>' +
+      '</span>';
     const notice = document.querySelector('.notice');
     notice.parentNode.insertBefore(b, notice.nextSibling);
   }
   els.ticker.focus();
 }
+// Sends the rendered analysis email to a TEST address (default the admin's own
+// email) without touching the lead. Saves/updates the draft post first so the
+// chart image + TradingView link resolve, then calls admin_fulfill with test_email.
+async function sendTestEmail(testBtn){
+  const leadCtx = window.__leadCtx || null;
+  if (!leadCtx){ flash('err','No lead in context.'); return; }
+  const data = collectFormData();
+  const err = validate(data);
+  if (err){ flash('err', err); return; }
+  const session = (await sb.auth.getSession()).data.session;
+  const defaultTo = (session && session.user && session.user.email) || 'artemfedorov@me.com';
+  const to = (prompt('Send a TEST of this email to which address? (the real requester will NOT be emailed, lead stays NEW)', defaultTo) || '').trim();
+  if (!to) return;
+  if (testBtn) testBtn.disabled = true;
+  try {
+    flash('info','uploading images...');
+    const paths = await uploadPendingImages();
+    const payload = { ...data, image_paths: paths, status: 'draft', created_by: session.user.id };
+    let row;
+    if (editingId){
+      const { data: r, error } = await sb.from('analysis_posts').update(payload).eq('id', editingId).select('id').maybeSingle();
+      if (error) throw error; row = r;
+    } else {
+      const { data: r, error } = await sb.from('analysis_posts').insert(payload).select('id').maybeSingle();
+      if (error) throw error; row = r; editingId = row.id;
+    }
+    flash('info', 'sending test email to '+to+'...');
+    const ff = await fetch(`${SUPABASE_URL}/functions/v1/landing-lead-fulfill`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ action:'admin_fulfill', lead_id: leadCtx.id, post_id: editingId, published_to_web: false, test_email: to })
+    });
+    const fj = await ff.json().catch(()=>({}));
+    if (ff.ok && fj.ok && fj.email && fj.email.ok){
+      flash('ok', 'Test email sent to '+fj.to+'. Lead is still NEW — do the real send when you\'re happy.');
+    } else {
+      flash('err', 'Test failed: '+((fj.email && fj.email.error) || fj.error || ff.status));
+    }
+  } catch(e){ flash('err','Test email error: '+e.message); }
+  finally { if (testBtn) testBtn.disabled = false; }
+}
+
 function clearLead(){
   window.__leadCtx = null;
   const url = new URL(location.href);
