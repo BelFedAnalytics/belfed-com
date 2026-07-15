@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BELFED ANALYTICS — ADMIN: CHART REQUESTS</title>
+<title>BELFED ANALYTICS — ADMIN: FREE REQUESTS</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background-color:#f5f2eb;font-family:'Courier New',Courier,monospace;color:#000;padding:24px 20px;line-height:1.6;font-size:14px;visibility:hidden}
@@ -42,8 +42,6 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .btn.primary:hover{background:#222}
 .btn.danger{background:#c50000;color:#fff;border-color:#c50000}
 .btn.danger:hover{background:#a30000}
-.btn.warn{background:#8a6a00;color:#fff;border-color:#8a6a00}
-.btn.warn:hover{background:#6b5200}
 .btn.small{padding:5px 10px;font-size:10px;letter-spacing:1px}
 .btn:disabled{opacity:0.4;cursor:not-allowed}
 
@@ -52,31 +50,28 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 
 .section-title{font-size:12px;font-weight:bold;letter-spacing:2px;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #000}
 
-.group-card{background:#fff;border:1px solid #000;margin-bottom:14px}
-.group-head{padding:14px 18px;border-bottom:1px solid #000;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#fffbe5}
-.group-head .left{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.group-ticker{font-size:20px;font-weight:bold;letter-spacing:1px}
-.group-ticker::before{content:'$'}
-.group-meta{font-size:11px;letter-spacing:1px;opacity:0.75}
+.lead-card{background:#fff;border:1px solid #000;margin-bottom:14px}
+.lead-head{padding:14px 18px;border-bottom:1px solid #000;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#e5f6ff}
+.lead-head .left{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.lead-ticker{font-size:20px;font-weight:bold;letter-spacing:1px}
+.lead-ticker::before{content:'$'}
+.lead-meta{font-size:11px;letter-spacing:1px;opacity:0.75}
 .class-pill{font-size:10px;letter-spacing:2px;padding:3px 8px;border:1px solid #000;background:#fff;text-transform:uppercase}
-.group-actions{display:flex;gap:6px;flex-wrap:wrap}
-.requesters{padding:10px 18px}
-.requester-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #ccc;font-size:11px;letter-spacing:1px}
-.requester-row:last-child{border-bottom:0}
-.requester-row .who{display:flex;gap:10px;align-items:center}
-.requester-row .src{font-size:9px;padding:2px 6px;border:1px solid #000;letter-spacing:1px;text-transform:uppercase}
-.requester-row .src.web{background:#fff}
-.requester-row .src.telegram{background:#e8f1f3}
-.requester-row .when{opacity:0.65}
+.lang-pill{font-size:10px;letter-spacing:2px;padding:3px 8px;border:1px solid #000;background:#fff;text-transform:uppercase}
+.lead-actions{display:flex;gap:6px;flex-wrap:wrap}
+.lead-body{padding:10px 18px;font-size:11px;letter-spacing:1px}
+.lead-body .row{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed #ccc}
+.lead-body .row:last-child{border-bottom:0}
+.lead-body .k{opacity:0.6;min-width:90px}
+.lead-body .note{white-space:pre-wrap;opacity:0.85}
 
 .recent-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid #ddd;background:#fff;margin-bottom:6px;font-size:11px;letter-spacing:1px}
-.recent-row .left{display:flex;gap:10px;align-items:baseline}
+.recent-row .left{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
 .recent-row .t{font-weight:bold}
 .recent-row .s{font-size:10px;padding:2px 6px;border:1px solid #000;letter-spacing:1px}
 .recent-row .s.fulfilled{background:#000;color:#f5f2eb}
 .recent-row .s.rejected{background:#ffe5e5}
-.recent-row .s.expired{background:#e8e8e8;opacity:0.7}
-.recent-row .s.clarified{background:#fffbe5;border-color:#8a6a00;color:#8a6a00}
+.recent-row .mailed{font-size:9px;padding:1px 5px;border:1px solid #006400;color:#006400;background:#f0fff0;letter-spacing:1px}
 
 .empty{background:#fff;border:1px dashed #999;padding:30px;text-align:center;font-size:12px;letter-spacing:2px;opacity:0.6}
 
@@ -85,14 +80,13 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .modal{background:#fff;border:2px solid #000;padding:24px;width:420px;max-width:92vw}
 .modal h3{font-size:13px;letter-spacing:2px;margin-bottom:14px}
 .modal textarea{width:100%;font-family:'Courier New',monospace;padding:8px;border:1px solid #000;background:#f5f2eb;font-size:12px;min-height:80px;resize:vertical;margin-bottom:10px}
-.modal label{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:1px;margin-bottom:12px;cursor:pointer}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 
 @media(max-width:700px){
   body{padding:16px 12px}
   .admin-nav{margin:-16px -12px 16px}
-  .group-head{padding:12px}
-  .requesters{padding:10px 12px}
+  .lead-head{padding:12px}
+  .lead-body{padding:10px 12px}
 }
 </style>
 </head>
@@ -116,8 +110,8 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
   <a href="/admin-positions.html">[ POSITIONS ]</a>
   <a href="/admin-analytics-list.html">[ ANALYTICS ]</a>
   <a href="/admin-analysis-posts.html">[ ASSET ANALYSIS ]</a>
-  <a href="/admin-chart-requests.html" class="active">[ REQUESTS ]</a>
-  <a href="/admin-free-requests.html">[ FREE REQUESTS ]</a>
+  <a href="/admin-chart-requests.html">[ REQUESTS ]</a>
+  <a href="/admin-free-requests.html" class="active">[ FREE REQUESTS ]</a>
   <a href="/admin-roster.html">[ RECONCILIATION ]</a>
 </nav>
 
@@ -125,17 +119,19 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 
 <header>
   <h2><a href="/admin.html">— BELFED_ ADMIN <span class="admin-badge">ADMIN</span> —</a></h2>
-  <h1>— CHART REQUESTS —</h1>
+  <h1>— FREE ANALYSIS REQUESTS —</h1>
 </header>
 
 <div class="notice">
-  // Queue of chart requests from paid subscribers. Grouped by ticker. Limit — see chart_quota_per_day per profile. Auto-expire after 48 h.
+  // Free-analysis leads from the public landing form (belfed.com / belfed.ru). Each lead is one email address requesting one ticker.<br>
+  // [ FULFILL → EDITOR ] opens the analysis editor pre-filled. On publish, the lead is marked fulfilled and a styled marketing email (chart + TradingView link + 14-day free-trial promo) is sent to the requester.<br>
+  // In the editor you can also publish to the website + private Telegram (RU/EN) — or leave both channels unchecked for an email-only fulfillment.
 </div>
 
 <div class="toolbar">
   <div class="toolbar-left">
-    <div class="counter">// PENDING: <span class="num" id="pendingTotal">—</span></div>
-    <div class="counter">// UNIQUE TICKERS: <span class="num" id="groupCount">—</span></div>
+    <div class="counter">// NEW: <span class="num" id="newTotal">—</span></div>
+    <div class="counter">// FULFILLED: <span class="num" id="fulfilledTotal">—</span></div>
   </div>
   <div class="toolbar-right">
     <button class="btn" onclick="loadQueue()">[ REFRESH ]</button>
@@ -145,12 +141,12 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 
 <div id="errorBox"></div>
 
-<div class="section-title">// QUEUE</div>
+<div class="section-title">// NEW REQUESTS</div>
 <div id="queue">
   <div class="empty">// LOADING…</div>
 </div>
 
-<div class="section-title">// RECENT (7 DAYS)</div>
+<div class="section-title">// RECENT (FULFILLED / REJECTED)</div>
 <div id="recent">
   <div class="empty">— EMPTY —</div>
 </div>
@@ -158,25 +154,12 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 </div>
 </div>
 
-<!-- Clarify modal -->
-<div class="modal-bg" id="clarifyModal">
-  <div class="modal">
-    <h3 id="clarifyTitle">— CLARIFY TICKER —</h3>
-    <p style="font-size:11px;letter-spacing:1px;margin-bottom:10px;opacity:0.75">Message will be sent via Telegram DM + email to the requester(s).</p>
-    <textarea id="clarifyMessage" placeholder="E.g.: Ticker WBKS not found. Did you mean WBK (Westpac Banking) or WBKN? Please re-submit with the correct ticker." style="min-height:100px"></textarea>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeClarify()">[ CANCEL ]</button>
-      <button class="btn warn" id="clarifyBtn" onclick="confirmClarify()">[ SEND CLARIFICATION ]</button>
-    </div>
-  </div>
-</div>
-
 <!-- Reject modal -->
 <div class="modal-bg" id="rejectModal">
   <div class="modal">
     <h3 id="rejectTitle">— REJECT REQUEST —</h3>
-    <textarea id="rejectReason" placeholder="Reason (sent in DM, up to 200 chars)"></textarea>
-    <label><input type="checkbox" id="rejectAll"> Reject all requests for this ticker</label>
+    <p style="font-size:11px;letter-spacing:1px;margin-bottom:10px;opacity:0.75">No email is sent on reject. Reason is stored internally only.</p>
+    <textarea id="rejectReason" placeholder="Internal reason (optional, up to 200 chars) — e.g. invalid ticker"></textarea>
     <div class="modal-actions">
       <button class="btn" onclick="closeReject()">[ CANCEL ]</button>
       <button class="btn danger" onclick="confirmReject()">[ REJECT ]</button>
@@ -192,7 +175,6 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 const $ = (q) => document.querySelector(q);
 
 let rejectTargetId = null;
-let rejectTicker = null;
 
 async function init(){ await checkAdminAndShow(); }
 document.addEventListener('DOMContentLoaded', init);
@@ -252,7 +234,7 @@ function showSuccess(msg){
 async function callFn(action, extra){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showErr('Session expired'); return null; }
-  const r = await fetch(SUPABASE_URL + '/functions/v1/chart-request', {
+  const r = await fetch(SUPABASE_URL + '/functions/v1/landing-lead-fulfill', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token, 'apikey': SUPABASE_ANON },
     body: JSON.stringify(Object.assign({ action }, extra || {})),
@@ -270,110 +252,75 @@ async function loadQueue(){
   $('#queue').innerHTML = '<div class="empty">// LOADING…</div>';
   const d = await callFn('admin_list');
   if (!d) return;
-  $('#pendingTotal').textContent = d.pending_total || 0;
-  $('#groupCount').textContent = (d.groups || []).length;
-  renderGroups(d.groups || []);
-  renderRecent(d.recent || []);
+  $('#newTotal').textContent = (d.new || []).length;
+  $('#fulfilledTotal').textContent = (d.fulfilled || []).length;
+  renderNew(d.new || []);
+  renderRecent([].concat(d.fulfilled || [], d.rejected || []));
 }
 
-function renderGroups(groups){
+// landing_leads asset_class: equities/crypto/commodities/fx/other → editor: stocks/crypto/commodities/fx
+const AC_MAP = { equities:'stocks', stocks:'stocks', crypto:'crypto', commodities:'commodities', fx:'fx', other:'stocks' };
+
+function renderNew(leads){
   const wrap = $('#queue');
-  if (!groups.length) {
-    wrap.innerHTML = '<div class="empty">— QUEUE EMPTY —</div>';
+  if (!leads.length) {
+    wrap.innerHTML = '<div class="empty">— NO NEW REQUESTS —</div>';
     return;
   }
-  wrap.innerHTML = groups.map(g => {
-    const cls = g.asset_class ? '<span class="class-pill">'+escapeHtml(g.asset_class.toUpperCase())+'</span>' : '';
-    const requesters = (g.requests || []).map(r => {
-      const id = r.email || ('@' + (r.telegram_id||'tg')) || r.user_id.slice(0,8);
-      const clarifiedBadge = r.clarification_sent_at
-        ? '<span style="font-size:9px;letter-spacing:1px;padding:1px 5px;border:1px solid #8a6a00;color:#8a6a00;background:#fffbe5;margin-left:6px">CLARIFIED</span>'
-        : '';
-      return '<div class="requester-row">' +
-        '<div class="who"><span class="src '+escapeHtml(r.source)+'">'+escapeHtml(r.source)+'</span><span>'+escapeHtml(id)+clarifiedBadge+'</span></div>' +
-        '<div class="when">'+escapeHtml(timeAgo(r.created_at))+'</div>' +
-        '</div>';
-    }).join('');
-    const oldestId = (g.requests && g.requests.length) ? g.requests[0].id : '';
-    _groupsMap[oldestId] = g; // store for openClarify lookup
-    return '<div class="group-card">' +
-      '<div class="group-head">' +
+  wrap.innerHTML = leads.map(l => {
+    const cls = l.asset_class ? '<span class="class-pill">'+escapeHtml(l.asset_class.toUpperCase())+'</span>' : '';
+    const lang = '<span class="lang-pill">'+escapeHtml((l.lang||'en').toUpperCase())+'</span>';
+    const editorAC = AC_MAP[(l.asset_class||'').toLowerCase()] || 'stocks';
+    const editorHref = '/admin-analysis-posts.html?lead='+encodeURIComponent(l.id)+
+      '&ticker='+encodeURIComponent(l.ticker||'')+'&asset_class='+encodeURIComponent(editorAC);
+    const rows = [];
+    rows.push('<div class="row"><span class="k">EMAIL</span><span>'+escapeHtml(l.email)+'</span></div>');
+    if (l.timeframe) rows.push('<div class="row"><span class="k">TIMEFRAME</span><span>'+escapeHtml(l.timeframe)+'</span></div>');
+    rows.push('<div class="row"><span class="k">SOURCE</span><span>'+escapeHtml(l.source||'landing')+'</span></div>');
+    if (l.note) rows.push('<div class="row"><span class="k">NOTE</span><span class="note">'+escapeHtml(l.note)+'</span></div>');
+    return '<div class="lead-card">' +
+      '<div class="lead-head">' +
         '<div class="left">' +
-          '<span class="group-ticker">'+escapeHtml(g.ticker)+'</span>' +
-          cls +
-          '<span class="group-meta">'+g.count+' '+(g.count===1?'request':'requests')+' · oldest '+timeAgo(g.oldest_at)+'</span>' +
+          '<span class="lead-ticker">'+escapeHtml(l.ticker||'—')+'</span>' +
+          cls + lang +
+          '<span class="lead-meta">received '+escapeHtml(timeAgo(l.created_at))+'</span>' +
         '</div>' +
-        '<div class="group-actions">' +
-          '<a class="btn primary small" href="/admin-analysis-posts.html?fulfill_req='+encodeURIComponent(oldestId)+'&ticker='+encodeURIComponent(g.ticker)+(g.asset_class?'&asset_class='+encodeURIComponent(g.asset_class):'')+'">[ FULFILL → EDITOR ]</a>' +
-          '<button class="btn small warn" onclick="openClarify(\''+oldestId+'\', \''+escapeHtml(g.ticker)+'\')">[ CLARIFY? ]</button>' +
-          '<button class="btn small danger" onclick="openReject(\''+oldestId+'\', \''+escapeHtml(g.ticker)+'\')">[ REJECT ]</button>' +
+        '<div class="lead-actions">' +
+          '<a class="btn primary small" href="'+editorHref+'">[ FULFILL → EDITOR ]</a>' +
+          '<button class="btn small danger" onclick="openReject(\''+l.id+'\', \''+escapeHtml(l.ticker||'')+'\')">[ REJECT ]</button>' +
         '</div>' +
       '</div>' +
-      '<div class="requesters">'+requesters+'</div>' +
+      '<div class="lead-body">'+rows.join('')+'</div>' +
     '</div>';
   }).join('');
 }
 
-function renderRecent(recent){
+function renderRecent(leads){
   const wrap = $('#recent');
-  if (!recent.length) { wrap.innerHTML = '<div class="empty">— EMPTY —</div>'; return; }
-  const statusLabel = { fulfilled:'DONE', rejected:'REJECTED', expired:'EXPIRED', pending:'PENDING' };
-  wrap.innerHTML = recent.map(r => {
-    const link = r.fulfilled_by_post_id ? ' · <a href="/asset-analysis.html#post-'+escapeHtml(r.fulfilled_by_post_id)+'" style="color:#000">[view]</a>' : '';
-    const reason = r.rejected_reason ? ' · reason: '+escapeHtml(r.rejected_reason) : '';
+  if (!leads.length) { wrap.innerHTML = '<div class="empty">— EMPTY —</div>'; return; }
+  // Sort newest first by fulfilled_at/created_at
+  leads.sort((a,b)=> new Date(b.fulfilled_at||b.created_at) - new Date(a.fulfilled_at||a.created_at));
+  const statusLabel = { fulfilled:'DONE', rejected:'REJECTED' };
+  wrap.innerHTML = leads.map(l => {
+    const st = (l.status === 'rejected') ? 'rejected' : 'fulfilled';
+    const mailed = l.email_sent_at ? '<span class="mailed">EMAILED</span>' : '';
+    const reason = l.rejected_reason ? ' · reason: '+escapeHtml(l.rejected_reason) : '';
     return '<div class="recent-row">' +
       '<div class="left">' +
-        '<span class="t">'+escapeHtml(r.ticker)+'</span>' +
-        '<span class="s '+escapeHtml(r.status)+'">'+escapeHtml(statusLabel[r.status]||r.status)+'</span>' +
-        '<span style="opacity:0.65">'+escapeHtml(r.email||r.user_id.slice(0,8))+'</span>' +
+        '<span class="t">'+escapeHtml(l.ticker||'—')+'</span>' +
+        '<span class="s '+st+'">'+escapeHtml(statusLabel[st]||st)+'</span>' +
+        mailed +
+        '<span style="opacity:0.65">'+escapeHtml(l.email)+'</span>' +
       '</div>' +
-      '<div style="opacity:0.65">'+escapeHtml(timeAgo(r.fulfilled_at||r.created_at))+reason+link+'</div>' +
+      '<div style="opacity:0.65">'+escapeHtml(timeAgo(l.fulfilled_at||l.created_at))+reason+'</div>' +
     '</div>';
   }).join('');
-}
-
-let clarifyTargetId = null;
-let clarifyRequests = [];
-const _groupsMap = {}; // keyed by oldestId → full group object
-
-function openClarify(id, ticker){
-  clarifyTargetId = id;
-  clarifyRequests = (_groupsMap[id] && _groupsMap[id].requests) || [];
-  $('#clarifyTitle').textContent = '— CLARIFY $' + ticker + ' —';
-  $('#clarifyMessage').value = '';
-  $('#clarifyBtn').disabled = false;
-  $('#clarifyBtn').textContent = '[ SEND CLARIFICATION ]';
-  $('#clarifyModal').classList.add('open');
-}
-function closeClarify(){
-  $('#clarifyModal').classList.remove('open');
-  clarifyTargetId = null;
-  clarifyRequests = [];
-}
-async function confirmClarify(){
-  if (!clarifyTargetId) return;
-  const message = $('#clarifyMessage').value.trim();
-  if (!message) { alert('Please enter a clarification message.'); return; }
-  $('#clarifyBtn').disabled = true;
-  $('#clarifyBtn').textContent = '[ SENDING… ]';
-  const d = await callFn('admin_clarify', { request_id: clarifyTargetId, message });
-  if (d && d.ok) {
-    closeClarify();
-    const info = (d.sent_tg ? 'Telegram DM' : '') + (d.sent_tg && d.sent_email ? ' + ' : '') + (d.sent_email ? 'email' : '');
-    showSuccess('Clarification sent via ' + (info||'notification') + '.');
-    await loadQueue();
-  } else {
-    $('#clarifyBtn').disabled = false;
-    $('#clarifyBtn').textContent = '[ SEND CLARIFICATION ]';
-  }
 }
 
 function openReject(id, ticker){
   rejectTargetId = id;
-  rejectTicker = ticker;
-  $('#rejectTitle').textContent = '— REJECT ' + ticker + ' —';
+  $('#rejectTitle').textContent = '— REJECT ' + (ticker ? '$'+ticker : 'REQUEST') + ' —';
   $('#rejectReason').value = '';
-  $('#rejectAll').checked = false;
   $('#rejectModal').classList.add('open');
 }
 function closeReject(){
@@ -383,24 +330,13 @@ function closeReject(){
 async function confirmReject(){
   if (!rejectTargetId) return;
   const reason = $('#rejectReason').value.trim();
-  const all = $('#rejectAll').checked;
-  const d = await callFn('admin_reject', { request_id: rejectTargetId, reason, reject_all_ticker: all });
+  const d = await callFn('admin_reject', { lead_id: rejectTargetId, reason });
   if (d && d.ok) {
     closeReject();
+    showSuccess('Request rejected.');
     await loadQueue();
   }
 }
-
-// Handle URL message from publish callback
-(function(){
-  const params = new URLSearchParams(location.search);
-  const msg = params.get('msg');
-  if (msg === 'fulfilled') {
-    setTimeout(()=>{ alert('Request fulfilled successfully — user notified.'); }, 200);
-    const url = new URL(location.href); url.searchParams.delete('msg');
-    history.replaceState(null,'', url.pathname + (url.search||''));
-  }
-})();
 </script>
 </body>
 </html>

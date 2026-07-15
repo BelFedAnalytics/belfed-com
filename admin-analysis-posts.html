@@ -182,6 +182,7 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
   <a href="/admin-analytics-list.html">[ ANALYTICS ]</a>
   <a href="/admin-analysis-posts.html" class="active">[ ASSET ANALYSIS ]</a>
   <a href="/admin-chart-requests.html">[ REQUESTS ]</a>
+  <a href="/admin-free-requests.html">[ FREE REQUESTS ]</a>
   <a href="/admin-roster.html">[ RECONCILIATION ]</a>
 </nav>
 
@@ -568,6 +569,8 @@ function initEditor(){
   handleReplyToParam();
   // Handle ?fulfill_req=<id>&ticker=<>&asset_class=<> from URL
   handleFulfillReqParam();
+  // Handle ?lead=<id>&ticker=<>&asset_class=<> from URL (free-analysis landing lead)
+  handleLeadParam();
 }
 
 async function handleFulfillReqParam(){
@@ -599,6 +602,55 @@ function clearFulfill(){
   url.searchParams.delete('asset_class');
   history.replaceState(null,'', url.pathname + (url.search||''));
   const b = document.getElementById('fulfill-banner');
+  if (b) b.remove();
+}
+
+// =================== FREE-ANALYSIS LANDING LEAD ===================
+// window.__leadCtx = { id, email, ticker, asset_class, timeframe, lang } when in lead-fulfill mode.
+async function handleLeadParam(){
+  const params = new URLSearchParams(location.search);
+  const leadId = params.get('lead');
+  if (!leadId) return;
+  // Load the lead so we know the requester email / lang / timeframe
+  const { data: lead, error } = await sb.from('landing_leads')
+    .select('id, email, ticker, asset_class, timeframe, lang, status').eq('id', leadId).maybeSingle();
+  if (error || !lead){ flash('err','lead not found'); return; }
+  window.__leadCtx = lead;
+
+  const ticker = (lead.ticker || params.get('ticker') || '').toUpperCase();
+  // landing_leads asset_class uses equities/crypto/commodities/fx/other; editor uses stocks/crypto/commodities/fx
+  const acMap = { equities:'stocks', stocks:'stocks', crypto:'crypto', commodities:'commodities', fx:'fx', other:'stocks' };
+  const assetClass = acMap[(lead.asset_class||'').toLowerCase()] || params.get('asset_class') || 'stocks';
+  if (ticker) els.ticker.value = ticker;
+  els.assetClass.value = assetClass;
+  els.tags.value = '#AnalysisUpdate #' + (assetClass==='crypto' ? 'crypto' : 'equities');
+  syncAssetClassTag();
+  // Free reads default to a friendly greeting; email is language-driven from the lead.
+  if ((lead.lang||'en') === 'en') els.greetEn.value = els.greetEn.value || 'Analysis requested via belfed.com';
+  else els.greetRu.value = els.greetRu.value || 'Анализ по запросу с belfed.ru';
+
+  const existing = document.getElementById('lead-banner');
+  if (!existing) {
+    const b = document.createElement('div');
+    b.id = 'lead-banner';
+    b.style.cssText = 'background:#e5f6ff;border:1px solid #000;padding:10px 14px;margin-bottom:14px;font-size:11px;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap';
+    b.innerHTML = '<span>// FREE-LEAD MODE — $' + escapeHtml(ticker) + ' · ' + escapeHtml(lead.email) +
+      ' (' + escapeHtml((lead.lang||'en').toUpperCase()) + '). On publish, this lead is marked fulfilled and a marketing email is sent to the requester. ' +
+      'Leave BOTH channels unchecked for email-only (no Telegram/website).</span>' +
+      '<button class="btn small" onclick="clearLead()">[ CANCEL ]</button>';
+    const notice = document.querySelector('.notice');
+    notice.parentNode.insertBefore(b, notice.nextSibling);
+  }
+  els.ticker.focus();
+}
+function clearLead(){
+  window.__leadCtx = null;
+  const url = new URL(location.href);
+  url.searchParams.delete('lead');
+  url.searchParams.delete('ticker');
+  url.searchParams.delete('asset_class');
+  history.replaceState(null,'', url.pathname + (url.search||''));
+  const b = document.getElementById('lead-banner');
   if (b) b.remove();
 }
 
@@ -879,10 +931,20 @@ function collectFormData(){
 
 function validate(d){
   if (!d.ticker) return 'TICKER required';
-  if (!d.publish_to_ru && !d.publish_to_en) return 'select at least one channel';
+  const leadMode = !!window.__leadCtx;
+  // In free-lead mode, email-only is allowed (no channel selected). Otherwise require a channel.
+  if (!leadMode && !d.publish_to_ru && !d.publish_to_en) return 'select at least one channel';
   if (d.publish_to_ru && !d.body_ru) return 'RU body is empty';
   if (d.publish_to_en && !d.body_en) return 'EN body is empty';
   if (d.post_type==='request' && !d.reply_name && !d.reply_text) return 'reply context is empty';
+  if (leadMode){
+    // Email needs a chart image and a TradingView link to be useful.
+    const hasImg = state.images && state.images.length > 0;
+    if (!hasImg) return 'attach a chart image (needed for the email)';
+    if (!d.tradingview_url) return 'TradingView URL required (needed for the email)';
+    // The lead's language body must be present so the requester gets real analysis text is optional,
+    // but at least the matching-language greeting/body should exist if that channel is published.
+  }
   return null;
 }
 
@@ -922,7 +984,14 @@ async function publish(){
   const data = collectFormData();
   const err = validate(data);
   if (err){ flash('err', err); return; }
-  if (!confirm('Publish to selected channels now?')) return;
+  const leadCtx = window.__leadCtx || null;
+  const emailOnly = leadCtx && !data.publish_to_ru && !data.publish_to_en;
+  const confirmMsg = leadCtx
+    ? (emailOnly
+        ? `Email-only fulfillment: send the $${data.ticker} analysis to ${leadCtx.email} without posting to Telegram/website?`
+        : `Publish to selected channels AND email the $${data.ticker} analysis to ${leadCtx.email}?`)
+    : 'Publish to selected channels now?';
+  if (!confirm(confirmMsg)) return;
   els.btnPublish.disabled = true;
   try {
     flash('info','uploading images...');
@@ -941,6 +1010,18 @@ async function publish(){
       if (error) throw error;
       row = r;
       editingId = row.id;
+    }
+
+    // ── EMAIL-ONLY LEAD FULFILLMENT: skip analysis-publish (no Telegram/website) ──
+    if (emailOnly){
+      flash('info','sending email to lead...');
+      const okLead = await fulfillLead(leadCtx.id, editingId, false, session);
+      if (okLead){
+        resetAfterPublish();
+        loadHistory();
+      }
+      els.btnPublish.disabled = false;
+      return;
     }
 
     flash('info','publishing to telegram...');
@@ -985,24 +1066,14 @@ async function publish(){
           }
         } catch (e) { flash('err', 'Fulfill error: '+e.message); }
       }
-      // reset to fresh form
-      editingId = null;
-      window.__editingSlug = null;
-      parentPostId = null;
-      document.querySelectorAll('input[type=text],input[type=url],textarea').forEach(i => i.value='');
-      els.greetRu.value = 'Анализ по запросу пользователя';
-      els.tags.value = '#AnalysisUpdate #equities'; els.type.value='update'; els.type.disabled=false; els.assetClass.value='stocks';
-      const banner = document.getElementById('parent-banner');
-      if (banner) banner.style.display='none';
-      const url = new URL(location.href);
-      url.searchParams.delete('reply_to');
-      url.searchParams.delete('fulfill_req');
-      url.searchParams.delete('ticker');
-      url.searchParams.delete('asset_class');
-      history.replaceState(null,'', url.pathname + (url.search||''));
-      const fb = document.getElementById('fulfill-banner');
-      if (fb) fb.remove();
-      state.images=[]; renderThumbs(); updateCounters(); updateReplyVisibility(); render();
+      // Fulfill FREE-ANALYSIS lead if we came from the free-requests queue.
+      const leadIdParam = fulfillParams.get('lead');
+      if (leadIdParam && publishedPostId && window.__leadCtx) {
+        // report_url is included only for the lead's language and only when that channel was published.
+        const langPublished = (window.__leadCtx.lang === 'ru') ? data.publish_to_ru : data.publish_to_en;
+        await fulfillLead(leadIdParam, publishedPostId, !!langPublished, session);
+      }
+      resetAfterPublish();
     }
     loadHistory();
   } catch (e){
@@ -1010,6 +1081,53 @@ async function publish(){
   } finally {
     els.btnPublish.disabled = false;
   }
+}
+
+// Calls the landing-lead-fulfill edge function: marks the lead fulfilled + sends the marketing email.
+async function fulfillLead(leadId, postId, publishedToWeb, session){
+  try {
+    const ff = await fetch(`${SUPABASE_URL}/functions/v1/landing-lead-fulfill`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ action:'admin_fulfill', lead_id: leadId, post_id: postId, published_to_web: !!publishedToWeb })
+    });
+    const fj = await ff.json().catch(()=>({}));
+    if (ff.ok && fj.ok && fj.email && fj.email.ok) {
+      flash('ok', `Lead fulfilled — email sent to ${fj.to}.`);
+      return true;
+    } else if (ff.ok && fj.ok) {
+      flash('err', `Lead marked fulfilled but email failed: ${(fj.email && fj.email.error) || 'unknown'}`);
+      return true;
+    } else {
+      flash('err', `Failed to fulfill lead: ${fj.error||ff.status}`);
+      return false;
+    }
+  } catch (e) { flash('err', 'Lead fulfill error: '+e.message); return false; }
+}
+
+// Resets the editor to a fresh state and clears reply/fulfill/lead URL params + banners.
+function resetAfterPublish(){
+  editingId = null;
+  window.__editingSlug = null;
+  window.__leadCtx = null;
+  parentPostId = null;
+  document.querySelectorAll('input[type=text],input[type=url],textarea').forEach(i => i.value='');
+  els.greetRu.value = 'Анализ по запросу пользователя';
+  els.tags.value = '#AnalysisUpdate #equities'; els.type.value='update'; els.type.disabled=false; els.assetClass.value='stocks';
+  const banner = document.getElementById('parent-banner');
+  if (banner) banner.style.display='none';
+  const url = new URL(location.href);
+  url.searchParams.delete('reply_to');
+  url.searchParams.delete('fulfill_req');
+  url.searchParams.delete('lead');
+  url.searchParams.delete('ticker');
+  url.searchParams.delete('asset_class');
+  history.replaceState(null,'', url.pathname + (url.search||''));
+  const fb = document.getElementById('fulfill-banner');
+  if (fb) fb.remove();
+  const lb = document.getElementById('lead-banner');
+  if (lb) lb.remove();
+  state.images=[]; renderThumbs(); updateCounters(); updateReplyVisibility(); render();
 }
 
 async function isAlreadyPublished(id){
