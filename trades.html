@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://script.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://script.google.com https://docs.google.com; img-src 'self'; frame-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://script.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://script.google.com https://docs.google.com; img-src 'self' https://s3.tradingview.com data:; frame-src 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/logo-belfed-512.png">
 <title id="page-title">Public Trade Record — Crypto &amp; Equities | Belfed Analytics</title>
@@ -345,6 +345,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
       var exitP=(r[8]||'').trim();
       var result=(r[9]||'').trim();
       var tvLink=(r[10]||'').trim();
+      var snap=(r[26]||'').trim();
       // Members Signal: crypto uses col O (idx 14), equities uses col T (idx 19)
       var membersSignal=((isCrypto?r[14]:r[19])||'').trim().toLowerCase();
       var memberDot=(membersSignal==='yes'||membersSignal==='y'||membersSignal==='true'||membersSignal==='1'||membersSignal==='•'||membersSignal==='●')?' <span class="member-dot" title="Members signal">●</span>':'';
@@ -375,7 +376,7 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
       if(window.BelfedReview){
         window.BelfedReview.attachButton(tr.lastElementChild,{
           ticker:ticker,dir:dir,entryDate:entryDate,exitDate:exitDate,
-          entryP:entryP,exitP:exitP,result:result,tvLink:tvLink
+          entryP:entryP,exitP:exitP,result:result,tvLink:tvLink,snap:snap
         });
       }
     });
