@@ -158,9 +158,19 @@
 
   function keyFor(data) {
     var t = (data.ticker || "").toUpperCase();
+    var entry = toISO(data.entryDate), exit = toISO(data.exitDate);
+    var full = t + "|" + entry + "|" + exit;
+    var ac = (data.assetClass || "").toLowerCase();
+    var dir = (data.dir || "").toLowerCase();
+    // Collision-safe lookup. Two trades that share ticker + entry date (e.g.
+    // TSLA opened 2026-04-30 and closed on two different dates) must never
+    // borrow each other's card. The SAFE key adds asset class + direction +
+    // exit; the FULL key adds exit; the PAIR alias is a last resort and is
+    // dropped from the manifest whenever it is ambiguous across sheet rows.
     return {
-      full: t + "|" + toISO(data.entryDate) + "|" + toISO(data.exitDate),
-      pair: t + "|" + toISO(data.entryDate),
+      safe: (ac && dir) ? ac + "#" + dir + "#" + full : "",
+      full: full,
+      pair: t + "|" + entry,
     };
   }
 
@@ -315,7 +325,7 @@
     var title = (data.ticker || "") + " — " + T.review;
     var k = keyFor(data);
     getManifest().then(function (m) {
-      var entry = m[k.full] || m[k.pair];
+      var entry = (k.safe && m[k.safe]) || m[k.full] || m[k.pair];
       var chart = chartHTML(data);
       var card;
       if (entry && entry[LANG]) {

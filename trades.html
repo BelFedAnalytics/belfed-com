@@ -282,21 +282,26 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
     document.title='Equities Trades | Belfed Analytics';
   }
 
+  // RFC-4180 aware: a quoted field may contain commas AND newlines. Parsing the
+  // whole text as one character stream (rather than splitting on newlines first)
+  // keeps multi-line note cells from shifting later columns — otherwise the
+  // Members-Signal column slips out of place and the members dot is dropped.
   function parseCSV(text){
-    var lines=text.split(/\r?\n/);
-    var results=[];
-    for(var i=0;i<lines.length;i++){
-      var cols=[]; var cur=''; var inQ=false;
-      for(var c=0;c<lines[i].length;c++){
-        var ch=lines[i][c];
-        if(ch=='"'&&inQ&&lines[i][c+1]=='"'){cur+='"';c++;}
-        else if(ch=='"'){inQ=!inQ;}
-        else if(ch==','&&!inQ){cols.push(cur.trim());cur='';}
+    var results=[]; var row=[]; var cur=''; var inQ=false;
+    for(var i=0;i<text.length;i++){
+      var ch=text[i];
+      if(inQ){
+        if(ch=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else {inQ=false;} }
+        else{cur+=ch;}
+      }else{
+        if(ch=='"'){inQ=true;}
+        else if(ch==','){row.push(cur.trim());cur='';}
+        else if(ch=='\n'){row.push(cur.trim());results.push(row);row=[];cur='';}
+        else if(ch=='\r'){if(text[i+1]!='\n'){row.push(cur.trim());results.push(row);row=[];cur='';}}
         else{cur+=ch;}
       }
-      cols.push(cur.trim());
-      results.push(cols);
     }
+    if(cur!==''||row.length){row.push(cur.trim());results.push(row);}
     return results;
   }
 
@@ -349,7 +354,9 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
       var result=(r[9]||'').trim();
       var tvLink=(r[10]||'').trim();
       var snap=(r[26]||'').trim();
-      // Members Signal: crypto uses col O (idx 14), equities uses col T (idx 19)
+      // Members Signal: crypto uses col O (idx 14), equities uses col T (idx 19).
+      // trim()+toLowerCase() so "Yes"/"yes"/" yes " all match — casing must never
+      // decide whether the members dot renders.
       var membersSignal=((isCrypto?r[14]:r[19])||'').trim().toLowerCase();
       var memberDot=(membersSignal==='yes'||membersSignal==='y'||membersSignal==='true'||membersSignal==='1'||membersSignal==='•'||membersSignal==='●')?' <span class="member-dot" title="Members signal">●</span>':'';
       if(!ticker)return;
@@ -379,7 +386,8 @@ tbody td{padding:14px 14px;font-size:13px;vertical-align:middle}
       if(window.BelfedReview){
         window.BelfedReview.attachButton(tr.lastElementChild,{
           ticker:ticker,dir:dir,entryDate:entryDate,exitDate:exitDate,
-          entryP:entryP,exitP:exitP,result:result,tvLink:tvLink,snap:snap
+          entryP:entryP,exitP:exitP,result:result,tvLink:tvLink,snap:snap,
+          assetClass:isCrypto?'crypto':'equities'
         });
       }
     });

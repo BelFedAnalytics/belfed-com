@@ -26,3 +26,9 @@ jobs:
         run: node tests/confirm.test.js
       - name: Run telegram connect tests
         run: node tests/telegram-link.test.js
+      - name: Syntax check build_review_manifest.js
+        run: node --check build_review_manifest.js
+      - name: Run trade-review card tests
+        run: node tests/review-cards.test.js
+      - name: Run results-page CSV parser tests
+        run: node tests/csv-parse.test.js
