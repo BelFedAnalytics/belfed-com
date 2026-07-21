@@ -32,3 +32,7 @@ jobs:
         run: node tests/review-cards.test.js
       - name: Run results-page CSV parser tests
         run: node tests/csv-parse.test.js
+      - name: Syntax check build_trades_fallback.js
+        run: node --check build_trades_fallback.js
+      - name: Run offline fallback dot-parity tests
+        run: node tests/fallback-dots.test.js
