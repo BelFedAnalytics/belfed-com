@@ -447,7 +447,8 @@ dataRows.push(r);}
 var tbody=document.querySelector('tbody');
 tbody.innerHTML='';
 var totalR=0,wins=0,losses=0,winSum=0,lossSum=0,closed=0;
-dataRows.forEach(function(r,idx){
+var renderedCount=0;
+dataRows.forEach(function(r){
 var ticker=(r[1]||'').trim();
 var dir=(r[2]||'').trim();
 var status=(r[3]||'').trim();
@@ -463,17 +464,21 @@ var snap=(r[26]||'').trim();
 var membersSignal=(r[19]||'').trim().toLowerCase();
 var memberDot=(membersSignal==='yes'||membersSignal==='y'||membersSignal==='true'||membersSignal==='1'||membersSignal==='•'||membersSignal==='●')?' <span class="member-dot" title="Members signal">●</span>':'';
 if(!ticker)return;
-var rVal=parseFloat(result.replace(',','.'));
 var isClosed=status.toLowerCase()==='closed';
-var isFullyClosed=isClosed&&!isNaN(rVal)&&result!==''&&exitP!=='';
-  if(!isFullyClosed)return;
-totalR+=rVal;closed++;if(rVal>0){wins++;winSum+=rVal;}else{losses++;lossSum+=rVal;}
+// Render every closed position; open rows are skipped on this "closed positions" page.
+if(!isClosed)return;
+var rVal=parseFloat(result.replace(',','.'));
+var hasResult=result!==''&&!isNaN(rVal);
+// Only rows with a parseable result contribute to totals/winrate.
+if(hasResult){totalR+=rVal;closed++;if(rVal>0){wins++;winSum+=rVal;}else{losses++;lossSum+=rVal;}}
 var dirClass=dir.toLowerCase()==='long'?'badge-long':'badge-short';
 var rClass=makeRClass(result);
 var rDisplay=formatR(result);
 var analysisCell='';
+// Row number reflects rows actually appended, not the CSV index.
+renderedCount++;
 var tr=document.createElement('tr');
-tr.innerHTML='<td class="num">'+(idx+1).toString().padStart(2,'0')+'</td><td><span class="ticker">'+ticker+'</span>'+memberDot+'</td><td><span class="badge '+dirClass+'">'+dir+'</span></td><td>'+entryDate+'</td><td>'+(exitDate||'\u2014')+'</td><td>'+entryP+'</td><td>'+(exitP||'\u2014')+'</td><td class="'+rClass+'">'+rDisplay+'</td><td>'+analysisCell+'</td>';
+tr.innerHTML='<td class="num">'+renderedCount.toString().padStart(2,'0')+'</td><td><span class="ticker">'+ticker+'</span>'+memberDot+'</td><td><span class="badge '+dirClass+'">'+dir+'</span></td><td>'+entryDate+'</td><td>'+(exitDate||'\u2014')+'</td><td>'+entryP+'</td><td>'+(exitP||'\u2014')+'</td><td class="'+rClass+'">'+rDisplay+'</td><td>'+analysisCell+'</td>';
 tbody.appendChild(tr);
 if(window.BelfedReview){window.BelfedReview.attachButton(tr.lastElementChild,{ticker:ticker,dir:dir,entryDate:entryDate,exitDate:exitDate,entryP:entryP,exitP:exitP,result:result,tvLink:tvLink,snap:snap,assetClass:'equities'});}
 });
