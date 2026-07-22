@@ -675,7 +675,15 @@ function renderClosedList() {
     const closesN = (p.partial_closes && Array.isArray(p.partial_closes))
       ? p.partial_closes.length
       : (p.partial_closes_count ?? 0);
-    const closesCell = closesN > 0 ? `${closesN}x partial → full` : '—';
+    // The automatic target/partial-stop engine flips remaining_pct/status without
+    // writing a partial_closes ledger row, so the relation is empty for those.
+    // Surface the accounting gap instead of rendering a misleading "—".
+    const remNum = (p.remaining_pct === null || p.remaining_pct === undefined)
+      ? 100 : parseFloat(p.remaining_pct);
+    const wasPartialed = isFinite(remNum) && remNum < 100;
+    const closesCell = closesN > 0
+      ? `${closesN}x partial → full`
+      : (wasPartialed ? '⚠ partial (ledger missing)' : '—');
     return `
     <tr>
       <td>${p.id}</td>
@@ -702,7 +710,7 @@ async function loadClosed() {
   // configured this gracefully falls back to the legacy projection.
   let { data, error } = await sb
     .from('active_positions')
-    .select('id,asset_class,ticker,direction,entry_price,exit_price,result_rr,closed_at,archived_to_sheet_at,partial_closes(id)')
+    .select('id,asset_class,ticker,direction,entry_price,exit_price,result_rr,closed_at,archived_to_sheet_at,remaining_pct,status,partial_closes(id)')
     .in('status', ['closed', 'cancelled'])
     .order('closed_at', { ascending: false })
     .limit(100);
@@ -710,7 +718,7 @@ async function loadClosed() {
     // Fallback: fetch without the relation (table or relation may not exist yet).
     const fb = await sb
       .from('active_positions')
-      .select('id,asset_class,ticker,direction,entry_price,exit_price,result_rr,closed_at,archived_to_sheet_at')
+      .select('id,asset_class,ticker,direction,entry_price,exit_price,result_rr,closed_at,archived_to_sheet_at,remaining_pct,status')
       .in('status', ['closed', 'cancelled'])
       .order('closed_at', { ascending: false })
       .limit(100);
