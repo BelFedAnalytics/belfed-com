@@ -35,7 +35,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DEFAULT_DATA = process.env.BELFED_AUDIT_DIR ||
-  '/home/user/workspace/trade_audit_2026-07-20';
+  '/home/user/workspace/trade_audit_2026-07-22';
 // Subscriber Telegram signal channels differ per language (EN and RU are
 // separate supergroups/topics, each with its own message-id namespace).
 const TG = {

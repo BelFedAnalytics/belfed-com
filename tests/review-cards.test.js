@@ -268,6 +268,78 @@ console.log('trade-review manifest builder');
   assert(en.indexOf('t.me/c/3869302680') === -1, 'no Telegram link is fabricated when message_id_en is null');
 }
 
+// 9) LITE #237 (Equties:167): a position closed AFTER the manifest build -------
+// Root cause of the regression this guards: position 237 was still OPEN
+// (partially_closed, closed_at=null, no sheet exit/result) at the 2026-07-20
+// closed-only build, so it was correctly excluded; it closed 2026-07-21 but no
+// rebuild ran, leaving the live EN page on a generic fallback card. Once the
+// sheet row is closed and the position carries its 5-event EN history, the row
+// must resolve to a full bot timeline under the SAME closed-only policy.
+{
+  // Faithful (trimmed) copy of the authoritative Supabase position id 237.
+  const lite237 = {
+    ticker: 'LITE', direction: 'short', result_rr: 1.6189,
+    opened_at: '2026-06-25T15:22:14.812229+00:00',
+    closed_at: '2026-07-21T17:50:03.449+00:00', exit_price: 839,
+    comment_en: "Price continues to print lower highs and is reacting sharply off key resistance zones at key moving averages today, signaling ongoing distribution. We're entering the position with a stepped (laddered) stop placed above today's and prior local highs.\n\nSee macro context in today's analysis: https://t.me/c/3869302680/4/991",
+    comment_ru: 'RU opening comment.',
+    close_comment_en: null, close_comment_ru: null,
+    // Bot "Auto ..." partials are system notes; the timeline is event-driven.
+    partial_closes: [
+      { id: 48, closed_at: '2026-07-02T17:50:06.185118+00:00', exit_price: 714.72, pct_closed: 35, comment_en: 'Auto target_1_hit', comment_ru: 'Auto target_1_hit', source: 'bot' },
+      { id: 59, closed_at: '2026-07-17T13:45:04.520477+00:00', exit_price: 653.19, pct_closed: 35, comment_en: 'Auto target_2_hit', comment_ru: 'Auto target_2_hit', source: 'bot' },
+      { id: 63, closed_at: '2026-07-21T17:50:03.530561+00:00', exit_price: 839, pct_closed: 30, comment_en: 'Auto stop_hit', comment_ru: 'Auto stop_hit', source: 'bot' },
+    ],
+    events: [
+      { id: 156, event_type: 'opened', triggered_at: '2026-06-25T15:22:26.744934+00:00', triggered_price: 838.76, message_id_en: 992, message_id_ru: 965, payload: { event: 'opened', is_addon: false } },
+      { id: 165, event_type: 'target_1_hit', triggered_at: '2026-07-02T17:50:07.43559+00:00', triggered_price: 714.72, message_id_en: 1065, message_id_ru: 1035, payload: {} },
+      { id: 178, event_type: 'stop_moved', triggered_at: '2026-07-15T13:44:46.987192+00:00', triggered_price: null, message_id_en: 1178, message_id_ru: 1148, payload: { event: 'stop_moved', new_stop: 839, old_stop: 838.76, comment_en: "Shifting the risk level to yesterday's highs. To keep the probabilities in favor of a continued correction in the coming weeks, the price must hold below this mark and continue closing under the moving averages.\n\nChart: https://www.tradingview.com/x/fLk9BKIq/", comment_ru: 'RU stop moved.' } },
+      { id: 188, event_type: 'target_2_hit', triggered_at: '2026-07-17T13:45:05.517268+00:00', triggered_price: 653.19, message_id_en: 1228, message_id_ru: 1200, payload: {} },
+      { id: 190, event_type: 'stop_hit', triggered_at: '2026-07-21T17:50:05.728538+00:00', triggered_price: 839, message_id_en: 1266, message_id_ru: 1238, payload: {} },
+    ],
+  };
+  const sheetInfo = { entryISO: '2026-06-25', exitISO: '2026-07-21', exitP: '839' };
+  const en = B.renderBotCard(lite237, sheetInfo, 'en');
+
+  assert((en.match(/class="step"/g) || []).length === 5, 'LITE builds all 5 event steps (opened, T1, stop moved, T2, stop hit)');
+  [992, 1065, 1178, 1228, 1266].forEach(function (mid) {
+    assert(en.indexOf('https://t.me/c/3869302680/6/' + mid) >= 0, 'EN step links to the EN channel message ' + mid);
+  });
+  assert(en.indexOf('3773738299') === -1, 'no RU channel link leaks into the EN card');
+  assert(en.indexOf('Price continues to print lower highs') >= 0, 'verbatim EN opening comment is preserved');
+  assert(en.indexOf("Shifting the risk level to yesterday") >= 0, 'verbatim EN stop-moved comment is preserved');
+  assert(en.indexOf('+1.62R') >= 0, 'result badge shows the published +1.62R (result_rr 1.6189)');
+  assert(en.indexOf('Target 1 reached at 714.72.') >= 0 && en.indexOf('Target 2 reached at 653.19.') >= 0, 'target steps report their trigger prices');
+  assert(en.indexOf('Stop hit at 839.') >= 0, 'stop-hit step reports the exit price');
+
+  // Closed-only policy holds both ways: the CLOSED row (with sheet exit+result)
+  // is a gap to upgrade; the SAME position while still OPEN is never a gap.
+  const closedRow = mkRow({ ticker: 'LITE', dir: 'Short', entry: '25.06.2026', exit: '21.07.2026', exitP: '839,00', result: '1,62', msIdx: 19, ms: 'Yes' });
+  const closedRows = B.reconcile(src({
+    equities: [closedRow],
+    positions: [Object.assign({ sheet_row_id: 'Equties:4', status: 'closed' }, lite237)],
+    manifest: {},
+  }));
+  assert(closedRows.length === 1 && B.isGap(closedRows[0]) === true, 'closed LITE row with EN history and no bot card is a timeline gap');
+  assert(closedRows[0].safeKey === 'equities#short#LITE|2026-06-25|2026-07-21', 'resolves via the collision-safe equities#short key');
+
+  const openRow = mkRow({ ticker: 'LITE', dir: 'Short', status: 'Open', entry: '25.06.2026', exit: '', exitP: '', result: '1,6159', msIdx: 19, ms: 'Yes' });
+  const openRows = B.reconcile(src({
+    equities: [openRow],
+    positions: [Object.assign({ sheet_row_id: 'Equties:4', status: 'partially_closed', closed_at: null }, lite237)],
+    manifest: {},
+  }));
+  assert(B.isGap(openRows[0]) === false, 'while still open (no exit/result), LITE is NOT a gap — closed-only policy preserved');
+
+  // Once the bot card exists, the closed row is no longer a gap (idempotent build).
+  const backed = B.reconcile(src({
+    equities: [closedRow],
+    positions: [Object.assign({ sheet_row_id: 'Equties:4', status: 'closed' }, lite237)],
+    manifest: { 'equities#short#LITE|2026-06-25|2026-07-21': { kind: 'bot', en: en, ru: 'x' } },
+  }));
+  assert(B.isGap(backed[0]) === false, 'a LITE row already backed by a bot card is not a gap');
+}
+
 // 5) Price precision preserved (never rounded) ---------------------------------
 {
   assert(B.fmtNum(13.665) === '13.665', 'fmtNum keeps 13.665 (no rounding to 13.67)');
@@ -276,6 +348,24 @@ console.log('trade-review manifest builder');
   assert(B.fmtNum(10.680) === '10.68', 'fmtNum strips trailing zero');
   assert(B.fmtR(1.06) === '+1.06R', 'fmtR formats a positive R with sign');
   assert(B.fmtR(-0.7) === '-0.70R', 'fmtR formats a negative R to two decimals');
+}
+
+// 10) Shipped manifest artifact carries the LITE bot card ----------------------
+// Guards the committed trade_review_cards.json (not just the builder) so the
+// LITE #237 fix cannot silently regress on the live site.
+{
+  const fs = require('fs');
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'trade_review_cards.json'), 'utf8'));
+  const k = 'equities#short#LITE|2026-06-25|2026-07-21';
+  const e = manifest[k];
+  assert(!!e && e.kind === 'bot', 'shipped manifest has the LITE Equties:167 bot card under its safe key');
+  if (e) {
+    assert((e.en.match(/class="step"/g) || []).length === 5, 'shipped LITE EN card has all 5 timeline steps');
+    assert(e.en.indexOf('https://t.me/c/3869302680/6/992') >= 0 && e.en.indexOf('https://t.me/c/3869302680/6/1266') >= 0,
+      'shipped LITE EN card links first (992) and last (1266) subscriber messages');
+    assert(manifest['LITE|2026-06-25|2026-07-21'] && manifest['LITE|2026-06-25|2026-07-21'].kind === 'bot',
+      'shipped manifest also exposes the full key for the same card');
+  }
 }
 
 console.log(failures === 0 ? '\nAll trade-review card tests passed.' : '\n' + failures + ' assertion(s) failed.');
