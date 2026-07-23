@@ -193,6 +193,8 @@ async function handleSignUp() {
   var pw  = document.getElementById('suPassword').value;
   var pw2 = document.getElementById('suPassword2').value;
   var consentBox = document.getElementById('suConsent');
+  var consentWrap = document.getElementById('suConsentWrap');
+  var marketingBox = document.getElementById('suMarketing');
   var errEl = document.getElementById('loginError');
   var msgEl = document.getElementById('loginMsg');
   errEl.style.display = 'none'; msgEl.style.display = 'none';
@@ -202,10 +204,15 @@ async function handleSignUp() {
   if (pw !== pw2) { errEl.textContent = 'Passwords do not match'; errEl.style.display = 'block'; return; }
   if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; errEl.style.display = 'block'; return; }
   if (!consentBox || !consentBox.checked) {
-    errEl.textContent = 'You must agree to the Privacy Policy and Terms of Service';
+    errEl.textContent = 'You must agree to the Privacy Policy, Terms of Service and Risk Disclaimer';
     errEl.style.display = 'block';
+    if (consentWrap) consentWrap.classList.add('error');
+    if (consentBox) { consentBox.setAttribute('aria-invalid', 'true'); consentBox.focus(); }
     return;
   }
+  if (consentWrap) consentWrap.classList.remove('error');
+  if (consentBox) consentBox.removeAttribute('aria-invalid');
+  var marketingConsent = !!(marketingBox && marketingBox.checked);
 
   var btn = document.querySelector('#signupForm .login-btn');
   var prevBtnText = null;
@@ -221,6 +228,8 @@ async function handleSignUp() {
   var signupMeta = {
     privacy_consent_at: consentNow,
     terms_consent_at: consentNow,
+    marketing_consent: marketingConsent,
+    marketing_consent_at: marketingConsent ? consentNow : null,
     consent_locale: 'en',
     consent_user_agent: consentUA
   };

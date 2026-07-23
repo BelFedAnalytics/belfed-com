@@ -1,0 +1,8 @@
+{
+  "name": "belfed-com",
+  "private": true,
+  "description": "Belfed Analytics EN production website (static site).",
+  "scripts": {
+    "test": "node tests/compliance-check.mjs"
+  }
+}
