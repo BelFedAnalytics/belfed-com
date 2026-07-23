@@ -570,6 +570,10 @@
       line-height: 1.55; letter-spacing: 0.005em;
     }
     .consent-text b { color: var(--ink); font-weight: 700; }
+    .consent + .consent { margin-top: -8px; }
+    .consent.error { border-color: var(--red, #c0392b); background: #fdf5f5; }
+    .consent-err { margin: -8px 0 16px; font-family: var(--font-mono); font-size: 11px; color: var(--red, #c0392b); line-height: 1.5; }
+    .consent-err[hidden] { display: none; }
 
     .form-card .btn { width: 100%; justify-content: center; padding: 14px; margin-top: 8px; }
     .form-note { margin-top: 14px; font-family: var(--font-mono); font-size: 11px; color: var(--gray-soft); line-height: 1.6; text-align: center; }
@@ -1411,9 +1415,15 @@
               <textarea id="note" name="note" placeholder="Helps us tailor the angle — long-term thesis, breakout, earnings, etc."></textarea>
             </div>
             <label class="consent" for="consent">
-              <input type="checkbox" id="consent" name="consent" checked />
+              <input type="checkbox" id="consent" name="consent" aria-describedby="consentErr" />
               <span class="consent-box" aria-hidden="true"><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 8 7 12 13 4"/></svg></span>
-              <span class="consent-text">Keep me in the loop. I agree to receive Belfed market analytics, free reports and product updates by email. <b>One short email at a time, unsubscribe in one click.</b></span>
+              <span class="consent-text">I agree that Belfed may use my email and request details to prepare and send my free analysis, as described in the <a href="/privacy.html" target="_blank" rel="noopener" style="color:var(--green-strong);font-weight:700;">Privacy Policy</a>. <b>Required.</b></span>
+            </label>
+            <p class="consent-err" id="consentErr" role="alert" hidden>Please tick this box so we can send you your free analysis.</p>
+            <label class="consent" for="marketingConsent">
+              <input type="checkbox" id="marketingConsent" name="marketingConsent" />
+              <span class="consent-box" aria-hidden="true"><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 8 7 12 13 4"/></svg></span>
+              <span class="consent-text">Optional — also send me Belfed market analytics, free reports and product updates by email. <b>Unsubscribe in one click. Not required to get your analysis.</b></span>
             </label>
             <button type="submit" class="btn btn-primary">Request my free analysis →</button>
             <p class="form-note">We&rsquo;ll email you within 3 business days. No spam — just your report and one short follow-up. Want more? Start your <a href="#pricing" style="color:var(--green-strong);font-weight:700;">14-day free access</a> — subscribers can request a new asset every 24h.</p>
@@ -1520,7 +1530,7 @@
     <div class="about-stack">
       <span class="label">About Belfed</span>
       <h2 style="margin-bottom:24px;">Independent global investment research.</h2>
-      <p class="about-lede">Belfed is an independent global investment research firm. We analyze major trends in the global economy and financial markets, and provide market analysis and recommendations on asset allocation and investment strategy.</p>
+      <p class="about-lede">Belfed is an independent global investment research firm. We analyze major trends in the global economy and financial markets and publish general market analysis and commentary on asset classes and market strategy for a broad audience. Our materials are general analytical and educational content, not individual investment advice.</p>
 
       <div class="about-pillars">
         <div class="about-pillar">
@@ -1530,8 +1540,8 @@
         </div>
         <div class="about-pillar">
           <div class="about-pillar-kicker">// Macro &amp; allocation</div>
-          <h3 class="about-pillar-h">Where capital should sit.</h3>
-          <p class="about-pillar-p">Top-down views on the global economy, central banks, and inter-market flows — translated into concrete recommendations on asset allocation and positioning.</p>
+          <h3 class="about-pillar-h">How capital flows across markets.</h3>
+          <p class="about-pillar-p">Top-down views on the global economy, central banks, and inter-market flows — translated into clear general analysis of asset classes and market positioning.</p>
         </div>
       </div>
 
@@ -1685,17 +1695,37 @@
   var form = document.getElementById('leadForm');
   var dupMsg = document.getElementById('dupMsg');
   var errMsg = document.getElementById('errMsg');
+  var consentEl = document.getElementById('consent');
+  if (consentEl) consentEl.addEventListener('change', function () {
+    if (!consentEl.checked) return;
+    var err = document.getElementById('consentErr');
+    if (err) err.hidden = true;
+    consentEl.removeAttribute('aria-invalid');
+    var wrap = consentEl.closest('.consent');
+    if (wrap) wrap.classList.remove('error');
+  });
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var submitBtn = form.querySelector('button[type="submit"]');
     var ticker = (document.getElementById('ticker').value || '').trim().toUpperCase();
     var email = (document.getElementById('email').value || '').trim().toLowerCase();
-    var consent = document.getElementById('consent').checked;
+    var consentBox = document.getElementById('consent');
+    var consent = consentBox.checked;
+    var marketingConsent = (document.getElementById('marketingConsent') || {}).checked || false;
+    var consentErr = document.getElementById('consentErr');
     var note = (document.getElementById('note').value || '').trim();
     var assetClass = (document.querySelector('input[name="class"]:checked') || {}).value || null;
     var timeframe  = (document.querySelector('input[name="tf"]:checked')    || {}).value || null;
     var honeypot = (document.getElementById('website') || {}).value || '';
     if (!ticker || !email) return;
+    // Required data-processing consent must be given before we submit the request.
+    if (!consent) {
+      if (consentErr) consentErr.hidden = false;
+      consentBox.closest('.consent').classList.add('error');
+      consentBox.setAttribute('aria-invalid', 'true');
+      consentBox.focus();
+      return;
+    }
     dupMsg.classList.remove('show');
     if (errMsg) errMsg.classList.remove('show');
     var origLabel = submitBtn.innerHTML;
@@ -1703,7 +1733,7 @@
 
     var leadPayload = {
       email: email, ticker: ticker, asset_class: assetClass, timeframe: timeframe,
-      note: note || null, consent: consent, lang: 'en', source: 'landing', website: honeypot
+      note: note || null, consent: consent, marketing_consent: marketingConsent, lang: 'en', source: 'landing', website: honeypot
     };
     if (window.BelfedAnalytics) {
       var _utm = window.BelfedAnalytics.utmFields();
