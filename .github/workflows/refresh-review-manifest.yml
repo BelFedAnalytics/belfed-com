@@ -1,0 +1,82 @@
+name: Refresh trade review manifest
+
+# A trade closing on the ledger updates trades.html instantly (the page reads the
+# sheet live) but leaves trade_review_cards.json behind, so the just-closed trade
+# renders the history-free fallback card until someone rebuilds by hand. This job
+# does that rebuild unattended.
+#
+# It is safe to run at any time: with nothing newly closed the script rewrites
+# nothing, the commit step is skipped, and the run is green.
+
+on:
+  schedule:
+    # Daily at 06:23 UTC — after the bot has archived overnight closes to the
+    # sheet, and off the top of the hour to avoid the cron stampede.
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report what would change without committing'
+        type: boolean
+        default: false
+
+# Never let two refreshes race for the same file; queue instead of cancelling so
+# an in-flight commit is not interrupted half-written.
+concurrency:
+  group: refresh-review-manifest
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Guard the builder before it is allowed to touch the shipped manifest.
+      - name: Test builder and refresh logic
+        run: |
+          node --check build_review_manifest.js
+          node --check refresh_review_manifest.js
+          node tests/review-cards.test.js
+          node tests/refresh-manifest.test.js
+
+      - name: Refresh manifest
+        id: refresh
+        env:
+          # Absent secret -> the script reports blocked=missing_supabase_credentials
+          # and exits 0 without touching the manifest. The lifecycle tables are
+          # RLS-closed to the public anon key, so there is no unauthenticated path.
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          node refresh_review_manifest.js \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
+
+      - name: Report missing configuration
+        if: steps.refresh.outputs.blocked != ''
+        run: |
+          echo "::warning title=Review manifest not refreshed::${{ steps.refresh.outputs.blocked }} — newly closed trades keep the fallback card until the secret is configured."
+
+      # Re-run the card tests against the regenerated artifact: a bad card must
+      # never reach main, even unattended.
+      - name: Verify regenerated manifest
+        if: steps.refresh.outputs.changed == 'true'
+        run: node tests/review-cards.test.js
+
+      - name: Commit and push
+        if: steps.refresh.outputs.changed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add trade_review_cards.json
+          git commit -m "chore(review-cards): refresh manifest for ${{ steps.refresh.outputs.upgraded }} newly closed trade(s)"
+          git push

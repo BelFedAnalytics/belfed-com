@@ -368,5 +368,102 @@ console.log('trade-review manifest builder');
   }
 }
 
+// 11) Shipped manifest carries the CL (Crypto:47) and ETH (Crypto:49) cards ----
+// Both trades closed after the previous manifest build (CL 2026-07-27, ETH
+// 2026-07-26) and therefore rendered the history-free fallback card on the live
+// page. These assertions pin the shipped artifact: correct keys, direction, R,
+// dates and — critically — only the Telegram message ids that were actually
+// published. A fabricated link would change the id set and fail here.
+{
+  const fs = require('fs');
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'trade_review_cards.json'), 'utf8'));
+
+  // Message ids present in a card, per language channel.
+  function mids(html, chat, topic) {
+    const re = new RegExp('https://t\\.me/c/' + chat + '/' + topic + '/(\\d+)', 'g');
+    const out = []; let m;
+    while ((m = re.exec(html))) out.push(parseInt(m[1], 10));
+    return out;
+  }
+  const EN_CHAT = '3869302680', EN_TOPIC = '6';
+  const RU_CHAT = '3773738299', RU_TOPIC = '4';
+
+  // -- CL, crypto long, 2026-07-10 -> 2026-07-27, +2.62R ------------------------
+  {
+    const safe = 'crypto#long#CL|2026-07-10|2026-07-27';
+    const full = 'CL|2026-07-10|2026-07-27';
+    const pair = 'CL|2026-07-10';
+    assert(B.keySafe('crypto', 'Long', 'CL', '2026-07-10', '2026-07-27') === safe,
+      'CL safe key matches the runtime key trade-review.js builds from the row');
+    const e = manifest[safe];
+    assert(!!e && e.kind === 'bot', 'shipped manifest has the CL bot card under its safe key');
+    assert(!!manifest[full] && !!manifest[pair], 'CL is also reachable via its full key and (unambiguous) pair alias');
+    assert(manifest[full] && manifest[full].en === (e && e.en), 'CL full key serves the same card as the safe key');
+
+    if (e) {
+      assert((e.en.match(/class="step"/g) || []).length === 6, 'CL EN card has all 6 lifecycle steps');
+      assert((e.ru.match(/class="step"/g) || []).length === 6, 'CL RU card has all 6 lifecycle steps');
+      assert(String(mids(e.en, EN_CHAT, EN_TOPIC)) === String([1128, 1161, 1227, 1267, 1268, 1346]),
+        'CL EN steps link exactly the published EN message ids (no invented links)');
+      assert(String(mids(e.ru, RU_CHAT, RU_TOPIC)) === String([1098, 1131, 1199, 1239, 1240, 1322]),
+        'CL RU steps link exactly the published RU message ids');
+      assert(e.en.indexOf(RU_CHAT) === -1 && e.ru.indexOf('/c/' + EN_CHAT + '/' + EN_TOPIC + '/') === -1,
+        'CL cards never leak the other language channel into their step links');
+      assert(e.en.indexOf('badge-long') >= 0 && e.en.indexOf('>Long<') >= 0, 'CL renders as a long trade');
+      assert(e.en.indexOf('+2.62R') >= 0 && e.ru.indexOf('+2.62R') >= 0, 'CL result badge shows +2.62R');
+      assert(e.en.indexOf('10.07.2026 → 27.07.2026') >= 0, 'CL meta shows the real entry/exit dates');
+      assert(e.en.indexOf('Exit $: 84') >= 0, 'CL meta shows the 84 exit price');
+      assert(e.en.indexOf('Price is likely forming a local bottom') >= 0, 'CL keeps the verbatim EN opening comment');
+      assert(e.ru.indexOf('Цена, вероятно, формирует локальное дно') >= 0, 'CL keeps the verbatim RU opening comment');
+      assert(e.en.indexOf('Target 1 reached at 80.16.') >= 0 && e.en.indexOf('Target 2 reached at 81.03.') >= 0,
+        'CL target steps report their real trigger prices');
+      assert(e.en.indexOf('Closed 25% at 87.22.') >= 0, 'CL partial-close step reports 25% at 87.22');
+      assert(e.en.indexOf('raising the stop-loss for the rest to 84') >= 0,
+        'CL stop-moved step carries the verbatim published comment');
+      assert(e.en.indexOf('https://www.tradingview.com/x/NnIMs9eL/') >= 0,
+        'CL stop-moved step keeps the chart link exactly as published');
+      assert(e.en.indexOf('Stop hit at 84.') >= 0, 'CL stop-hit step reports the 84 exit');
+    }
+  }
+
+  // -- ETH, crypto short, 2026-07-23 -> 2026-07-26, -1R -------------------------
+  {
+    const safe = 'crypto#short#ETH|2026-07-23|2026-07-26';
+    const full = 'ETH|2026-07-23|2026-07-26';
+    const pair = 'ETH|2026-07-23';
+    assert(B.keySafe('crypto', 'Short', 'ETH', '2026-07-23', '2026-07-26') === safe,
+      'ETH safe key matches the runtime key trade-review.js builds from the row');
+    const e = manifest[safe];
+    assert(!!e && e.kind === 'bot', 'shipped manifest has the ETH bot card under its safe key');
+    assert(!!manifest[full] && !!manifest[pair], 'ETH is also reachable via its full key and pair alias');
+
+    if (e) {
+      assert((e.en.match(/class="step"/g) || []).length === 2, 'ETH EN card has both lifecycle steps');
+      assert(String(mids(e.en, EN_CHAT, EN_TOPIC)) === String([1316, 1345]),
+        'ETH EN steps link exactly the published EN message ids');
+      assert(String(mids(e.ru, RU_CHAT, RU_TOPIC)) === String([1291, 1321]),
+        'ETH RU steps link exactly the published RU message ids');
+      assert(e.en.indexOf('badge-short') >= 0 && e.en.indexOf('>Short<') >= 0, 'ETH renders as a short trade');
+      assert(e.ru.indexOf('Короткая') >= 0, 'ETH RU card labels the direction in Russian');
+      assert(e.en.indexOf('-1.00R') >= 0, 'ETH result badge shows -1.00R');
+      assert(e.en.indexOf('class="loss"') >= 0, 'ETH losing result uses the loss styling');
+      assert(e.en.indexOf('23.07.2026 → 26.07.2026') >= 0, 'ETH meta shows the real entry/exit dates');
+      assert(e.en.indexOf('Exit $: 1941') >= 0, 'ETH meta shows the 1941 exit price');
+      assert(e.en.indexOf('We are opening a medium-term short position on ETH') >= 0,
+        'ETH keeps the verbatim EN opening comment');
+      assert(e.ru.indexOf('Открываем среднесрочную шорт-позицию по ETH') >= 0,
+        'ETH keeps the verbatim RU opening comment');
+      assert(e.en.indexOf('Stop hit at 1941.') >= 0, 'ETH stop-hit step reports the 1941 exit');
+    }
+
+    // The five older ETH longs must keep their own cards — the July short must
+    // not have overwritten or borrowed any of them.
+    ['ETH|2025-08-03|2025-08-14', 'ETH|2026-04-10|2026-04-12', 'ETH|2026-04-29|2026-04-29',
+      'ETH|2026-05-09|2026-05-12', 'ETH|2026-05-26|2026-05-26'].forEach(function (k) {
+      assert(!!manifest[k], 'pre-existing ETH card ' + k + ' is preserved');
+    });
+  }
+}
+
 console.log(failures === 0 ? '\nAll trade-review card tests passed.' : '\n' + failures + ' assertion(s) failed.');
 process.exit(failures === 0 ? 0 : 1);

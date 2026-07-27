@@ -34,16 +34,38 @@ same algorithm with no code change. Rebuild the manifest to upgrade a
 just-closed trade from the fallback card to a curated one (and to give bot trades
 their rich timeline).
 
-## Regenerating the manifest
+## Automatic refresh after a trade closes
+
+`.github/workflows/refresh-review-manifest.yml` (daily 06:23 UTC +
+`workflow_dispatch`) runs `refresh_review_manifest.js`, which:
+
+1. reads the live ledger worksheets from the public gviz CSV export (no secret),
+2. reads the subscriber-signal lifecycle from Supabase and keeps only the
+   whitelisted card fields — no profiles, subscriptions or user ids ever leave
+   the database,
+3. recovers the CSV→sheet row offset from `sheet_row_id` instead of assuming it,
+4. reuses `build_review_manifest.js` `reconcile()`/`fill()` to upgrade closed
+   trades that have genuine EN history and no bot card yet,
+5. writes and commits `trade_review_cards.json` **only** when its bytes change.
+
+The run is idempotent — nothing newly closed means no write and no commit. It
+needs the repository secret `SUPABASE_SERVICE_ROLE_KEY`, because the lifecycle
+tables are RLS-closed to the public anon key. Without it the job stays green,
+changes nothing, and annotates the run with `missing_supabase_credentials`. Set
+`SUPABASE_URL` as well if the project URL ever moves off the default.
+
+Preview locally with `node refresh_review_manifest.js --dry-run`.
+
+## Regenerating the manifest by hand
 
 ```
-python3 build_draft_preview.py preview/tier1_real_recaps.json trade-history-preview.html trade_review_cards.json
+node build_review_manifest.js audit [dataDir] [outCsv]   # reconcile, never writes
+node build_review_manifest.js fill  [dataDir] [manifest] # upgrade gaps in place
 ```
 
-- Arg 1: recap data (`preview/tier1_real_recaps.json`; override the data dir with
-  `BELFED_DATA_DIR`).
-- Arg 2: preview HTML (side output, safe to ignore for production).
-- Arg 3 (optional): manifest path, defaults to `trade_review_cards.json`.
+`dataDir` holds a captured `crypto_rows.json`, `equities_rows.json` and
+`supabase_audit.json`; it defaults to `$BELFED_AUDIT_DIR`. These exports are
+production data and must not be committed.
 
 Deploy the regenerated `trade_review_cards.json` alongside `trade-review.js` /
 `trade-review.css` at the site root.

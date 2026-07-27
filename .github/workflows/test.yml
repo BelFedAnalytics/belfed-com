@@ -32,6 +32,10 @@ jobs:
         run: node tests/review-cards.test.js
       - name: Run results-page CSV parser tests
         run: node tests/csv-parse.test.js
+      - name: Syntax check refresh_review_manifest.js
+        run: node --check refresh_review_manifest.js
+      - name: Run review-manifest refresh automation tests
+        run: node tests/refresh-manifest.test.js
       - name: Syntax check build_trades_fallback.js
         run: node --check build_trades_fallback.js
       - name: Run offline fallback dot-parity tests
