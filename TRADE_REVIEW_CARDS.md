@@ -40,19 +40,30 @@ their rich timeline).
 `workflow_dispatch`) runs `refresh_review_manifest.js`, which:
 
 1. reads the live ledger worksheets from the public gviz CSV export (no secret),
-2. reads the subscriber-signal lifecycle from Supabase and keeps only the
-   whitelisted card fields — no profiles, subscriptions or user ids ever leave
+2. reads the subscriber-signal lifecycle through the token-gated Supabase RPC
+   `export_review_card_data`, which returns only closed archived positions with
+   the card fields already whitelisted server-side (the same whitelist is
+   re-applied client-side) — no profiles, subscriptions or user ids ever leave
    the database,
 3. recovers the CSV→sheet row offset from `sheet_row_id` instead of assuming it,
 4. reuses `build_review_manifest.js` `reconcile()`/`fill()` to upgrade closed
    trades that have genuine EN history and no bot card yet,
 5. writes and commits `trade_review_cards.json` **only** when its bytes change.
 
-The run is idempotent — nothing newly closed means no write and no commit. It
-needs the repository secret `SUPABASE_SERVICE_ROLE_KEY`, because the lifecycle
-tables are RLS-closed to the public anon key. Without it the job stays green,
-changes nothing, and annotates the run with `missing_supabase_credentials`. Set
-`SUPABASE_URL` as well if the project URL ever moves off the default.
+The run is idempotent — nothing newly closed means no write and no commit.
+
+The export call is `POST ${SUPABASE_URL}/rest/v1/rpc/export_review_card_data`
+with `apikey: ${SUPABASE_PUBLISHABLE_KEY}` and body `{"p_token": …}`; the
+publishable key is public and the export token is the actual gate, so **no
+service-role key is used anywhere in this path**. Repository secrets:
+`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_CARD_EXPORT_KEY`.
+
+There is no degraded mode. A missing secret, a rejected token, a non-`https`
+project URL or a payload that fails shape validation (missing `generated_at`,
+non-array collections, an empty export, a position without `id`/`sheet_row_id`,
+duplicate ids) aborts with a non-zero exit and leaves the manifest untouched —
+a half-refreshed card is worse than a stale one, so the schedule goes red
+instead.
 
 Preview locally with `node refresh_review_manifest.js --dry-run`.
 

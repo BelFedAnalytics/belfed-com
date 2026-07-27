@@ -8,10 +8,11 @@
  * This script closes that gap unattended:
  *
  *   1. Fetch the live ledger worksheets as CSV (public gviz export, no secret).
- *   2. Fetch the subscriber-signal lifecycle from Supabase and reduce it to the
- *      whitelisted fields the card builder needs (see SAFE_* below). Nothing
- *      else — no profiles, no subscriptions, no user ids — is ever read into
- *      memory, written to disk, or logged.
+ *   2. Fetch the subscriber-signal lifecycle through the token-gated Supabase RPC
+ *      export_review_card_data, which returns only closed archived positions and
+ *      is already field-whitelisted server-side. The whitelist below is applied
+ *      again on this side, so nothing — no profiles, no subscriptions, no user
+ *      ids — can reach disk even if the function is widened later.
  *   3. Reuse build_review_manifest.js reconcile()/fill(): closed rows that have
  *      genuine EN history and no bot card yet are upgraded in place.
  *   4. Write the manifest only when its bytes actually change.
@@ -23,14 +24,14 @@
  *   node refresh_review_manifest.js [--manifest path] [--dry-run]
  *
  * Env:
- *   SUPABASE_URL                (optional, defaults to the public project URL)
- *   SUPABASE_SERVICE_ROLE_KEY   (required; the lifecycle tables are RLS-closed
- *                                to the anon key, which returns zero rows)
- *   GITHUB_OUTPUT               (optional; changed/upgraded/blocked are appended)
+ *   SUPABASE_URL               (optional, defaults to the public project URL)
+ *   SUPABASE_PUBLISHABLE_KEY   (required; the public apikey, gate is the token)
+ *   SUPABASE_CARD_EXPORT_KEY   (required; the RPC's p_token argument)
+ *   GITHUB_OUTPUT              (optional; changed/upgraded are appended)
  *
- * Without the key the script is a deliberate no-op: it reports
- * blocked=missing_supabase_credentials and exits 0 rather than failing the
- * schedule or, worse, rewriting cards from incomplete data.
+ * There is no degraded mode. A missing secret, a rejected token or a payload
+ * that fails validation aborts with a non-zero exit and leaves the manifest
+ * untouched, so a silent half-refresh can never be committed.
  */
 'use strict';
 
@@ -45,6 +46,7 @@ const WORKSHEETS = [
   { key: 'equities', ws: 'Equties', gid: '0' },
 ];
 const DEFAULT_SUPABASE_URL = 'https://obujqvqqmyfcfflhqvud.supabase.co';
+const RPC_NAME = 'export_review_card_data';
 
 // Only these columns ever leave Supabase. Everything else in the row — and every
 // other table — stays untouched, so no subscriber or billing data can reach the
@@ -175,17 +177,91 @@ async function fetchWorksheet(gid) {
   return parseCsv(await fetchText(url));
 }
 
-// One nested read of the lifecycle tables. The embed syntax keeps it to a single
-// request and to the whitelisted columns only.
-async function fetchLifecycle(baseUrl, key) {
-  const select = 'sheet_row_id,ticker,direction,status,asset_class,result_rr,exit_price,' +
-    'opened_at,closed_at,comment_en,comment_ru,close_comment_en,close_comment_ru,' +
-    'events:position_events(id,event_type,triggered_at,triggered_price,message_id_en,message_id_ru,payload),' +
-    'partial_closes(id,closed_at,exit_price,pct_closed,comment_en,comment_ru,source)';
-  const url = baseUrl.replace(/\/+$/, '') + '/rest/v1/active_positions?select=' +
-    encodeURIComponent(select) + '&sheet_row_id=not.is.null';
-  const body = await fetchText(url, { apikey: key, Authorization: 'Bearer ' + key });
-  return sanitizePositions(JSON.parse(body));
+// The single privileged read: a token-gated RPC that returns only closed,
+// archived positions with the card fields whitelisted server-side. The apikey is
+// the project's public publishable key — the actual gate is p_token, which is
+// never logged and never echoed into an error message.
+function rpcRequest(baseUrl, publishableKey, token) {
+  const base = String(baseUrl || '').replace(/\/+$/, '');
+  // The token travels in the request body; a plaintext scheme would leak it.
+  if (!/^https:\/\//.test(base)) throw new Error('SUPABASE_URL must be an https:// URL');
+  return {
+    url: base + '/rest/v1/rpc/' + RPC_NAME,
+    options: {
+      method: 'POST',
+      headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_token: token }),
+    },
+  };
+}
+
+// The payload arrives as four parallel arrays; reconcile() wants events and
+// partial closes nested under their position. Validate hard before nesting: a
+// truncated or shape-shifted response must abort the run, not silently produce a
+// manifest with the history stripped out of half the cards.
+function groupLifecycle(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error(RPC_NAME + ': expected an object payload');
+  }
+  if (typeof payload.generated_at !== 'string' || !payload.generated_at) {
+    throw new Error(RPC_NAME + ': payload has no generated_at');
+  }
+  for (const k of ['positions', 'events', 'partial_closes']) {
+    if (!Array.isArray(payload[k])) throw new Error(RPC_NAME + ': payload.' + k + ' is not an array');
+  }
+  if (!payload.positions.length) throw new Error(RPC_NAME + ': payload.positions is empty');
+
+  const byId = new Map();
+  const out = [];
+  for (const p of payload.positions) {
+    if (!p || typeof p !== 'object') throw new Error(RPC_NAME + ': malformed position entry');
+    const id = p.id != null ? p.id : p.position_id;
+    if (id == null) throw new Error(RPC_NAME + ': position is missing its id');
+    if (!p.sheet_row_id) throw new Error(RPC_NAME + ': position ' + id + ' has no sheet_row_id');
+    if (byId.has(String(id))) throw new Error(RPC_NAME + ': duplicate position id ' + id);
+    const pos = Object.assign({}, p, { events: [], partial_closes: [] });
+    byId.set(String(id), pos);
+    out.push(pos);
+  }
+  // Children whose parent is absent are dropped rather than guessed at: the RPC
+  // filters to archived positions, so an orphan means the parent was excluded.
+  for (const e of payload.events) {
+    const parent = e && byId.get(String(e.position_id));
+    if (parent) parent.events.push(e);
+  }
+  for (const pc of payload.partial_closes) {
+    const parent = pc && byId.get(String(pc.position_id));
+    if (parent) parent.partial_closes.push(pc);
+  }
+  return out;
+}
+
+async function fetchLifecycle(baseUrl, publishableKey, token, doFetch) {
+  const req = rpcRequest(baseUrl, publishableKey, token);
+  const res = await (doFetch || fetch)(req.url, req.options);
+  if (!res.ok) {
+    // Deliberately terse: the response body of a rejected auth call is not
+    // something to print into a public build log.
+    throw new Error('POST ' + RPC_NAME + ' -> HTTP ' + res.status +
+      (res.status === 401 || res.status === 403 ? ' (token rejected)' : ''));
+  }
+  let payload;
+  try { payload = JSON.parse(await res.text()); }
+  catch (err) { throw new Error(RPC_NAME + ': response is not valid JSON'); }
+  return sanitizePositions(groupLifecycle(payload));
+}
+
+// Missing configuration is a hard error, not a quiet skip: the secrets are
+// provisioned, so their absence means the workflow is misconfigured and the
+// schedule should go red instead of silently never refreshing anything.
+function resolveConfig(env) {
+  const missing = ['SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_CARD_EXPORT_KEY'].filter(n => !env[n]);
+  if (missing.length) throw new Error('missing required secret(s): ' + missing.join(', '));
+  return {
+    baseUrl: env.SUPABASE_URL || DEFAULT_SUPABASE_URL,
+    publishableKey: env.SUPABASE_PUBLISHABLE_KEY,
+    token: env.SUPABASE_CARD_EXPORT_KEY,
+  };
 }
 
 function ghOutput(pairs) {
@@ -200,18 +276,9 @@ async function main() {
   const mi = argv.indexOf('--manifest');
   const manifestPath = mi >= 0 ? argv[mi + 1] : path.join(__dirname, 'trade_review_cards.json');
 
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) {
-    // Deliberate no-op. Failing here would turn a missing-configuration state
-    // into a daily red schedule, and rebuilding from sheet data alone would
-    // strip existing timelines.
-    console.log('no-op: SUPABASE_SERVICE_ROLE_KEY is not configured; manifest left untouched.');
-    ghOutput({ changed: 'false', upgraded: '0', blocked: 'missing_supabase_credentials' });
-    return;
-  }
-  const baseUrl = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
-
-  const positions = await fetchLifecycle(baseUrl, key);
+  const cfg = resolveConfig(process.env);
+  const positions = await fetchLifecycle(cfg.baseUrl, cfg.publishableKey, cfg.token);
+  console.log(RPC_NAME + ': ' + positions.length + ' closed position(s) exported.');
   const sheets = {};
   for (const w of WORKSHEETS) sheets[w.key] = await fetchWorksheet(w.gid);
 
@@ -228,19 +295,19 @@ async function main() {
 
   if (!res.changed) {
     console.log('no change: every closed trade with history already has its card.');
-    ghOutput({ changed: 'false', upgraded: '0', blocked: '' });
+    ghOutput({ changed: 'false', upgraded: '0' });
     return;
   }
   for (const u of res.upgraded) console.log('upgraded -> ' + u.key);
   if (res.pruned.length) console.log('pruned ambiguous alias(es): ' + res.pruned.join(', '));
   if (dryRun) {
     console.log('dry run: ' + res.upgraded.length + ' card(s) would be written.');
-    ghOutput({ changed: 'false', upgraded: String(res.upgraded.length), blocked: '' });
+    ghOutput({ changed: 'false', upgraded: String(res.upgraded.length) });
     return;
   }
   fs.writeFileSync(manifestPath, JSON.stringify(res.manifest) + '\n');
   console.log('manifest written -> ' + manifestPath);
-  ghOutput({ changed: 'true', upgraded: String(res.upgraded.length), blocked: '' });
+  ghOutput({ changed: 'true', upgraded: String(res.upgraded.length) });
 }
 
 if (require.main === module) {
@@ -249,6 +316,7 @@ if (require.main === module) {
 
 module.exports = {
   parseCsv, sanitizePosition, sanitizePositions, detectOffset, alignRows,
-  alignWorksheet, buildUpdate, WORKSHEETS,
+  alignWorksheet, buildUpdate, WORKSHEETS, RPC_NAME,
+  rpcRequest, groupLifecycle, fetchLifecycle, resolveConfig,
   SAFE_POSITION, SAFE_EVENT, SAFE_EVENT_PAYLOAD, SAFE_PARTIAL,
 };

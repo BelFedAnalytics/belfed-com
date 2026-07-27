@@ -6,7 +6,9 @@ name: Refresh trade review manifest
 # does that rebuild unattended.
 #
 # It is safe to run at any time: with nothing newly closed the script rewrites
-# nothing, the commit step is skipped, and the run is green.
+# nothing, the commit step is skipped, and the run is green. There is no degraded
+# mode — if the export RPC cannot be read, or returns something that fails
+# validation, the run fails and the manifest is left exactly as it was.
 
 on:
   schedule:
@@ -52,19 +54,16 @@ jobs:
       - name: Refresh manifest
         id: refresh
         env:
-          # Absent secret -> the script reports blocked=missing_supabase_credentials
-          # and exits 0 without touching the manifest. The lifecycle tables are
-          # RLS-closed to the public anon key, so there is no unauthenticated path.
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Read path is the token-gated RPC export_review_card_data: the apikey is
+          # the project's public publishable key and the gate is the export token.
+          # No service-role key is involved. A missing secret, a rejected token or
+          # a payload that fails validation fails the step and commits nothing.
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_CARD_EXPORT_KEY: ${{ secrets.SUPABASE_CARD_EXPORT_KEY }}
         run: |
           node refresh_review_manifest.js \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
-
-      - name: Report missing configuration
-        if: steps.refresh.outputs.blocked != ''
-        run: |
-          echo "::warning title=Review manifest not refreshed::${{ steps.refresh.outputs.blocked }} — newly closed trades keep the fallback card until the secret is configured."
 
       # Re-run the card tests against the regenerated artifact: a bad card must
       # never reach main, even unattended.
