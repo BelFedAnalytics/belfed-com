@@ -257,8 +257,7 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
     <h1>— ASSET ANALYSIS &amp; REQUESTS —</h1>
     <div class="header-actions">
       <a href="/members.html" class="members-link">&larr; MEMBERS</a>
-      <a href="/settings.html" class="members-link" title="Account settings">SETTINGS</a>
-      <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+      <div id="acctMenuMount"></div>
     </div>
   </header>
 
@@ -332,9 +331,11 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="belfed-analytics.js"></script>
 <script src="belfed-auth.js"></script>
+<script src="belfed-account-menu.js"></script>
 <script>
 // Page callbacks expected by belfed-auth.js
 function onAuthReady(profile, session, entitlement) {
+  if (window.BelfedAccountMenu) window.BelfedAccountMenu.update(profile, session, entitlement);
   if (entitlement && entitlement.access) showMain();
   else { showExpired(); if (window.belfedTrack) window.belfedTrack('trial_expired', { page: 'asset-analysis' }); }
 }
