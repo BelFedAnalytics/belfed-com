@@ -270,8 +270,7 @@ a.card{text-decoration:none;color:#000}
 <h1 data-i18n="title">— BELFED ANALYTICS —</h1>
 <div class="header-actions">
   <a href="/members.html" class="members-link">&larr; MEMBERS</a>
-  <a href="/settings.html" class="members-link" title="Account settings">SETTINGS</a>
-  <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+  <div id="acctMenuMount"></div>
 </div>
 </header>
 
@@ -373,6 +372,7 @@ a.card{text-decoration:none;color:#000}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="belfed-analytics.js"></script>
 <script src="belfed-auth.js"></script>
+<script src="belfed-account-menu.js"></script>
 <script>
 // SUPABASE_URL, SUPABASE_KEY (anon) and supaClient provided by belfed-auth.js
 const ANON_KEY = SUPABASE_KEY;
@@ -839,6 +839,7 @@ function showMainScreen() {
 
 let _feedInitialized = false;
 function onAuthReady(profile, session, entitlement) {
+  if (window.BelfedAccountMenu) window.BelfedAccountMenu.update(profile, session, entitlement);
   if (entitlement && entitlement.access) {
     hasAccess = true;
     showMainScreen();
