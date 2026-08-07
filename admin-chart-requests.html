@@ -68,6 +68,13 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .requester-row .src.web{background:#fff}
 .requester-row .src.telegram{background:#e8f1f3}
 .requester-row .when{opacity:0.65}
+.lang-pill{font-size:9px;letter-spacing:1px;padding:2px 5px;border:1px solid #000;font-weight:bold}
+.lang-pill.ru{background:#000;color:#f5f2eb}
+.lang-pill.en{background:#fff;color:#000}
+.lang-pill.unknown{background:#e8e8e8;color:#666;border-style:dashed}
+.lang-notice{border:1px solid #000;background:#fffbe5;padding:10px 12px;margin-bottom:10px;font-size:11px;line-height:1.6;letter-spacing:0.5px}
+.lang-notice strong{letter-spacing:1px}
+.lang-notice .warn-line{display:block;margin-top:6px;color:#8a2b00}
 
 .recent-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid #ddd;background:#fff;margin-bottom:6px;font-size:11px;letter-spacing:1px}
 .recent-row .left{display:flex;gap:10px;align-items:baseline}
@@ -220,8 +227,8 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 <div class="modal-bg" id="clarifyModal">
   <div class="modal">
     <h3 id="clarifyTitle">— CLARIFY TICKER —</h3>
-    <p style="font-size:11px;letter-spacing:1px;margin-bottom:10px;opacity:0.75">Message will be sent via Telegram DM + email to the requester(s).</p>
-    <textarea id="clarifyMessage" placeholder="E.g.: Ticker WBKS not found. Did you mean WBK (Westpac Banking) or WBKN? Please re-submit with the correct ticker." style="min-height:100px"></textarea>
+    <div class="lang-notice" id="clarifyNotice"></div>
+    <textarea id="clarifyMessage" style="min-height:100px"></textarea>
     <div class="modal-actions">
       <button class="btn" onclick="closeClarify()">[ CANCEL ]</button>
       <button class="btn warn" id="clarifyBtn" onclick="confirmClarify()">[ SEND CLARIFICATION ]</button>
@@ -353,7 +360,7 @@ function renderGroups(groups){
         ? '<span style="font-size:9px;letter-spacing:1px;padding:1px 5px;border:1px solid #8a6a00;color:#8a6a00;background:#fffbe5;margin-left:6px">CLARIFIED</span>'
         : '';
       return '<div class="requester-row">' +
-        '<div class="who"><span class="src '+escapeHtml(r.source)+'">'+escapeHtml(r.source)+'</span><span>'+escapeHtml(id)+clarifiedBadge+'</span></div>' +
+        '<div class="who">'+langPill(r.lang)+'<span class="src '+escapeHtml(r.source)+'">'+escapeHtml(r.source)+'</span><span>'+escapeHtml(id)+clarifiedBadge+'</span></div>' +
         '<div class="when">'+escapeHtml(timeAgo(r.created_at))+'</div>' +
         '</div>';
     }).join('');
@@ -398,13 +405,53 @@ function renderRecent(recent){
 
 let clarifyTargetId = null;
 let clarifyRequests = [];
-const _groupsMap = {}; // keyed by oldestId → full group object
+
+// Recipient language drives every outgoing string; it is never the admin locale.
+function langPill(lang){
+  const l = (lang === 'ru' || lang === 'en') ? lang : 'unknown';
+  const label = l === 'unknown' ? '??' : l.toUpperCase();
+  return '<span class="lang-pill ' + l + '">' + label + '</span>';
+}
+
+// The edge function notifies only the request_id it is given, so a clarification
+// reaches the oldest requester alone -- unlike fulfil, which closes the whole group.
+function clarifyNotice(requests, targetId){
+  const target = (requests || []).find(r => r.id === targetId) || (requests || [])[0] || {};
+  const lang = (target.lang === 'ru' || target.lang === 'en') ? target.lang : null;
+  const others = (requests || []).filter(r => r.id !== (target.id || targetId));
+  return { lang: lang, otherCount: others.length };
+}
+
+function renderClarifyNotice(){
+  const box = $('#clarifyNotice');
+  if (!box) return;
+  const info = clarifyNotice(clarifyRequests, clarifyTargetId);
+  const ta = $('#clarifyMessage');
+  let html;
+  if (info.lang === 'en') {
+    html = 'Recipient speaks English ' + langPill('en') + ' — <strong>write in English</strong>. Their header, footer and buttons will be in English.';
+    if (ta) ta.placeholder = 'E.g.: Ticker DA not found. Did you mean DATA (Arenadata) or something else? Please re-submit with the correct ticker.';
+  } else if (info.lang === 'ru') {
+    html = 'Recipient speaks Russian ' + langPill('ru') + ' — <strong>write in Russian</strong>. Their header, footer and buttons will be in Russian.';
+    if (ta) ta.placeholder = 'Например: тикер DA не найден. Вы имели в виду DATA (Аренадата) или что-то другое? Пришлите, пожалуйста, запрос с точным тикером.';
+  } else {
+    html = 'Recipient language ' + langPill(null) + ' is not set in the profile — the Russian layout will be used.';
+    if (ta) ta.placeholder = 'E.g.: Ticker DA not found. Please tell us which instrument you meant.';
+  }
+  html += '<br><span style="opacity:0.7">Sent to the Telegram bot and to the requester\'s email.</span>';
+  if (info.otherCount > 0) {
+    html += '<span class="warn-line">Note: ' + info.otherCount + ' more request(s) for this ticker. ' +
+            'Only the oldest requester is notified — the rest stay in the queue silently.</span>';
+  }
+  box.innerHTML = html;
+}
 
 function openClarify(id, ticker){
   clarifyTargetId = id;
   clarifyRequests = (_groupsMap[id] && _groupsMap[id].requests) || [];
   $('#clarifyTitle').textContent = '— CLARIFY $' + ticker + ' —';
   $('#clarifyMessage').value = '';
+  renderClarifyNotice();
   $('#clarifyBtn').disabled = false;
   $('#clarifyBtn').textContent = '[ SEND CLARIFICATION ]';
   $('#clarifyModal').classList.add('open');
@@ -431,6 +478,7 @@ async function confirmClarify(){
     $('#clarifyBtn').textContent = '[ SEND CLARIFICATION ]';
   }
 }
+const _groupsMap = {}; // keyed by oldestId -> full group object
 
 // =================== LINK TO EXISTING PUBLISHED POST ===================
 // Closes pending requests for a ticker by pointing them at an analysis post
