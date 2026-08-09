@@ -213,6 +213,66 @@
            link + '<div class="fields">' + fields + "</div>" + method + promoHTML() + "</article>";
   }
 
+  // Structured manual enrichment for a small number of reviewed public ideas.
+  // The manifest keeps the original card HTML (including timelines and Telegram
+  // links) and stores this concise, language-specific data beside it. Rendering
+  // it here means scheduled manifest refreshes never have to rewrite hand-curated
+  // HTML just to preserve a trade's set-up, risk, and result calculation.
+  function manualSectionHeading(label) {
+    return '<div class="tl-h"><b>' + esc(label) + '</b><i></i></div>';
+  }
+
+  function manualBlock(m) {
+    var h = '<section class="tl" data-review-enrichment="true">';
+    h += '<div class="tl-sec">' + manualSectionHeading("SET-UP LOGIC");
+    h += '<p class="tl-public"><a class="brc-inline-link" href="' + esc(m.ideaUrl) +
+      '" target="_blank" rel="noopener">' + esc(m.publicLabel || "Public trade idea") + " " + ARROW + "</a></p>";
+    (m.setup || []).forEach(function (text) {
+      h += '<p class="tl-p">' + esc(text) + "</p>";
+    });
+    h += "</div>";
+
+    h += '<div class="tl-sec">' + manualSectionHeading("RISK & EXECUTION") + '<dl class="tl-rows">';
+    (m.riskRows || []).forEach(function (row) {
+      h += '<div class="tl-row"><dt>' + esc(row.label) + "</dt><dd>" + esc(row.value) +
+        (row.detail ? " <em>" + esc(row.detail) + "</em>" : "") + "</dd></div>";
+    });
+    h += "</dl>";
+    (m.riskNotes || []).forEach(function (note) {
+      h += '<p class="tl-note"><span>' + esc(note.label) + ":</span> " + esc(note.text) + "</p>";
+    });
+    h += "</div>";
+
+    h += '<div class="tl-sec">' + manualSectionHeading("RESULT CALCULATION") + '<div class="tl-calc">';
+    (m.calculation || []).forEach(function (leg) {
+      h += '<div class="tl-calc-row"><span class="tl-calc-leg">' + esc(leg.share) +
+        '</span><span class="tl-calc-expr">' + esc(leg.formula) +
+        '</span><span class="tl-calc-r">' + esc(leg.result) +
+        '</span><span class="tl-calc-sub">' + esc(leg.note) + "</span></div>";
+    });
+    if (m.weighted) {
+      h += '<div class="tl-calc-total"><span class="tl-total-k">' + esc(m.weighted.label || "Weighted result") +
+        '</span><span class="tl-total-v">' + esc(m.weighted.result) +
+        '</span><span class="tl-total-expr">' + esc(m.weighted.formula) + " = " + esc(m.weighted.result) +
+        "</span></div>";
+    }
+    if (m.formula) h += '<p class="tl-formula">' + esc(m.formula) + "</p>";
+    return h + "</div></div></section>";
+  }
+
+  // Put the enrichment after the card's header/metrics and before its existing
+  // timeline or methodology. The fallbacks retain the same insertion order.
+  function insertManualBlock(cardHTML, manual) {
+    var marker = ["<p class=\"bot-intro\"", "<ol class=\"timeline\"", "<div class=\"rc-method\"", "<div class=\"promo\""];
+    var at = -1;
+    marker.some(function (needle) {
+      at = cardHTML.indexOf(needle);
+      return at >= 0;
+    });
+    var block = manualBlock(manual);
+    return at >= 0 ? cardHTML.slice(0, at) + block + cardHTML.slice(at) : cardHTML + block;
+  }
+
   function promoHTML() {
     return '<div class="promo"><span class="promo-h">' + esc(T.promoH) + "</span>" +
            '<p class="promo-body">' + esc(T.promoBody) + "</p>" +
@@ -331,8 +391,14 @@
       if (entry && entry[LANG]) {
         card = postProcessCard(entry[LANG], data, !!chart);
       } else {
-        card = fallbackCard(data);
+        // A manual enrichment can carry corrected header values even when the
+        // card has no historical HTML yet (for example a newly closed public
+        // idea). All normal fallback behaviour remains intact.
+        var manualHeader = entry && entry.manual && entry.manual[LANG] && entry.manual[LANG].header;
+        var fallbackData = manualHeader ? Object.assign({}, data, manualHeader) : data;
+        card = fallbackCard(fallbackData);
       }
+      if (entry && entry.manual && entry.manual[LANG]) card = insertManualBlock(card, entry.manual[LANG]);
       // Prepend the embedded chart snapshot to every card (manifest or fallback).
       var html = chart + card;
       open(trigger, html, title);

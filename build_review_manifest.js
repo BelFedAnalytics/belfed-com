@@ -332,7 +332,7 @@ function reconcile(src) {
       const match = src.manifest[kSafe] ? 'safe'
         : (src.manifest[kFull] ? 'full' : (src.manifest[kPair] ? 'pair' : 'none'));
       const kind = mEntry ? mEntry.kind : 'fallback/missing';
-      const steps = mEntry ? (mEntry.en.match(/class="step"/g) || []).length : 0;
+      const steps = mEntry ? ((String(mEntry.en || '').match(/class="step"/g) || []).length) : 0;
       const sid = ws + ':' + (i + 1);
       const pos = posBySid[sid];
       const posMatch = pos && pos.ticker.toUpperCase() === ticker.toUpperCase();
@@ -371,7 +371,9 @@ function reconcile(src) {
 // A row needs a bot timeline when it is closed, has genuine EN history, and its
 // current card is not already a bot card.
 function isGap(row) {
-  return row.fullyClosed && row.enHistory === 'yes' && row.cardKind !== 'bot';
+  // A manual card is curated production content. Refreshes may add ordinary
+  // bot cards, but must never replace the manual fields or enrichment data.
+  return row.fullyClosed && row.enHistory === 'yes' && row.cardKind !== 'bot' && row.cardKind !== 'manual';
 }
 
 // ---------------------------------------------------------------------------

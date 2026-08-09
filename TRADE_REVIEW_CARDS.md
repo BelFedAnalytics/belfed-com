@@ -34,6 +34,24 @@ same algorithm with no code change. Rebuild the manifest to upgrade a
 just-closed trade from the fallback card to a curated one (and to give bot trades
 their rich timeline).
 
+## Structured manual enrichments
+
+Exceptionally, a reviewed public idea can carry a `manual.en` object in its
+manifest entry. This is structured content (not prebuilt HTML) for the three
+flat card sections rendered by `trade-review.js`: `SET-UP LOGIC`, `RISK &
+EXECUTION`, and `RESULT CALCULATION`.
+
+- The renderer inserts the block after the existing header/metrics and before
+  the existing timeline or methodology, so original card data and Telegram links
+  remain intact.
+- A manual entry may provide a `header` object when there is no historical card
+  HTML yet; the normal fallback card still supplies its methodology and promo.
+- Use `kind: "manual"` for a manual-only card. The scheduled fill treats that
+  kind as protected and never overwrites it. Existing `bot` cards may also carry
+  `manual.en`; their lifecycle history continues to be preserved.
+- Keep the full and safe keys collision-safe. Add an entry-date alias only when
+  it is unambiguous, following the same rules as every other manifest card.
+
 ## Automatic refresh after a trade closes
 
 `.github/workflows/refresh-review-manifest.yml` (daily 06:23 UTC +
