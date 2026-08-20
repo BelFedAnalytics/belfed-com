@@ -81,13 +81,13 @@
     <div class="legal-content">
       <div class="legal-tag">// Legal</div>
       <h1>Privacy Policy</h1>
-      <p class="legal-updated">Last updated: June 1, 2026 — Version 1.0</p>
+      <p class="legal-updated">Last updated: July 23, 2026 — Version 1.1</p>
 
       <p>This Privacy Policy explains what personal data Belfed Analytics collects, why we collect it, how we protect it, and what rights you have over it. We follow the principles of the EU General Data Protection Regulation (Regulation (EU) 2016/679, "GDPR") for visitors located in the EU/EEA and the UK, and the Russian Federal Law No. 152-FZ "On Personal Data" for visitors from the Russian Federation.</p>
 
       <h2>1. Data Controller</h2>
       <p>The data controller responsible for the processing described in this Policy is:</p>
-      <p><strong>Individual entrepreneur Artem I. Fedorov</strong> (IE / "Самозанятый")<br>
+      <p><strong>Individual entrepreneur (ИП) Artem I. Fedorov</strong><br>
       INN: 781103296545<br>
       OGRNIP: 326784700016572<br>
       Mailing address: St. Petersburg, Russian Federation<br>
@@ -103,7 +103,7 @@
         <tbody>
           <tr><td>Telegram identifiers</td><td>telegram_id, username (if public), first/last name as exposed by Telegram, group membership status</td></tr>
           <tr><td>Contact data</td><td>email address you provide when starting a trial or paid subscription</td></tr>
-          <tr><td>Payment data</td><td>payment ID and tokenised card reference — <strong>stored by our payment processors</strong> (YooKassa for RUB, Telegram Stars for foreign users). We never see your full card number or CVV. On our side we keep only subscription status, amount and validity period.</td></tr>
+          <tr><td>Payment data</td><td>payment ID and tokenised payment reference — <strong>stored by our payment provider</strong> (primarily Tribute; YooKassa and Telegram Stars may be used as additional or legacy methods). We never see your full card number or CVV. On our side we keep only subscription status, amount and validity period.</td></tr>
           <tr><td>Usage data</td><td>login and action logs in the member dashboard, IP address, User-Agent, request timestamps, referrer</td></tr>
           <tr><td>Behavioural analytics</td><td>de-identified visit statistics (CTA source, button clicks), functional and first-party analytics cookies</td></tr>
           <tr><td>Communications</td><td>messages you send us via @BelfedBot or contact@belfed.com, to handle your requests</td></tr>
@@ -139,18 +139,24 @@
         <thead><tr><th>Vendor</th><th>Purpose</th><th>Jurisdiction</th></tr></thead>
         <tbody>
           <tr><td>Supabase Inc.</td><td>Database, authentication, edge functions, profile storage</td><td>Hosted in EU-West (Ireland)</td></tr>
-          <tr><td>YooKassa (NCO YuMoney)</td><td>Card payments and recurring billing for RUB</td><td>Russia</td></tr>
-          <tr><td>Telegram FZ-LLC</td><td>Messaging, Stars payments, identification by telegram_id, channel access</td><td>UAE / global infrastructure</td></tr>
+          <tr><td>Tribute</td><td>Primary payment provider — subscription checkout and recurring billing (RUB and foreign currency) inside Telegram</td><td>Processes payments via its own infrastructure</td></tr>
+          <tr><td>YooKassa (NCO YuMoney)</td><td>Additional / legacy payment method for card payments in RUB, where offered</td><td>Russia</td></tr>
+          <tr><td>Telegram FZ-LLC</td><td>Messaging, Telegram Stars payments, identification by telegram_id, channel access</td><td>UAE / global infrastructure</td></tr>
           <tr><td>Brevo (Sendinblue SAS)</td><td>Delivery of transactional and service emails</td><td>France (EU)</td></tr>
           <tr><td>Cloudflare / GitHub Pages</td><td>Static site hosting, CDN, DDoS protection</td><td>USA / global network</td></tr>
         </tbody>
       </table>
-      <p>We do not sell your personal data and we do not share it with ad networks. International transfers (e.g. to Telegram, Cloudflare) are carried out under the contractual safeguards required by GDPR (Standard Contractual Clauses or equivalent measures).</p>
+      <p>We do not sell your personal data and we do not share it with ad networks. For visitors located in the EU/EEA and the UK, international transfers (e.g. to Telegram or Cloudflare) are made under the contractual safeguards required by GDPR (Standard Contractual Clauses or equivalent measures).</p>
 
-      <h2>7. Cookies and similar technologies</h2>
-      <p>The Belfed websites use only functional cookies (session, language, UI toggles) and first-party, anonymised analytics. We do not use third-party advertising cookies or cross-site trackers. Because no consent-required cookies are set, we do not display a cookie banner; however, you can disable cookies in your browser settings without losing access to public content.</p>
+      <h2>7. Data location and cross-border transfer (Russian users)</h2>
+      <p>Our database, authentication and edge functions are currently hosted by Supabase in the EU-West (Ireland) region, and some sub-processors listed above are located outside the Russian Federation. This means that personal data of users in Russia may be recorded and stored on infrastructure located outside Russia, and may be transferred across borders to the recipients listed above.</p>
+      <p>Russian Federal Law No. 152-FZ requires operators to record, systematise, accumulate, store, amend and retrieve the personal data of Russian citizens using databases located in the Russian Federation (Art. 18(5)), and to submit a separate notification to Roskomnadzor before carrying out cross-border transfers (Art. 12). We are reviewing our data architecture and notification status against these requirements. This Policy describes our processing as it is actually carried out today; it does not assert that a Russian primary database is already in place, and it does not claim that any Roskomnadzor notification has been filed. Where a legal basis or notification is required and not yet completed, we are working to bring the relevant processing into line with the law.</p>
+      <p>If you are a user in Russia and have questions about how your data is located or transferred, contact us at <a href="mailto:contact@belfed.com">contact@belfed.com</a>.</p>
 
-      <h2>8. Your rights</h2>
+      <h2>8. Cookies and similar technologies</h2>
+      <p>The Belfed websites use functional storage (session, language, UI toggles) and first-party, de-identified analytics. We do not use third-party advertising cookies or cross-site trackers. We do not currently display a cookie banner; we treat this storage as strictly functional/first-party, and we are reviewing each item of local storage and analytics against the consent requirements that may apply to individual visitors. You can disable cookies in your browser settings without losing access to public content.</p>
+
+      <h2>9. Your rights</h2>
       <p>Under GDPR (and equivalent rights under 152-FZ) you have the right to:</p>
       <ul>
         <li><strong>Access</strong> a copy of the personal data we hold about you.</li>
@@ -161,19 +167,27 @@
         <li><strong>Withdraw consent</strong> at any time for any processing based on consent. Withdrawal does not affect the lawfulness of processing carried out before the withdrawal.</li>
         <li><strong>Lodge a complaint</strong> with a supervisory authority — the EU/EEA Data Protection Authority of your country of residence, or Roskomnadzor (rkn.gov.ru) for users in Russia.</li>
       </ul>
-      <p>To exercise any of these rights, contact us at <a href="mailto:contact@belfed.com">contact@belfed.com</a> with the subject line "Privacy request". We will respond within 30 calendar days.</p>
+      <p>To exercise any of these rights, contact us at <a href="mailto:contact@belfed.com">contact@belfed.com</a> with the subject line "Privacy request".</p>
+      <p><strong>Response times.</strong> For visitors in the EU/EEA and the UK, we respond to rights requests without undue delay and within one month, as required by GDPR (extendable by two further months for complex requests, with notice). For users in Russia, we apply the specific statutory periods of 152-FZ, which differ by request type:</p>
+      <ul>
+        <li>Where we identify unlawful processing or inaccurate data following your request, we <strong>block</strong> the relevant data from the moment of the request for the duration of the check.</li>
+        <li>Confirmed inaccurate data is <strong>corrected within 7 working days</strong>, after which blocking is lifted.</li>
+        <li>Unlawful processing that cannot be made lawful is <strong>stopped within 3 working days</strong>; if the data cannot be made lawful, it is <strong>destroyed within 10 working days</strong>.</li>
+        <li>On your request to <strong>stop processing</strong>, we cease processing <strong>within 10 working days</strong> (extendable by up to 5 working days with a reasoned notice).</li>
+        <li>When the purpose of processing is achieved, or on <strong>withdrawal of consent</strong> where no other legal basis applies, we stop processing and delete the data <strong>within 30 days</strong> (or block and then delete within 6 months if immediate deletion is not technically possible).</li>
+      </ul>
       <p>Some rights can be exercised directly inside the product: notification preferences in <code>belfed.com/members.html</code>, one-click unsubscribe in every marketing email, and self-service cancellation of subscription auto-renewal.</p>
 
-      <h2>9. Children</h2>
+      <h2>10. Children</h2>
       <p>The Service is not intended for individuals under 18. We do not knowingly collect personal data from minors. If we discover that we have collected such data inadvertently, we will delete it promptly.</p>
 
-      <h2>10. Security</h2>
+      <h2>11. Security</h2>
       <p>We apply technical and organisational measures to protect your data, including TLS encryption in transit, password hashing, restricted access to production systems, administrator action logging and regular backups. No internet transmission or storage can be guaranteed 100% secure — please use strong unique passwords and do not share your credentials with third parties.</p>
 
-      <h2>11. Changes to this Policy</h2>
+      <h2>12. Changes to this Policy</h2>
       <p>We may update this Privacy Policy from time to time. For material changes we will notify users inside the member dashboard and/or by email at least 14 calendar days before the change takes effect. The current version date is shown at the top of this document.</p>
 
-      <h2>12. How to contact us</h2>
+      <h2>13. How to contact us</h2>
       <p>For any privacy-related question or to exercise your rights, contact the controller at:<br>
       Email: <a href="mailto:contact@belfed.com">contact@belfed.com</a><br>
       Subject: "Privacy request"</p>
