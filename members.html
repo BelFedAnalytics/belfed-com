@@ -462,6 +462,10 @@
             <label class="bf-toggle"><input type="checkbox" id="flagAnalytics" disabled><span class="flag-label">Off</span></label>
           </div>
           <div class="email-pref-row">
+            <span class="email-pref-label">Video reviews<span class="email-pref-hint">A separate email when a new sector review is published. Off by default.</span></span>
+            <label class="bf-toggle"><input type="checkbox" id="flagVideoReviews" disabled><span class="flag-label">Off</span></label>
+          </div>
+          <div class="email-pref-row">
             <span class="email-pref-label">New positions<span class="email-pref-hint">Open signal: ticker, side, entry, stop and targets.</span></span>
             <label class="bf-toggle"><input type="checkbox" id="flagOpen" disabled><span class="flag-label">Off</span></label>
           </div>
@@ -515,6 +519,7 @@
 
     var FLAG_MAP = {
       flagAnalytics: 'notify_analytics',
+      flagVideoReviews: 'notify_video_reviews',
       flagOpen:      'notify_position_open',
       flagStop:      'notify_stop_hit',
       flagTP:        'notify_take_profit',

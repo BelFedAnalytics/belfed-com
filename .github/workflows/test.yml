@@ -40,3 +40,5 @@ jobs:
         run: node --check build_trades_fallback.js
       - name: Run offline fallback dot-parity tests
         run: node tests/fallback-dots.test.js
+      - name: Run video-review provider safety tests
+        run: node --test tests/video-reviews.test.js
