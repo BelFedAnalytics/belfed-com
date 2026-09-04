@@ -51,3 +51,47 @@ test('admin page uses a valid Supabase anon JWT payload', () => {
   assert.equal(payload.ref, 'obujqvqqmyfcfflhqvud');
   assert.equal(payload.role, 'anon');
 });
+
+test('EN catalog and admin use independent publish targets and covers', () => {
+  const analytics = fs.readFileSync(path.join(__dirname, '..', 'analytics.html'), 'utf8');
+  const admin = fs.readFileSync(path.join(__dirname, '..', 'admin-video-reviews.html'), 'utf8');
+  assert.match(analytics, /function videoLocale\(item\) \{\s*return 'en';/);
+  assert.match(analytics, /\.rpc\('video_reviews_list', \{ p_lang: 'en' \}\)/);
+  for (const field of [
+    'publish_to_site_ru',
+    'publish_to_telegram_ru',
+    'publish_to_site_en',
+    'publish_to_telegram_en',
+    'thumbnail_file_ru',
+    'thumbnail_file_en',
+  ]) assert.match(admin, new RegExp(`id="${field}"`));
+  assert.match(admin, /p\.status='published'/);
+  assert.match(admin, /newReview\(true\)/);
+  assert.doesNotMatch(admin, /publish_to_site_en\.checked=true/);
+  assert.match(admin, /Сессия администратора истекла; Telegram не обновлён/);
+  assert.match(admin, /Telegram недоступен:/);
+  assert.match(
+    admin,
+    /Telegram \$\{lang\.toUpperCase\(\)\} уже имеет историю доставки\. Снять этот флаг нельзя; используйте архив/,
+  );
+  assert.match(admin, /function makeOperation\(\)/);
+  assert.match(admin, /operationId:crypto\.randomUUID\(\)/);
+  assert.match(admin, /expected_updated_at:row\.updated_at,operation_id:operationId/);
+  assert.match(admin, /\.eq\('updated_at',op\.updatedAt\)/);
+  assert.match(admin, /function fillEditor\(row\)/);
+  assert.match(admin, /if\(fresh&&!dirtyState\)fillEditor\(fresh\)/);
+  const editReviewBody = admin.match(/function editReview\(id\)\{([^}]*)\}/)?.[1] || '';
+  assert.doesNotMatch(editReviewBody, /loadList\(/);
+  assert.match(admin, /dirtyState=false/);
+  assert.match(admin, /fresh&&!dirtyState/);
+  assert.match(admin, /На сервере появилась новая версия/);
+  assert.match(admin, /onclick="requestNewReview\(\)"/);
+  assert.match(admin, /function requestNewReview\(\)\{if\(dirtyState&&!confirm\(/);
+  assert.match(admin, /event==='SIGNED_IN'\|\|event==='SIGNED_OUT'/);
+  assert.doesNotMatch(admin, /onAuthStateChange\(\(\)=>setTimeout\(checkAdmin/);
+  assert.match(admin, /function lockDeliveredTargets\(\)/);
+  assert.match(admin, /reconcile_video_review_telegram/);
+  assert.match(admin, /telegram_send_started_at_\$\{lang\}/);
+  assert.match(admin, /function canReconcile\(lang\)/);
+  assert.match(admin, /15\*60\*1000/);
+});
