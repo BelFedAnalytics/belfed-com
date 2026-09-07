@@ -8,8 +8,12 @@ const {
   safeHttpUrl,
   videoCatalogPath,
   videoDetailPath,
+  videoSectorPath,
   videoSegmentPath,
   selectVideoReviews,
+  videoSectors,
+  isVideoSector,
+  filterVideoReviews,
 } = require('../belfed-video-reviews.js');
 
 test('parses YouTube watch and short links into privacy-enhanced embeds', () => {
@@ -128,13 +132,42 @@ test('video selection matches only an exact known slug', () => {
   assert.deepEqual(selectVideoReviews(null, 'known'), []);
 });
 
+test('video sectors are fixed and catalog filtering is exact', () => {
+  assert.deepEqual(videoSectors, ['crypto', 'equities', 'commodities']);
+  assert.equal(isVideoSector('crypto'), true);
+  assert.equal(isVideoSector('stocks'), false);
+  const items = [
+    { slug: 'one', sector: 'crypto' },
+    { slug: 'two', sector: 'equities' },
+    { slug: 'three', sector: 'commodities' },
+  ];
+  assert.deepEqual(filterVideoReviews(items, 'commodities'), [items[2]]);
+  assert.deepEqual(filterVideoReviews(items, 'unknown'), []);
+  assert.equal(
+    videoDetailPath('one', 'en', 'commodities'),
+    '/analytics.html?tab=videos&video=one&lang=en&sector=commodities',
+  );
+  assert.equal(videoCatalogPath('en', 'commodities'), '/analytics.html?tab=videos&lang=en&sector=commodities');
+  assert.equal(
+    videoSectorPath('https://belfed.com/analytics.html?tab=videos&video=one&lang=en&utm=x#top', 'equities'),
+    '/analytics.html?tab=videos&lang=en&utm=x&sector=equities#top',
+  );
+});
+
 test('video catalog renders full-review controls without hijacking playback', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'analytics.html'), 'utf8');
+  assert.doesNotMatch(html, /id="videoCount"/);
+  assert.match(html, /data-video-sector="crypto"/);
+  assert.match(html, /data-video-sector="equities"/);
+  assert.match(html, /data-video-sector="commodities"/);
+  assert.match(html, /filterVideoReviews\(items, videoSector\)/);
+  assert.match(html, /videoSectorEmptyTitle/);
+  assert.match(html, /videoSectorPath\(location\.href, sector\)/);
   assert.match(html, /videoOpen: 'OPEN REVIEW'/);
   assert.match(html, /const wanted = new URLSearchParams\(location\.search\)\.get\('video'\)/);
   assert.match(html, /selectVideoReviews\(items, wanted\)/);
-  assert.match(html, /videoDetailPath\(item\.slug, state\.lang\)/);
-  assert.match(html, /videoCatalogPath\(state\.lang\)/);
+  assert.match(html, /videoDetailPath\(item\.slug, state\.lang, videoSector\)/);
+  assert.match(html, /videoCatalogPath\(state\.lang, videoSector\)/);
   assert.match(html, /videoSegmentPath\(location\.href, seg\)/);
   assert.match(html, /class="video-card\$\{wanted \? ' video-detail' : ''\}"/);
   assert.match(html, /class="video-open"/);
