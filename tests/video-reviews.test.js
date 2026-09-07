@@ -3,7 +3,14 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { parseVideoUrl, safeHttpUrl } = require('../belfed-video-reviews.js');
+const {
+  parseVideoUrl,
+  safeHttpUrl,
+  videoCatalogPath,
+  videoDetailPath,
+  videoSegmentPath,
+  selectVideoReviews,
+} = require('../belfed-video-reviews.js');
 
 test('parses YouTube watch and short links into privacy-enhanced embeds', () => {
   assert.deepEqual(parseVideoUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), {
@@ -94,4 +101,43 @@ test('EN catalog and admin use independent publish targets and covers', () => {
   assert.match(admin, /telegram_send_started_at_\$\{lang\}/);
   assert.match(admin, /function canReconcile\(lang\)/);
   assert.match(admin, /15\*60\*1000/);
+});
+
+test('video detail routes preserve locale, encode slugs, and clear stale state', () => {
+  assert.equal(videoCatalogPath('ru'), '/analytics.html?tab=videos&lang=ru');
+  assert.equal(videoCatalogPath('en'), '/analytics.html?tab=videos&lang=en');
+  assert.equal(
+    videoDetailPath('weekly review & <script>', 'en'),
+    '/analytics.html?tab=videos&video=weekly+review+%26+%3Cscript%3E&lang=en',
+  );
+  assert.equal(
+    videoSegmentPath('https://belfed.com/analytics.html?tab=videos&video=old&lang=en&utm=x#top', 'rep'),
+    '/analytics.html?lang=en&utm=x#top',
+  );
+  assert.equal(
+    videoSegmentPath('https://belfed.com/analytics.html?lang=en', 'video'),
+    '/analytics.html?lang=en&tab=videos',
+  );
+});
+
+test('video selection matches only an exact known slug', () => {
+  const items = [{ slug: 'known' }, { slug: '<img src=x onerror=alert(1)>' }];
+  assert.deepEqual(selectVideoReviews(items, 'known'), [{ slug: 'known' }]);
+  assert.deepEqual(selectVideoReviews(items, 'missing'), []);
+  assert.deepEqual(selectVideoReviews(items, '<img src=x onerror=alert(1)>'), [items[1]]);
+  assert.deepEqual(selectVideoReviews(null, 'known'), []);
+});
+
+test('video catalog renders full-review controls without hijacking playback', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'analytics.html'), 'utf8');
+  assert.match(html, /videoOpen: 'OPEN REVIEW'/);
+  assert.match(html, /const wanted = new URLSearchParams\(location\.search\)\.get\('video'\)/);
+  assert.match(html, /selectVideoReviews\(items, wanted\)/);
+  assert.match(html, /videoDetailPath\(item\.slug, state\.lang\)/);
+  assert.match(html, /videoCatalogPath\(state\.lang\)/);
+  assert.match(html, /videoSegmentPath\(location\.href, seg\)/);
+  assert.match(html, /class="video-card\$\{wanted \? ' video-detail' : ''\}"/);
+  assert.match(html, /class="video-open"/);
+  assert.match(html, /class="video-back"/);
+  assert.match(html, /onclick="playVideo\(this\)"/);
 });
