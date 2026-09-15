@@ -79,6 +79,11 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 .login-box .login-error{color:#c50000;font-size:12px;margin-top:12px;display:none}
 .login-box .login-msg{color:#1a7a1a;font-size:12px;margin-top:12px;display:none}
 .trial-note{font-size:10px;opacity:0.5;margin-top:14px;letter-spacing:0.5px}
+.su-consent{display:flex;align-items:flex-start;gap:8px;text-align:left;font-size:11px;line-height:1.5;margin-bottom:10px;color:#333}
+.su-consent input[type=checkbox]{width:auto;margin:2px 0 0;flex-shrink:0}
+.su-consent a{color:#000;text-decoration:underline}
+.su-consent.error{color:#c50000}
+.su-consent.error a{color:#c50000}
 .header-actions{display:contents}
 .members-link{position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;color:#000;text-decoration:none;border:1px solid #000;padding:5px 12px}
 .logout-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;padding:6px 16px;background:none;border:1px solid #000;cursor:pointer;color:#000}
@@ -132,6 +137,14 @@ footer{text-align:center;margin-top:60px;padding-top:18px;border-top:1px solid #
 <input type="email" id="suEmail" placeholder="Email address">
 <input type="password" id="suPassword" placeholder="Password (min 6 chars)">
 <input type="password" id="suPassword2" placeholder="Confirm password">
+<label class="su-consent" id="suConsentWrap" for="suConsent">
+<input type="checkbox" id="suConsent" name="suConsent">
+<span>I have read and accept the <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>, <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="/disclaimer.html" target="_blank" rel="noopener">Risk Disclaimer</a>. (required)</span>
+</label>
+<label class="su-consent" for="suMarketing">
+<input type="checkbox" id="suMarketing" name="suMarketing">
+<span>Optional: send me Belfed market analytics and product updates by email. Not required to use the service.</span>
+</label>
 <button class="login-btn" onclick="handleSignUp()">START FREE TRIAL</button>
 <div class="trial-note">14 days free access &bull; No credit card required</div>
 </div>
