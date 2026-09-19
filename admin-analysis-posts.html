@@ -75,6 +75,7 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
 .char-counter{font-size:10px;letter-spacing:1px;opacity:0.6;text-align:right;margin-top:2px}
 .char-counter.warn{color:#e6a800}
 .char-counter.over{color:#c50000;font-weight:bold}
+.tg-mode-note{margin-top:8px;padding:8px 10px;border:1px solid #e6a800;background:rgba(230,168,0,0.08);color:#e6a800;font-size:11px;line-height:1.5;letter-spacing:0.5px}
 
 .section-block{border-top:1px dashed #999;padding-top:18px;margin-top:18px}
 .section-head{font-size:11px;letter-spacing:3px;opacity:0.6;font-weight:bold;margin-bottom:10px}
@@ -327,6 +328,7 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
           <input type="file" id="files" accept="image/*" multiple style="display:none">
         </div>
         <div class="thumbs" id="thumbs"></div>
+        <div class="tg-mode-note" id="tg-mode-note" style="display:none"></div>
       </div>
 
     </div>
@@ -898,6 +900,31 @@ function updateCounters(){
   els.cntRu.classList.toggle('over', ru>limit);
   els.cntEn.classList.toggle('warn', en>warnAt && en<=limit);
   els.cntEn.classList.toggle('over', en>limit);
+
+  const note = document.getElementById('tg-mode-note');
+  if (note){
+    const chk = tgTextOnlyCheck();
+    if (chk.need){
+      const detail = chk.over.map(o => `${o.lang} ${o.len}`).join(', ');
+      note.style.display = 'block';
+      note.textContent = `⚠ Caption over 1024 (${detail}). Images will NOT be attached to the Telegram message — links to them will be added to the text instead (text message limit 4096). The website and member area will still show the full post: text plus images.`;
+    } else {
+      note.style.display = 'none';
+      note.textContent = '';
+    }
+  }
+}
+
+// v7: Telegram caption-limit workaround (1024). When images are attached and the
+// built caption exceeds the limit for any selected channel, the Telegram message
+// is sent as plain text with links to the images (tg_text_only), while the
+// website keeps the full version with images.
+function tgTextOnlyCheck(){
+  if (state.images.length === 0) return { need:false, over:[] };
+  const over = [];
+  if (els.chRu.checked){ const n = buildCaption('ru').length; if (n > 1024) over.push({ lang:'RU', len:n }); }
+  if (els.chEn.checked){ const n = buildCaption('en').length; if (n > 1024) over.push({ lang:'EN', len:n }); }
+  return { need: over.length > 0, over };
 }
 function updateReplyVisibility(){ els.replytoBlock.style.display = els.type.value==='request' ? 'block' : 'none'; }
 
@@ -1050,6 +1077,28 @@ async function publish(){
         ? `Email-only fulfillment: send the $${data.ticker} analysis to ${leadCtx.email} without posting to Telegram/website?`
         : `Publish to selected channels AND email the $${data.ticker} analysis to ${leadCtx.email}?`)
     : 'Publish to selected channels now?';
+
+  const alreadyPub = editingId ? await isAlreadyPublished(editingId) : false;
+  const tgMode = tgTextOnlyCheck();
+
+  if (tgMode.need){
+    const detail = tgMode.over.map(o => `${o.lang}: ${o.len} / 1024`).join('; ');
+    if (alreadyPub){
+      alert(
+        `This post is already published and the text exceeds the Telegram caption limit (${detail}).\n\n` +
+        `Telegram cannot turn an already sent photo message into a text message. ` +
+        `Either shorten the text, or delete the post and publish it again — then the images will go out as links.`
+      );
+      return;
+    }
+    const warn =
+      `WARNING: the text exceeds the Telegram photo caption limit (${detail}).\n\n` +
+      `Images will NOT be attached to the Telegram message. A line with links to the images will be added to the text instead.\n` +
+      `The website and the member area will show the full post: text and all images.\n\n` +
+      `Publish it this way?`;
+    if (!confirm(warn)) return;
+  }
+
   if (!confirm(confirmMsg)) return;
   els.btnPublish.disabled = true;
   try {
@@ -1084,11 +1133,11 @@ async function publish(){
     }
 
     flash('info','publishing to telegram...');
-    const action = editingId && (await isAlreadyPublished(editingId)) ? 'edit' : 'publish';
+    const action = alreadyPub ? 'edit' : 'publish';
     const res = await fetch(`${SUPABASE_URL}/functions/v1/analysis-publish`, {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}` },
-      body: JSON.stringify({ action, post_id: editingId })
+      body: JSON.stringify({ action, post_id: editingId, tg_text_only: tgMode.need })
     });
     const j = await res.json().catch(()=>({}));
     if (!res.ok || j.error){
