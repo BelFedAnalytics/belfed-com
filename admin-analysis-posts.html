@@ -211,6 +211,7 @@ header h1{font-size:16px;letter-spacing:3px;font-weight:bold}
   <div class="toolbar-right">
     <button class="btn" id="btn-clear">[ CLEAR ]</button>
     <button class="btn" id="btn-draft">[ SAVE DRAFT ]</button>
+    <button class="btn" id="btn-preview">[ PREVIEW IN TELEGRAM ]</button>
     <button class="btn primary" id="btn-publish">[ PUBLISH ]</button>
   </div>
 </div>
@@ -531,7 +532,7 @@ function initEditor(){
     cntRu:$('#cnt-ru'), cntEn:$('#cnt-en'),
     files:$('#files'), dropzone:$('#dropzone'), thumbs:$('#thumbs'),
     tgFormat:$('#tg-format'), tgFormatHint:$('#tg-format-hint'),
-    btnClear:$('#btn-clear'), btnDraft:$('#btn-draft'), btnPublish:$('#btn-publish'),
+    btnClear:$('#btn-clear'), btnDraft:$('#btn-draft'), btnPreview:$('#btn-preview'), btnPublish:$('#btn-publish'),
     bubbleHost:$('#bubble-host'), topicName:$('#topic-name'),
     history:$('#history'), topMsg:$('#top-msg'),
     searchInput:$('#search-input'), searchClear:$('#search-clear'),
@@ -559,6 +560,7 @@ function initEditor(){
 
   els.btnClear.addEventListener('click', clearForm);
   els.btnDraft.addEventListener('click', saveDraft);
+  if (els.btnPreview) els.btnPreview.addEventListener('click', previewTelegram);
   els.btnPublish.addEventListener('click', publish);
 
   // footer: load saved footers from config, wire Load/Save buttons
@@ -1145,6 +1147,52 @@ async function saveDraft(){
   }
 }
 
+// v8: Telegram preview. Saves the draft and sends it only to the admin's private
+// chat with the bot, using the same renderer that publishes to the channels.
+async function previewTelegram(){
+  const data = collectFormData();
+  const err = validate(data);
+  if (err){ flash('err', err); return; }
+  if (els.btnPreview) els.btnPreview.disabled = true;
+  try {
+    flash('info','uploading images...');
+    const paths = await uploadPendingImages();
+    const payload = { ...data, image_paths: paths, image_meta: collectImageMeta(paths) };
+    const session = (await sb.auth.getSession()).data.session;
+    payload.created_by = session.user.id;
+
+    if (editingId){
+      const { error } = await sb.from('analysis_posts').update(payload).eq('id', editingId);
+      if (error) throw error;
+    } else {
+      payload.status = 'draft';
+      const { data: r, error } = await sb.from('analysis_posts').insert(payload).select('id').maybeSingle();
+      if (error) throw error;
+      editingId = r.id;
+    }
+
+    flash('info','sending preview...');
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/analysis-publish`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}` },
+      body: JSON.stringify({ action:'preview', post_id: editingId })
+    });
+    const j = await res.json().catch(()=>({}));
+    if (!res.ok || j.error){
+      const det = Array.isArray(j.results) ? j.results.map(r => `${String(r.lang).toUpperCase()}: ${r.error||'ok'}`).join('; ') : (j.error||res.status);
+      flash('err', `preview failed: ${det}`);
+    } else {
+      const langs = (j.results||[]).map(r => String(r.lang).toUpperCase()).join(' + ');
+      flash('ok', `Preview sent to your private chat with the bot (${j.format}): ${langs}`);
+      loadHistory();
+    }
+  } catch (e){
+    flash('err','preview failed: '+(e.message||e));
+  } finally {
+    if (els.btnPreview) els.btnPreview.disabled = false;
+  }
+}
+
 async function publish(){
   const data = collectFormData();
   const err = validate(data);
@@ -1156,15 +1204,6 @@ async function publish(){
         ? `Email-only fulfillment: send the $${data.ticker} analysis to ${leadCtx.email} without posting to Telegram/website?`
         : `Publish to selected channels AND email the $${data.ticker} analysis to ${leadCtx.email}?`)
     : 'Publish to selected channels now?';
-
-  // The article format is stored in the draft, but the publisher cannot send it yet.
-  if (tgFormat() === 'article'){
-    alert(
-      'The ARTICLE format is selected. It is saved with the draft, but article delivery is not wired into the publisher yet.\n\n' +
-      'Save the draft and wait for it, or switch the format to REGULAR POST to publish now.'
-    );
-    return;
-  }
 
   const alreadyPub = editingId ? await isAlreadyPublished(editingId) : false;
   const tgMode = tgTextOnlyCheck();
@@ -1185,6 +1224,13 @@ async function publish(){
       `The website and the member area will show the full post: text and all images.\n\n` +
       `Publish it this way?`;
     if (!confirm(warn)) return;
+  }
+
+  if (tgFormat() === 'article'){
+    if (!confirm(
+      'ARTICLE format: Telegram will receive one long message with the charts inline.\n\n' +
+      'Chart titles and links come from the fields under each image. Continue?'
+    )) return;
   }
 
   if (!confirm(confirmMsg)) return;
@@ -1230,7 +1276,10 @@ async function publish(){
     const j = await res.json().catch(()=>({}));
     if (!res.ok || j.error){
       // v6: show caption-length details per language
-      if (j.error === 'caption_too_long' && Array.isArray(j.failures)){
+      if (j.error === 'article_too_long' && Array.isArray(j.failures)){
+        const lines = j.failures.map(f => `${f.lang.toUpperCase()}: ${f.length} / ${f.limit}`);
+        flash('err', `article too long — ${lines.join('; ')}. Shorten and retry.`);
+      } else if (j.error === 'caption_too_long' && Array.isArray(j.failures)){
         const lines = j.failures.map(f => `${f.lang.toUpperCase()}: ${f.length} / ${f.limit} — exceeded by ${f.excess}`);
         flash('err', `caption too long — ${lines.join('; ')}. Shorten and retry.`);
       } else if (j.error === 'partial_failure' && Array.isArray(j.failures)){
