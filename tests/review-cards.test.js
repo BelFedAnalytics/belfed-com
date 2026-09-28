@@ -465,5 +465,28 @@ console.log('trade-review manifest builder');
   }
 }
 
+// Charts per stage (2026-09-28): every operation after entry carries its own
+// TradingView snapshot; the entry step does not (opening chart heads the card).
+{
+  const pc = { id: 9, pct_closed: 50, exit_price: 80, closed_at: '2026-09-28T10:00:00Z', comment_en: '', comment_ru: '',
+    chart_url: 'https://www.tradingview.com/x/TYz3kDJz/' };
+  const pos = { id: 1, ticker: 'DASH', direction: 'long', entry_price: 70, opened_at: '2026-09-21T10:00:00Z',
+    closed_at: '2026-09-28T10:00:00Z', result_rr: 1.2, partial_closes: [pc], events: [
+      { id: 1, event_type: 'opened', triggered_at: '2026-09-21T10:00:00Z', message_id_en: 1, message_id_ru: 1,
+        chart_url: 'https://www.tradingview.com/x/AAAA1111/', payload: {} },
+      { id: 2, event_type: 'partial_closed', triggered_at: '2026-09-28T10:00:00Z', message_id_en: 2, message_id_ru: 2,
+        payload: { partial_close_id: 9 } },
+      { id: 3, event_type: 'stop_moved', triggered_at: '2026-09-28T11:00:00Z', message_id_en: 3, message_id_ru: 3,
+        chart_url: 'javascript:alert(1)', payload: { old_stop: 60, new_stop: 70 } }] };
+  const steps = B.buildSteps(pos, 'en');
+  const html = steps.map(s => B.renderStep ? B.renderStep(s, 'en') : '').join('');
+  const partial = steps.find(s => s.chart);
+  assert(!!partial && partial.chart.indexOf('TYz3kDJz') >= 0, 'partial step takes chart from partial_closes');
+  assert(!steps.some(s => s.chart && s.chart.indexOf('AAAA1111') >= 0), 'entry step carries no duplicate chart');
+  assert(!steps.some(s => s.chart && s.chart.indexOf('javascript') >= 0), 'non-https chart is dropped');
+  const card = B.renderBotCard(pos, { entryISO: '2026-09-21', exitISO: '2026-09-28', exitP: '80' }, 'en');
+  assert(JSON.stringify(card).indexOf('snapshots/t/TYz3kDJz.png') >= 0, 'card renders the stage snapshot');
+}
+
 console.log(failures === 0 ? '\nAll trade-review card tests passed.' : '\n' + failures + ' assertion(s) failed.');
 process.exit(failures === 0 ? 0 : 1);

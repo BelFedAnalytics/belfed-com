@@ -55,11 +55,11 @@ const SAFE_POSITION = ['sheet_row_id', 'ticker', 'direction', 'status', 'asset_c
   'result_rr', 'exit_price', 'opened_at', 'closed_at',
   'comment_en', 'comment_ru', 'close_comment_en', 'close_comment_ru'];
 const SAFE_EVENT = ['id', 'event_type', 'triggered_at', 'triggered_price',
-  'message_id_en', 'message_id_ru'];
+  'message_id_en', 'message_id_ru', 'chart_url'];
 const SAFE_EVENT_PAYLOAD = ['event', 'is_addon', 'old_stop', 'new_stop',
   'comment_en', 'comment_ru', 'partial_close_id'];
 const SAFE_PARTIAL = ['id', 'closed_at', 'exit_price', 'pct_closed',
-  'comment_en', 'comment_ru', 'source'];
+  'comment_en', 'comment_ru', 'source', 'chart_url'];
 
 function pick(obj, keys) {
   const out = {};

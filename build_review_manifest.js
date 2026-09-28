@@ -157,7 +157,21 @@ function isSystemComment(c) {
   return /^(auto |corrected )/i.test(trim(c)) || /\(per sheet recap\)/i.test(trim(c));
 }
 
-// Build the ordered timeline (list of {lbl, ts, body, mid}) for one language.
+// Snapshot image for a TradingView /x/ link (same rule as trade-review.js).
+function chartImg(url) {
+  const m = String(url || '').match(/tradingview\.com\/x\/([A-Za-z0-9]+)/);
+  if (!m) return '';
+  return 'https://s3.tradingview.com/snapshots/' + m[1].charAt(0).toLowerCase() + '/' + m[1] + '.png';
+}
+function httpsOnly(u) {
+  const v = trim(u);
+  return /^https:\/\/\S+$/i.test(v) ? v : '';
+}
+
+// Build the ordered timeline (list of {lbl, ts, body, mid, chart}) for one language.
+// chart = TradingView snapshot of the asset at the moment of that operation
+// (position_events.chart_url / partial_closes.chart_url). The initial entry
+// step carries none: the opening chart already sits at the top of the card.
 // mid is the Telegram message id (or null -> no step link).
 function buildSteps(pos, lang) {
   const t = L[lang];
@@ -182,9 +196,11 @@ function buildSteps(pos, lang) {
       const mid = e[midKey] || null;
       const price = e.triggered_price != null ? fmtNum(e.triggered_price) : (pl.triggered_price != null ? fmtNum(pl.triggered_price) : '');
       let lbl, body;
+      let chart = httpsOnly(e.chart_url);
       switch (e.event_type) {
         case 'opened':
           lbl = pl.is_addon ? t.added : t.opened;
+          if (!pl.is_addon) chart = '';
           body = comment('comment') || (price ? t.sOpened(trim(pos.direction).toLowerCase(), price) : '');
           break;
         case 'stop_moved':
@@ -207,6 +223,7 @@ function buildSteps(pos, lang) {
             : (pcQueue[pIdx++] || null);
           body = pc ? t.sPartial(Math.round(pc.pct_closed), fmtNum(pc.exit_price))
                     : t.sPartial('', price);
+          if (!chart && pc) chart = httpsOnly(pc.chart_url);
           break;
         }
         case 'closed':
@@ -214,7 +231,7 @@ function buildSteps(pos, lang) {
         default:
           continue;
       }
-      steps.push({ lbl, ts, body, mid });
+      steps.push({ lbl, ts, body, mid, chart });
     }
   } else {
     // No event stream: build an honest timeline from the position's own
@@ -226,7 +243,7 @@ function buildSteps(pos, lang) {
     for (const pc of (pos.partial_closes || []).slice().sort((a, b) => trim(a.closed_at).localeCompare(trim(b.closed_at)))) {
       const c = trim(pc['comment_' + lang]);
       const body = (c && !isSystemComment(c)) ? c : t.sPartial(Math.round(pc.pct_closed), fmtNum(pc.exit_price));
-      steps.push({ lbl: t.partial, ts: fromISO(tsISO(pc.closed_at)), body, mid: null });
+      steps.push({ lbl: t.partial, ts: fromISO(tsISO(pc.closed_at)), body, mid: null, chart: httpsOnly(pc.chart_url) });
     }
     if (comment('close_comment')) {
       steps.push({ lbl: t.closed, ts: fromISO(tsISO(pos.closed_at)), body: comment('close_comment'), mid: null });
@@ -243,9 +260,19 @@ function renderStep(s, lang) {
     link = '<a class="steplink" href="' + href + '" target="_blank" rel="noopener">' +
            SVG_LOCK + t.steplink + '</a>';
   }
+  let chart = '';
+  if (s.chart) {
+    const img = chartImg(s.chart);
+    const alt = lang === 'ru' ? 'График на момент операции' : 'Chart at the time of this update';
+    chart = img
+      ? '<a class="step-chart" href="' + esc(s.chart) + '" target="_blank" rel="noopener">' +
+        '<img src="' + esc(img) + '" alt="' + esc(alt) + '" loading="lazy" ' +
+        'onerror="var a=this.closest(&quot;.step-chart&quot;);if(a)a.style.display=&quot;none&quot;;"></a>'
+      : '<a class="steplink" href="' + esc(s.chart) + '" target="_blank" rel="noopener">' + esc(alt) + '</a>';
+  }
   return '<li class="step"><div class="step-h"><span class="step-lbl">' + esc(s.lbl) +
          '</span><span class="step-ts">' + esc(s.ts) + '</span></div>' +
-         '<div class="step-body">' + esc(s.body) + '</div>' + link + '</li>';
+         '<div class="step-body">' + esc(s.body) + '</div>' + chart + link + '</li>';
 }
 
 function renderBotCard(pos, sheet, lang) {
