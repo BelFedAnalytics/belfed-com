@@ -19,10 +19,8 @@
  *       Print a reconciliation summary and (optionally) write a CSV of every
  *       audited row. Never mutates the manifest.
  *   node build_review_manifest.js fill  [dataDir] [manifestPath]
- *       Upgrade every closed trade that has genuine Supabase EN history but no
- *       bot timeline card to a freshly-built bot card, merged into the manifest
- *       in place. Existing manifest entries are preserved verbatim unless they
- *       are being upgraded from legacy/missing -> bot.
+ *       Regenerate closed trades with genuine Supabase EN history, including
+ *       existing bot cards. Manual cards and unrelated entries are preserved.
  *
  * dataDir defaults to $BELFED_AUDIT_DIR or /home/user/workspace/trade_audit_2026-07-20.
  *
@@ -123,7 +121,7 @@ const L = {
   en: {
     opened: 'Opened', added: 'Added', stopMoved: 'Stop moved', stopHit: 'Stop hit',
     closed: 'Closed', partial: 'Partial close', target: n => 'Target ' + n + ' hit',
-    intro: 'Below are the messages published in the subscriber group during the lifecycle of this trade.',
+    intro: 'Recorded trade history. Subscriber-group messages are linked where available; other steps come from the trade ledger.',
     steplink: ' signal message (sub. only)',
     sStopMoved: (o, n) => 'Stop moved from ' + o + ' to ' + n + '.',
     sStopHit: p => 'Stop hit at ' + p + '.',
@@ -138,7 +136,7 @@ const L = {
     stopMoved: 'Стоп перенесён', stopHit: 'Стоп сработал',
     closed: 'Закрытие', partial: 'Частичное закрытие',
     target: n => 'Цель ' + n + ' достигнута',
-    intro: 'Ниже представлены сообщения, опубликованные в подписной группе в течение жизненного цикла этой сделки.',
+    intro: 'История сделки по сохранённым записям. Ссылки на сообщения подписной группы указаны, где они доступны; остальные этапы подтверждены торговым журналом.',
     steplink: ' сообщение сигнала (для подписчиков)',
     sStopMoved: (o, n) => 'Стоп перенесён с ' + o + ' на ' + n + '.',
     sStopHit: p => 'Стоп сработал по ' + p + '.',
@@ -154,7 +152,51 @@ const SVG_LOCK = '<svg viewBox="0 0 10 12" width="8" height="9" fill="none" stro
 
 // A machine-written system note, not a verbatim subscriber message.
 function isSystemComment(c) {
-  return /^(auto |corrected )/i.test(trim(c)) || /\(per sheet recap\)/i.test(trim(c));
+  return /^(auto |corrected |backfilled )/i.test(trim(c)) || /\(per sheet recap\)/i.test(trim(c));
+}
+
+const EXIT_EVENTS = new Set(['partial_closed', 'closed', 'stop_hit',
+  'target_1_hit', 'target_2_hit', 'target_3_hit', 'partial_stop_1_hit', 'partial_stop_2_hit']);
+function timestamp(value) { return Date.parse(value) || 0; }
+function eventPrice(e) {
+  return e.triggered_price != null ? e.triggered_price : (e.payload || {}).triggered_price;
+}
+// Each ledger exit can enrich at most one event. Reserve explicit IDs first;
+// otherwise require a unique price+time match (publication can lag by seconds).
+// Never match by queue order or by calendar day.
+function matchPartials(events, partials, pos) {
+  const matches = new Map(), used = new Set();
+  for (const e of events) {
+    if (!EXIT_EVENTS.has(e.event_type)) continue;
+    const id = (e.payload || {}).partial_close_id;
+    const pc = id == null ? null : partials.find(p => String(p.id) === String(id));
+    if (pc && !used.has(pc)) { matches.set(e, pc); used.add(pc); }
+  }
+  for (const e of events) {
+    if (!EXIT_EVENTS.has(e.event_type) || matches.has(e)) continue;
+    const terminal = ['closed', 'stop_hit'].includes(e.event_type);
+    const price = eventPrice(e) ?? (terminal ? pos.exit_price : null), at = timestamp(e.triggered_at);
+    if (price == null || !at) continue;
+    const candidates = partials.filter(pc => {
+      if (used.has(pc) || pc.exit_price == null || !timestamp(pc.closed_at)) return false;
+      const type = String(pc.comment_en || pc.comment_ru || '').match(/\b(target_[123]_hit|partial_stop_[12]_hit|stop_hit)\b/i);
+      if (type && type[1].toLowerCase() !== e.event_type) return false;
+      const samePrice = Math.abs(Number(pc.exit_price) - Number(price)) <= Math.max(1e-8, Math.abs(Number(price)) * 1e-9);
+      // Legacy final fills may be rounded/corrected. Keep trigger and recorded
+      // fill in one step only at the verified position-close time and price.
+      const finalFill = terminal && pos.exit_price != null && timestamp(pos.closed_at) &&
+        Math.abs(timestamp(pos.closed_at) - at) <= 60000 &&
+        Math.abs(Number(pc.exit_price) - Number(pos.exit_price)) <= 1e-8;
+      return Math.abs(timestamp(pc.closed_at) - at) <= 60000 && (samePrice || finalFill);
+    });
+    if (candidates.length === 1) { matches.set(e, candidates[0]); used.add(candidates[0]); }
+  }
+  return { matches, used };
+}
+function partialBody(pc, lang) {
+  const c = trim(pc['comment_' + lang]);
+  const summary = L[lang].sPartial(fmtNum(pc.pct_closed), fmtNum(pc.exit_price));
+  return summary + (c && !isSystemComment(c) && c !== summary ? '\n\n' + c : '');
 }
 
 // Snapshot image for a TradingView /x/ link (same rule as trade-review.js).
@@ -178,25 +220,20 @@ function buildSteps(pos, lang) {
   const midKey = TG[lang].midKey;
   const comment = k => trim(pos[k + '_' + lang]);
   const events = (pos.events || []).filter(e => e.event_type !== 'edited');
+  const partials = pos.partial_closes || [];
+  const { matches, used } = matchPartials(events, partials, pos);
   const steps = [];
 
   if (events.length) {
-    // Event-driven timeline (matches the curated bot cards). A partial_closed
-    // event references its partial_close record by payload.partial_close_id.
-    const pcById = {};
-    for (const pc of (pos.partial_closes || [])) pcById[pc.id] = pc;
-    const pcQueue = (pos.partial_closes || [])
-      .filter(pc => !isSystemComment(pc.comment_en))
-      .sort((a, b) => trim(a.closed_at).localeCompare(trim(b.closed_at)));
-    let pIdx = 0;
-    events.sort((a, b) => (trim(a.triggered_at).localeCompare(trim(b.triggered_at)) || (a.id - b.id)));
+    events.sort((a, b) => timestamp(a.triggered_at) - timestamp(b.triggered_at) || (a.id - b.id));
     for (const e of events) {
       const pl = e.payload || {};
       const ts = fromISO(tsISO(e.triggered_at));
       const mid = e[midKey] || null;
-      const price = e.triggered_price != null ? fmtNum(e.triggered_price) : (pl.triggered_price != null ? fmtNum(pl.triggered_price) : '');
+      const price = fmtNum(eventPrice(e) ?? (['closed', 'stop_hit'].includes(e.event_type) ? pos.exit_price : null));
       let lbl, body;
       let chart = httpsOnly(e.chart_url);
+      const pc = matches.get(e);
       switch (e.event_type) {
         case 'opened':
           lbl = pl.is_addon ? t.added : t.opened;
@@ -218,38 +255,44 @@ function buildSteps(pos, lang) {
           lbl = t.target(3); body = t.sTarget(3, price); break;
         case 'partial_closed': {
           lbl = t.partial;
-          const pc = (pl.partial_close_id != null && pcById[pl.partial_close_id])
-            ? pcById[pl.partial_close_id]
-            : (pcQueue[pIdx++] || null);
-          body = pc ? t.sPartial(Math.round(pc.pct_closed), fmtNum(pc.exit_price))
-                    : t.sPartial('', price);
-          if (!chart && pc) chart = httpsOnly(pc.chart_url);
+          body = pc ? partialBody(pc, lang) : t.sClosed(price);
           break;
         }
+        case 'partial_stop_1_hit':
+        case 'partial_stop_2_hit':
+          lbl = t.partial; body = pc ? partialBody(pc, lang) : t.sClosed(price); break;
         case 'closed':
           lbl = t.closed; body = comment('close_comment') || t.sClosed(price); break;
         default:
           continue;
       }
-      steps.push({ lbl, ts, body, mid, chart });
+      if (pc) {
+        if (!chart) chart = httpsOnly(pc.chart_url);
+        if (!['partial_closed', 'partial_stop_1_hit', 'partial_stop_2_hit'].includes(e.event_type))
+          body += '\n\n' + partialBody(pc, lang);
+      }
+      steps.push({ lbl, ts, body, mid, chart, at: timestamp(e.triggered_at) });
     }
   } else {
     // No event stream: build an honest timeline from the position's own
     // verbatim comments + partial_close records. No step links exist here, so
     // none are fabricated.
     if (comment('comment')) {
-      steps.push({ lbl: t.opened, ts: fromISO(tsISO(pos.opened_at)), body: comment('comment'), mid: null });
-    }
-    for (const pc of (pos.partial_closes || []).slice().sort((a, b) => trim(a.closed_at).localeCompare(trim(b.closed_at)))) {
-      const c = trim(pc['comment_' + lang]);
-      const body = (c && !isSystemComment(c)) ? c : t.sPartial(Math.round(pc.pct_closed), fmtNum(pc.exit_price));
-      steps.push({ lbl: t.partial, ts: fromISO(tsISO(pc.closed_at)), body, mid: null, chart: httpsOnly(pc.chart_url) });
+      steps.push({ lbl: t.opened, ts: fromISO(tsISO(pos.opened_at)), body: comment('comment'), mid: null, at: timestamp(pos.opened_at) });
     }
     if (comment('close_comment')) {
-      steps.push({ lbl: t.closed, ts: fromISO(tsISO(pos.closed_at)), body: comment('close_comment'), mid: null });
+      const final = partials.some(pc => timestamp(pos.closed_at) &&
+        Math.abs(timestamp(pc.closed_at) - timestamp(pos.closed_at)) <= 60000);
+      if (!final) steps.push({ lbl: t.closed, ts: fromISO(tsISO(pos.closed_at)), body: comment('close_comment'), mid: null, at: timestamp(pos.closed_at) });
     }
   }
-  return steps;
+  for (const pc of partials) {
+    if (used.has(pc)) continue;
+    // Ledger evidence, not a fabricated Telegram event.
+    steps.push({ lbl: t.partial, ts: fromISO(tsISO(pc.closed_at)),
+      body: partialBody(pc, lang), mid: null, chart: httpsOnly(pc.chart_url), at: timestamp(pc.closed_at) });
+  }
+  return steps.sort((a, b) => a.at - b.at).map(({ at, ...step }) => step);
 }
 
 function renderStep(s, lang) {
@@ -282,9 +325,9 @@ function renderBotCard(pos, sheet, lang) {
   const dirLbl = lang === 'ru'
     ? (dir === 'short' ? 'Короткая' : 'Длинная')
     : (dir === 'short' ? 'Short' : 'Long');
-  // The result badge/meta reflect the published R (result_rr) only; a position
-  // without a finalized result_rr shows an em-dash, not the interim realized_r.
-  const rNum = pos.result_rr;
+  // Public review mirrors its published table row. No database accounting
+  // field is overwritten/recalculated; interim realized_r is never used.
+  const rNum = trim(sheet.result) ? Number(trim(sheet.result).replace(',', '.')) : pos.result_rr;
   const hasR = rNum != null;
   const rStr = hasR ? fmtR(rNum) : '';
   const rInner = hasR
@@ -362,7 +405,9 @@ function reconcile(src) {
       const steps = mEntry ? ((String(mEntry.en || '').match(/class="step"/g) || []).length) : 0;
       const sid = ws + ':' + (i + 1);
       const pos = posBySid[sid];
-      const posMatch = pos && pos.ticker.toUpperCase() === ticker.toUpperCase();
+      const posMatch = pos && pos.ticker.toUpperCase() === ticker.toUpperCase() &&
+        trim(pos.direction).toLowerCase() === direction.toLowerCase() &&
+        tsISO(pos.opened_at) === entryISO && tsISO(pos.closed_at) === exitISO;
       const p = posMatch ? pos : null;
       const enHist = hasEnHistory(p);
       rows.push({
@@ -466,18 +511,21 @@ function pruneAmbiguousPairs(rows, manifest) {
 
 function fill(rows, manifest) {
   const upgraded = [];
-  for (const r of rows.filter(isGap)) {
-    const sheet = { entryISO: r.entryISO, exitISO: r.exitISO, exitP: r.exitP };
+  for (const r of rows.filter(r => r.fullyClosed && r.enHistory === 'yes' && r.cardKind !== 'manual')) {
+    const sheet = { entryISO: r.entryISO, exitISO: r.exitISO, exitP: r.exitP, result:r.result };
     const en = renderBotCard(r.pos, sheet, 'en');
     const ru = renderBotCard(r.pos, sheet, 'ru');
-    const entry = { kind: 'bot', en, ru };
     // Safe + full keys are always collision-safe. The pair alias is only added
     // when it is unambiguous; an ambiguous one would let another same-entry
     // trade borrow this card.
-    manifest[r.safeKey] = entry;
-    manifest[r.sheetKey] = entry;
-    if (!r.ambiguousPair) manifest[r.sheetPairKey] = entry;
-    upgraded.push(r);
+    const keys = [r.safeKey, r.sheetKey, ...(!r.ambiguousPair ? [r.sheetPairKey] : [])];
+    if (keys.some(k => manifest[k]?.kind === 'manual')) continue;
+    const prior = manifest[r.safeKey] || manifest[r.sheetKey] || manifest[r.sheetPairKey] || {};
+    const entry = { ...prior, kind: 'bot', en, ru };
+    if (keys.some(k => JSON.stringify(manifest[k]) !== JSON.stringify(entry))) {
+      for (const k of keys) manifest[k] = entry;
+      upgraded.push(r);
+    }
   }
   const pruned = pruneAmbiguousPairs(rows, manifest);
   return { upgraded, pruned };

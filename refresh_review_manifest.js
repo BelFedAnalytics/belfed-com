@@ -14,7 +14,7 @@
  *      again on this side, so nothing — no profiles, no subscriptions, no user
  *      ids — can reach disk even if the function is widened later.
  *   3. Reuse build_review_manifest.js reconcile()/fill(): closed rows that have
- *      genuine EN history and no bot card yet are upgraded in place.
+ *      genuine EN history are regenerated, including existing bot cards.
  *   4. Write the manifest only when its bytes actually change.
  *
  * The run is idempotent: with no newly closed trade it rewrites nothing and
@@ -155,11 +155,16 @@ function buildUpdate(alignedCrypto, alignedEquities, positions, manifest) {
   };
   const rows = B.reconcile(src);
   const { upgraded, pruned } = B.fill(rows, next);
+  const resultDiscrepancies = rows.filter(r => r.fullyClosed && r.pos &&
+    B.fmtR(r.result) !== B.fmtR(r.pos.result_rr)).map(r => ({
+      key:r.safeKey, published:B.fmtR(r.result), database:B.fmtR(r.pos.result_rr),
+    }));
   return {
     manifest: next,
     changed: JSON.stringify(next) !== before,
     upgraded: upgraded.map(r => ({ ticker: r.ticker, asset: r.asset, key: r.safeKey })),
     pruned,
+    resultDiscrepancies,
   };
 }
 
@@ -292,9 +297,12 @@ async function main() {
 
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const res = buildUpdate(aligned.crypto, aligned.equities, positions, manifest);
+  for (const d of res.resultDiscrepancies) {
+    console.warn(`ACCOUNTING_REVIEW ${d.key}: published=${d.published}, database=${d.database}; no accounting values changed`);
+  }
 
   if (!res.changed) {
-    console.log('no change: every closed trade with history already has its card.');
+    console.log('no change: every generated card matches the current history and result.');
     ghOutput({ changed: 'false', upgraded: '0' });
     return;
   }

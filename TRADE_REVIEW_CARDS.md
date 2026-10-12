@@ -1,4 +1,37 @@
-# Trade Review Cards — integration & regeneration
+# Trade Review Cards: integration & regeneration
+
+## Complete-history refresh, 2026-10-12
+
+Generated bot cards are now rebuilt from the current verified lifecycle, rather
+than treated as immutable after their first generation. Manually curated cards
+and structured `manual` enrichment are preserved.
+
+- Merge events with the `partial_closes` ledger in chronological order.
+- Match each exit once: explicit `partial_close_id` first, then a unique
+  time-and-price match within 60 seconds. A final fill may also match the
+  position's verified close time/price when the original trigger was rounded.
+- Include unmatched ledger exits with percentage, price, stored comment, and
+  chart, but never invent a Telegram message ID or link.
+- Use the recorded position exit price when a final event has no trigger price.
+- Require ticker, direction, entry date, and exit date to match the public row.
+- Keep the review's displayed R aligned with the published table row. This is
+  presentation only: no database R, execution, or accounting values are changed.
+  The refresh logs `ACCOUNTING_REVIEW` for source discrepancies.
+- Run the scheduled refresh every 15 minutes at minutes 7/22/37/52 UTC.
+  Scheduling and deployment may add delay; this is not a real-time guarantee.
+- Deploy changed EN manifests in the refresh workflow itself because commits
+  made with `GITHUB_TOKEN` do not start the separate push workflow.
+- Repeated runs are idempotent and commit/deploy only when content changes.
+
+Legacy rows without stored lifecycle evidence remain summaries.
+
+Follow-up, not changed by this fix: SOL 2026-05-04 has public +0.10R versus DB
++0.09R; CL 2026-07-10 has public +2.62R versus DB +3.60R; the equities CIFR
+2026-05-13 row has public -1.00R but DB `result_rr=null`. Resolve the accounting
+separately through the existing controlled process, then the next refresh will
+reflect the approved public result.
+
+## Original integration
 
 Per-trade "Review / Обзор" modal cards on the live results pages
 (`trades.html`, `equities-trades.html`, and the belfed.ru mirror). The pages'

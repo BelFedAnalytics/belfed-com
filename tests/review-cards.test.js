@@ -139,7 +139,7 @@ console.log('trade-review manifest builder');
 
   // isGap: closed row + EN history + non-bot card must be flagged for upgrade.
   const rows = B.reconcile(src({
-    equities: [mkRow({ ticker: 'BE', entry: '07.07.2026', exit: '15.07.2026', exitP: '238.22', result: '1.94', msIdx: 19, ms: 'Yes' })],
+    equities: [mkRow({ ticker: 'BE', dir: 'Short', entry: '07.07.2026', exit: '15.07.2026', exitP: '238.22', result: '1.94', msIdx: 19, ms: 'Yes' })],
     positions: [Object.assign({ sheet_row_id: 'Equties:4' }, pos)],
     manifest: {}, // no card yet -> fallback/missing
   }));
@@ -148,7 +148,7 @@ console.log('trade-review manifest builder');
 
   // Once a bot card exists for it, it is no longer a gap.
   const rows2 = B.reconcile(src({
-    equities: [mkRow({ ticker: 'BE', entry: '07.07.2026', exit: '15.07.2026', exitP: '238.22', result: '1.94', msIdx: 19, ms: 'Yes' })],
+    equities: [mkRow({ ticker: 'BE', dir: 'Short', entry: '07.07.2026', exit: '15.07.2026', exitP: '238.22', result: '1.94', msIdx: 19, ms: 'Yes' })],
     positions: [Object.assign({ sheet_row_id: 'Equties:4' }, pos)],
     manifest: { 'BE|2026-07-07|2026-07-15': { kind: 'bot', en: en, ru: ru } },
   }));

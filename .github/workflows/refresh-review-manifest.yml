@@ -12,9 +12,8 @@ name: Refresh trade review manifest
 
 on:
   schedule:
-    # Daily at 06:23 UTC — after the bot has archived overnight closes to the
-    # sheet, and off the top of the hour to avoid the cron stampede.
-    - cron: '23 6 * * *'
+    # Every 15 minutes; Actions scheduling and Pages propagation can add delay.
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -25,15 +24,20 @@ on:
 # Never let two refreshes race for the same file; queue instead of cancelling so
 # an in-flight commit is not interrupted half-written.
 concurrency:
-  group: refresh-review-manifest
+  group: pages
   cancel-in-progress: false
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,6 +54,7 @@ jobs:
           node --check refresh_review_manifest.js
           node tests/review-cards.test.js
           node tests/refresh-manifest.test.js
+          node tests/history-completeness.test.js
 
       - name: Refresh manifest
         id: refresh
@@ -77,5 +82,20 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add trade_review_cards.json
-          git commit -m "chore(review-cards): refresh manifest for ${{ steps.refresh.outputs.upgraded }} newly closed trade(s)"
+          git commit -m "chore(review-cards): refresh ${{ steps.refresh.outputs.upgraded }} trade histories"
           git push
+
+      # GITHUB_TOKEN commits do not trigger the push-based Pages workflow.
+      # Deploy in this run so a successful scheduled refresh reaches the site.
+      - name: Setup Pages
+        if: steps.refresh.outputs.changed == 'true'
+        uses: actions/configure-pages@v5
+      - name: Upload site
+        if: steps.refresh.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - name: Deploy refreshed cards
+        if: steps.refresh.outputs.changed == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
