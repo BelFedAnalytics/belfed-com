@@ -233,6 +233,7 @@ function buildSteps(pos, lang) {
       const price = fmtNum(eventPrice(e) ?? (['closed', 'stop_hit'].includes(e.event_type) ? pos.exit_price : null));
       let lbl, body;
       let chart = httpsOnly(e.chart_url);
+      let image = httpsOnly(e.chart_image_url);
       const pc = matches.get(e);
       switch (e.event_type) {
         case 'opened':
@@ -268,10 +269,11 @@ function buildSteps(pos, lang) {
       }
       if (pc) {
         if (!chart) chart = httpsOnly(pc.chart_url);
+        if (!image) image = httpsOnly(pc.chart_image_url);
         if (!['partial_closed', 'partial_stop_1_hit', 'partial_stop_2_hit'].includes(e.event_type))
           body += '\n\n' + partialBody(pc, lang);
       }
-      steps.push({ lbl, ts, body, mid, chart, at: timestamp(e.triggered_at) });
+      steps.push({ lbl, ts, body, mid, chart, image, at: timestamp(e.triggered_at) });
     }
   } else {
     // No event stream: build an honest timeline from the position's own
@@ -290,7 +292,7 @@ function buildSteps(pos, lang) {
     if (used.has(pc)) continue;
     // Ledger evidence, not a fabricated Telegram event.
     steps.push({ lbl: t.partial, ts: fromISO(tsISO(pc.closed_at)),
-      body: partialBody(pc, lang), mid: null, chart: httpsOnly(pc.chart_url), at: timestamp(pc.closed_at) });
+      body: partialBody(pc, lang), mid: null, chart: httpsOnly(pc.chart_url), image: httpsOnly(pc.chart_image_url), at: timestamp(pc.closed_at) });
   }
   return steps.sort((a, b) => a.at - b.at).map(({ at, ...step }) => step);
 }
@@ -304,11 +306,12 @@ function renderStep(s, lang) {
            SVG_LOCK + t.steplink + '</a>';
   }
   let chart = '';
-  if (s.chart) {
-    const img = chartImg(s.chart);
+  if (s.chart || s.image) {
+    const uploaded = /^https:\/\/obujqvqqmyfcfflhqvud\.supabase\.co\/functions\/v1\/position-chart-media\?id=[0-9a-f-]{36}$/i.test(s.image || '') ? s.image : '';
+    const img = uploaded || chartImg(s.chart);
     const alt = lang === 'ru' ? 'График на момент операции' : 'Chart at the time of this update';
     chart = img
-      ? '<a class="step-chart" href="' + esc(s.chart) + '" target="_blank" rel="noopener">' +
+      ? '<a class="step-chart" href="' + esc(s.chart || uploaded) + '" target="_blank" rel="noopener">' +
         '<img src="' + esc(img) + '" alt="' + esc(alt) + '" loading="lazy" ' +
         'onerror="var a=this.closest(&quot;.step-chart&quot;);if(a)a.style.display=&quot;none&quot;;"></a>'
       : '<a class="steplink" href="' + esc(s.chart) + '" target="_blank" rel="noopener">' + esc(alt) + '</a>';
