@@ -894,7 +894,14 @@
     .form-msg.err a { color: var(--green-strong); font-weight: 700; }
     .form-msg.err a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-    </style>
+        /* nav-fit: keep primary nav on one line */
+    .nav-links a, .nav-right .btn { white-space: nowrap; }
+    @media (max-width: 1360px) { .nav-links { gap: 20px; } }
+    @media (max-width: 1100px) {
+      .nav-links { display: none; }
+      .hamburger { display: inline-flex; }
+    }
+  </style>
 </head>
 <body>
 
@@ -905,6 +912,7 @@
     <li><a href="#tour" data-spy="tour">What you get</a></li>
     <li><a href="#how" data-spy="how">How it works</a></li>
     <li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record ↗</a></li>
+    <li><a href="/research/">Research</a></li>
     <li><a href="#pricing" data-spy="pricing">Pricing</a></li>
     <li><a href="#faq" data-spy="faq">FAQ</a></li>
   </ul>
@@ -1438,7 +1446,7 @@
       </div>
       <div class="foot-col">
         <h5>Product</h5>
-        <ul><li><a href="#tour">What you get</a></li><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record</a></li><li><a href="#free-analysis">Free analysis</a></li></ul>
+        <ul><li><a href="#tour">What you get</a></li><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="https://belfed.com/trades.html" target="_blank" rel="noopener">Track record</a></li><li><a href="/research/">Research</a></li><li><a href="#free-analysis">Free analysis</a></li></ul>
       </div>
       <div class="foot-col">
         <h5>Community</h5>
