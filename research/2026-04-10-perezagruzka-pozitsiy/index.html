@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/logo-belfed-512.png">
-  <title>POSITION RESET — Belfed Research</title>
+  <title>POSITION RESET | Belfed Research</title>
   <link rel="canonical" href="https://belfed.com/research/2026-04-10-perezagruzka-pozitsiy/" />
   <meta name="description" content="The market has staged a sharp recovery. What&#39;s next?" />
   <meta property="og:type" content="article" />
@@ -81,6 +81,14 @@
     .gated p { font-size: 14px; color: #444; margin-bottom: 16px; line-height: 1.6; }
     .gated a.btn { display: inline-block; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; padding: 12px 20px; border: 1px solid var(--black); background: var(--black); color: var(--white); }
     .gated a.btn:hover { background: transparent; color: var(--black); }
+    .locked-preview { position: relative; margin: 8px 0 0; user-select: none; -webkit-user-select: none; }
+    .locked-text { font-size: 16px; line-height: 1.75; color: #222; margin: 0; max-height: 9.5em; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 100%); mask-image: linear-gradient(to bottom, #000 35%, transparent 100%); }
+    .locked-figs { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%); mask-image: linear-gradient(to bottom, #000 60%, transparent 100%); }
+    .locked-figs.two { grid-template-columns: 1fr 1fr; }
+    .locked-fig { aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--border); background: var(--paper); }
+    .locked-fig img { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(5px) saturate(0.9); transform: scale(1.08); }
+    .gated.over { position: relative; margin-top: -28px; background: var(--white); border: 1px solid var(--black); box-shadow: 0 -24px 40px 8px var(--white); }
+    @media (max-width: 600px) { .locked-figs.two { grid-template-columns: 1fr; } .locked-figs.two .locked-fig + .locked-fig { display: none; } .gated.over { padding: 20px; } }
     .cta-inline { margin: 56px 0; border: 1px solid var(--black); padding: 32px 28px; background: var(--white); }
     .cta-inline .cta-kicker { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; }
     .cta-inline h3 { font-size: 22px; font-weight: 700; line-height: 1.3; margin-bottom: 12px; letter-spacing: -0.01em; }
@@ -168,7 +176,7 @@
       <div class="cta-inline">
         <div class="cta-kicker">// From analysis to positions</div>
         <h3>We&#39;ve already mapped entries on the tickers in this report.</h3>
-        <p>Levels, stops, and targets live inside the members area and Telegram — pushed the moment a setup triggers. Start a 14-day trial and get access before we open the first position in this theme. No card required.</p>
+        <p>Levels, stops, and targets live inside the members area and Telegram, pushed the moment a setup triggers. Start a 14-day trial and get access before we open the first position in this theme. No card required.</p>
         <div class="cta-row">
           <a href="https://t.me/belfedbot?start=research_2026_04_10_perezagruzka_pozitsiy_en_mid" class="btn-primary">Start 14-day trial →</a>
           <a href="#stay-in-loop" class="btn-secondary">Just notify me by email</a>
@@ -178,7 +186,7 @@
     <section class="cta-final" id="stay-in-loop">
       <div class="kicker">// Two ways to stay in the loop</div>
       <h2>You&#39;ve read the thesis. Here&#39;s how to trade it.</h2>
-      <p class="lead">The Belfed members area publishes entries, stops and targets on this theme the moment they trigger — in Telegram and on the dashboard. Every closed trade is then logged permanently on our public track record.</p>
+      <p class="lead">The Belfed members area publishes entries, stops and targets on this theme the moment they trigger, in Telegram and on the dashboard. Every closed trade is then logged permanently on our public track record.</p>
       <div class="track">
         <div><strong>+93.54R</strong>YTD 2026 · 87 trades · win rate ~62%</div>
         <div><strong>+70.33R</strong>2025 · 61 trades</div>

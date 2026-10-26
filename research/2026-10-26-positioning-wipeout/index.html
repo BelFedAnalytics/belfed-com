@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/logo-belfed-512.png">
-  <title>POSITIONING WIPEOUT — Belfed Research</title>
+  <title>POSITIONING WIPEOUT | Belfed Research</title>
   <link rel="canonical" href="https://belfed.com/research/2026-10-26-positioning-wipeout/" />
   <meta name="description" content="Indexes barely moved, but under the surface hedge funds got flushed out. Positioning that was a minefield two weeks ago is now mostly cleared.
 
@@ -87,6 +87,14 @@ Inside: the worst week for hedge fund books since 2011, leverage back at 2022 an
     .gated p { font-size: 14px; color: #444; margin-bottom: 16px; line-height: 1.6; }
     .gated a.btn { display: inline-block; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; padding: 12px 20px; border: 1px solid var(--black); background: var(--black); color: var(--white); }
     .gated a.btn:hover { background: transparent; color: var(--black); }
+    .locked-preview { position: relative; margin: 8px 0 0; user-select: none; -webkit-user-select: none; }
+    .locked-text { font-size: 16px; line-height: 1.75; color: #222; margin: 0; max-height: 9.5em; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 100%); mask-image: linear-gradient(to bottom, #000 35%, transparent 100%); }
+    .locked-figs { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%); mask-image: linear-gradient(to bottom, #000 60%, transparent 100%); }
+    .locked-figs.two { grid-template-columns: 1fr 1fr; }
+    .locked-fig { aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--border); background: var(--paper); }
+    .locked-fig img { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(5px) saturate(0.9); transform: scale(1.08); }
+    .gated.over { position: relative; margin-top: -28px; background: var(--white); border: 1px solid var(--black); box-shadow: 0 -24px 40px 8px var(--white); }
+    @media (max-width: 600px) { .locked-figs.two { grid-template-columns: 1fr; } .locked-figs.two .locked-fig + .locked-fig { display: none; } .gated.over { padding: 20px; } }
     .cta-inline { margin: 56px 0; border: 1px solid var(--black); padding: 32px 28px; background: var(--white); }
     .cta-inline .cta-kicker { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; }
     .cta-inline h3 { font-size: 22px; font-weight: 700; line-height: 1.3; margin-bottom: 12px; letter-spacing: -0.01em; }
@@ -160,22 +168,25 @@ Inside: the worst week for hedge fund books since 2011, leverage back at 2022 an
       <figure class="hero-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793011695033-97390010a144a59c.png" alt="POSITIONING WIPEOUT" width="1672" height="941" fetchpriority="high" decoding="async" /></figure>
     </section>
     <article class="report">
-<section><h2>00 · 01  </h2><h3>WHAT ACTUALLY HAPPENED</h3><p>SPY -0.4% · QQQ -0.8% · Dow +0.4% · Equal-weight +1.1% · IWM +2.0%</p>
+<section><h2>01</h2><h3>WHAT ACTUALLY HAPPENED</h3><p>SPY -0.4% · QQQ -0.8% · Dow +0.4% · Equal-weight +1.1% · IWM +2.0%</p>
 <p>· 66% of S&amp;P names closed up. 7 of 11 sectors advanced. Leaders: Software and Homebuilders.</p><figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793004206016-e58d6477a2b1f982.jpeg" alt="// CHART: Weekly ETF performance, week ending Oct 24 (Source: Macro Charts)"><figcaption>// CHART: Weekly ETF performance, week ending Oct 24 (Source: Macro Charts)</figcaption></figure></section>
-<section><h2>01 · 02  </h2><h3>LEVERAGE RESET</h3><p>Thursday was the worst day for hedge fund books in 15 years. Goldman&#39;s &quot;VIP longs vs most-shorted&quot; pair dropped ~4.2% in one session, the biggest move since 2011, and is down 10.4% MTD.</p>
+<section><h2>02</h2><h3>LEVERAGE RESET</h3><p>Thursday was the worst day for hedge fund books in 15 years. Goldman&#39;s &quot;VIP longs vs most-shorted&quot; pair dropped ~4.2% in one session, the biggest move since 2011, and is down 10.4% MTD.</p>
 <p>Funds held tech longs and offset them with shorts elsewhere. The shorts squeezed, the longs lagged. Losses on both sides.</p>
 <p>Global L/S net leverage has fallen toward the levels where the market bottomed in 2022 and 2025. US L/S net leverage is already below 2022 and nearly at the 2025 low.</p>
 <p>Cash inflows are the fastest in years. Shorting spiked. This is a rare positioning washout, and historically it is the kind that shows up close to a tactical bottom.</p><figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793004498100-3ffe8146eb7c7d26.jpeg" alt="CHART: GS Hedge Fund VIP longs vs VIP shorts, daily change since 2011 (Source: Bloomberg, Goldman Sachs)"><figcaption>CHART: GS Hedge Fund VIP longs vs VIP shorts, daily change since 2011 (Source: Bloomberg, Goldman Sachs)</figcaption></figure>
 <figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793008232572-5d7cf0b01cd67f38.jpeg" alt="// CHART: Global fundamental L/S funds, gross vs net leverage (SOURCE: Goldman Sachs PB)"><figcaption>// CHART: Global fundamental L/S funds, gross vs net leverage (SOURCE: Goldman Sachs PB)</figcaption></figure>
 <figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793008400923-adfb69aabd000696.jpeg" alt="// CHART: US fundamental L/S funds (Source: Goldman Sachs PB)"><figcaption>// CHART: US fundamental L/S funds (Source: Goldman Sachs PB)</figcaption></figure></section>
-<section><h2>02 · 03  </h2><h3>RATES CONFIRM THE STRESS</h3><p>The 30Y yield posted one of its largest 2-week drops in years. Outside of 2008 and 2020, moves like this landed near panic lows in stocks. Tech and yields are tightly correlated right now, so a yield bounce would likely lift tech.</p>
+<section><h2>03</h2><h3>RATES CONFIRM THE STRESS</h3><p>The 30Y yield posted one of its largest 2-week drops in years. Outside of 2008 and 2020, moves like this landed near panic lows in stocks. Tech and yields are tightly correlated right now, so a yield bounce would likely lift tech.</p>
 <p>Metals were sold too. Daily sentiment: Gold 20, Silver 16, Platinum 10, Palladium 10. Looks like indiscriminate selling.</p>
 <p>Bond Yields and Tech stocks are strongly correlated here. A bounce in Yields would likely see a recovery in Tech.</p><figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793006910574-29c91f20f7514341.jpeg" alt="// CHART: S&amp;P 500 and the two-week change in the U.S. 30-year Treasury yield.(Source: MacroCharts)"><figcaption>// CHART: S&amp;P 500 and the two-week change in the U.S. 30-year Treasury yield.(Source: MacroCharts)</figcaption></figure>
 <figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793006960516-77a8912cc0909542.jpeg" alt="// CHART: 20-day correlation between U.S. Treasury returns and AI-focused stocks. Inverse correlation strengthened to around −0.6 (Source: Bloomberg)"><figcaption>// CHART: 20-day correlation between U.S. Treasury returns and AI-focused stocks. Inverse correlation strengthened to around −0.6 (Source: Bloomberg)</figcaption></figure></section>
-<section><h2>03 · 04  </h2><h3>POSITIONING EXTREMES</h3><p>VIX: record short<br>Rates (TY, SOFR, FV, TU): very low<br>WTI: 6th percentile · Gasoline: 99th percentile<br>USD: 97th percentile · AUD, NZD: record short · EUR near 10y lows<br>Silver: 15th percentile</p><figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793004968639-da93d67477d89a1a.jpeg" alt="// CHART: COT positioning as of Oct 20, 2026 (Source: Macro Charts)"><figcaption>// CHART: COT positioning as of Oct 20, 2026 (Source: Macro Charts)</figcaption></figure>
+<section><h2>04</h2><h3>POSITIONING EXTREMES</h3><p>VIX: record short<br>Rates (TY, SOFR, FV, TU): very low<br>WTI: 6th percentile · Gasoline: 99th percentile<br>USD: 97th percentile · AUD, NZD: record short · EUR near 10y lows<br>Silver: 15th percentile</p><figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793004968639-da93d67477d89a1a.jpeg" alt="// CHART: COT positioning as of Oct 20, 2026 (Source: Macro Charts)"><figcaption>// CHART: COT positioning as of Oct 20, 2026 (Source: Macro Charts)</figcaption></figure>
 <figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793006545122-b1a5fd749dfd399a.jpeg" alt="// CHART: VIX and historical percentile of asset managers’ net positioning as a share of open interest (COT). Data since August 2006 (Source: MacroCharts)"><figcaption>// CHART: VIX and historical percentile of asset managers’ net positioning as a share of open interest (COT). Data since August 2006 (Source: MacroCharts)</figcaption></figure></section>
-<section><h2>04 · 05  </h2><div class="gated"><div class="gated-label">Available to subscribers</div><h3>05  </h3><p>This section is unlocked for active subscribers inside the members area. A trial opens every section of every report.</p><a href="https://t.me/belfedbot?start=research_2026_10_26_positioning_wipeout_en_gated" class="btn">Start 14-day trial →</a></div></section>
-<section><h2>05 · 06  </h2><h3>Portfolio Update</h3><p>No confirmed reversal yet, so we are waiting for proper conditions before opening new longs. Key macro models are close to buy signals, while midterm-year October seasonality, earnings, and the return of buybacks could support the market.</p>
+<section class="sec-locked"><h2>05</h2><h3>THE SCENARIO TO WATCH</h3><div class="locked-preview">
+      <p class="locked-text">NDX is down 8.1% over 13 days. In late 2025 the same setup was an 8.9% drop over 17 days, followed by a 9-10% rally. A repeat would mean one more leg lower this week (~28600, roughly 1% below current, undercutting the September low), then a run toward ~31300 …</p>
+      <div class="locked-figs two" aria-hidden="true"><div class="locked-fig"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/render/image/public/analytics-charts/2026-10/1793006397172-8d4e25bd74ba2274.png?width=64&amp;height=40&amp;resize=contain&amp;quality=40" alt="" loading="lazy" decoding="async"></div><div class="locked-fig"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/render/image/public/analytics-charts/2026-10/1793006422837-b6d40c2d1c20cbab.png?width=64&amp;height=40&amp;resize=contain&amp;quality=40" alt="" loading="lazy" decoding="async"></div></div>
+    </div><div class="gated over"><div class="gated-label">Available to subscribers</div><p>The rest of this section and its charts are open to subscribers. The first 14 days are free, with every section of every report.</p><a href="https://t.me/belfedbot?start=research_2026_10_26_positioning_wipeout_en_gated" class="btn">Subscribe to read in full →</a></div></section>
+<section><h2>06</h2><h3>Portfolio Update</h3><p>No confirmed reversal yet, so we are waiting for proper conditions before opening new longs. Key macro models are close to buy signals, while midterm-year October seasonality, earnings, and the return of buybacks could support the market.</p>
 <p>A defensive stance helped navigate the volatility: we closed our SMCI, SPCX, MRNA, ETH, SOL, and AAVE longs in profit, and played the downside through a medium-term short in BE, with profits now locked in on 75% of the position.</p>
 <p>We are now watching high-quality names near support zones for the first signs of buyers stepping back in. Selloff weeks like this clearly reveal the next market leaders, though we always wait for price confirmation first.</p>
 <p>All closed trades are published openly on the BelFed website.</p><figure><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793007935547-966ebc95d6335b9b.png" alt="// CHART: BelFed Analytics Live Trade Tracker - Equities (Source: BelFed Analytics)"><figcaption>// CHART: BelFed Analytics Live Trade Tracker - Equities (Source: BelFed Analytics)</figcaption></figure>
@@ -184,7 +195,7 @@ Inside: the worst week for hedge fund books since 2011, leverage back at 2022 an
       <div class="cta-inline">
         <div class="cta-kicker">// From analysis to positions</div>
         <h3>We&#39;ve already mapped entries on the tickers in this report.</h3>
-        <p>Levels, stops, and targets live inside the members area and Telegram — pushed the moment a setup triggers. Start a 14-day trial and get access before we open the first position in this theme. No card required.</p>
+        <p>Levels, stops, and targets live inside the members area and Telegram, pushed the moment a setup triggers. Start a 14-day trial and get access before we open the first position in this theme. No card required.</p>
         <div class="cta-row">
           <a href="https://t.me/belfedbot?start=research_2026_10_26_positioning_wipeout_en_mid" class="btn-primary">Start 14-day trial →</a>
           <a href="#stay-in-loop" class="btn-secondary">Just notify me by email</a>
@@ -194,7 +205,7 @@ Inside: the worst week for hedge fund books since 2011, leverage back at 2022 an
     <section class="cta-final" id="stay-in-loop">
       <div class="kicker">// Two ways to stay in the loop</div>
       <h2>You&#39;ve read the thesis. Here&#39;s how to trade it.</h2>
-      <p class="lead">The Belfed members area publishes entries, stops and targets on this theme the moment they trigger — in Telegram and on the dashboard. Every closed trade is then logged permanently on our public track record.</p>
+      <p class="lead">The Belfed members area publishes entries, stops and targets on this theme the moment they trigger, in Telegram and on the dashboard. Every closed trade is then logged permanently on our public track record.</p>
       <div class="track">
         <div><strong>+93.54R</strong>YTD 2026 · 87 trades · win rate ~62%</div>
         <div><strong>+70.33R</strong>2025 · 61 trades</div>
