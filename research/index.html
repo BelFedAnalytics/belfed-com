@@ -65,6 +65,10 @@
     .card p.card-sub { font-size: 15px; color: #444; line-height: 1.6; max-width: 640px; }
     .card .card-arrow { font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 16px; }
     .card:hover .card-arrow { color: var(--black); }
+    .card.has-cover { display: grid; grid-template-columns: 300px 1fr; gap: 32px; align-items: start; }
+    .card .card-cover { aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid var(--border); background: var(--paper); }
+    .card .card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @media (max-width: 760px) { .card.has-cover { grid-template-columns: 1fr; gap: 16px; } }
     .empty { padding: 80px 40px; text-align: center; color: var(--gray); font-size: 14px; max-width: 720px; margin: 0 auto; }
     @media (max-width: 700px) { .index-hero { padding: 40px 20px 30px; } .cards { padding: 0 20px; margin-bottom: 60px; } .card:hover { padding-left: 0; padding-right: 0; margin-left: 0; margin-right: 0; } }
   </style>
@@ -89,7 +93,9 @@
       <h1>Research</h1>
       <p class="lead">Independent Belfed Analytics reports on sectors, single-name themes, and macro cycles. The public side of the analyst desk.</p>
     </section>
-    <section class="cards"><a href="/research/2026-10-26-positioning-wipeout/" class="card">
+    <section class="cards"><a href="/research/2026-10-26-positioning-wipeout/" class="card has-cover">
+    <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793011695033-97390010a144a59c.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
+    <div class="card-body">
     <div class="card-meta">
       <span>October 26, 2026</span>
       <span class="tag">Technology</span><span class="tag">Semiconductors</span><span class="tag">positioning</span><span class="tag">hedge funds</span>
@@ -99,8 +105,11 @@
 
 Inside: the worst week for hedge fund books since 2011, leverage back at 2022 and 2025 bottom levels, the NDX and SOX scenarios, what falling long yields are telling us, and positioning extremes in VIX and rates.</p>
     <div class="card-arrow">Read →</div>
+    </div>
   </a>
-<a href="/research/2026-08-17-kitayskiy-ii-kompleks-ot-tsenovogo-dempinga-k-fundamentalnoy-pereotsenke/" class="card">
+<a href="/research/2026-08-17-kitayskiy-ii-kompleks-ot-tsenovogo-dempinga-k-fundamentalnoy-pereotsenke/" class="card has-cover">
+    <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-08/1786999839151-ae07d99c81e6bfbc.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
+    <div class="card-body">
     <div class="card-meta">
       <span>August 18, 2026</span>
       <span class="tag">TECHNOLOGY</span><span class="tag">SEMICONDUCTORS</span><span class="tag">China</span><span class="tag">AI</span>
@@ -110,6 +119,7 @@ Inside: the worst week for hedge fund books since 2011, leverage back at 2022 an
 
 Yet, key Chinese data center operators and cloud giants trade at a fraction of US multiples amid historically depressed institutional positioning. This report outlines the core thesis behind the structural re-rating of China&#39;s compute ecosystem, along with the primary assets positioned to capture this trade.</p>
     <div class="card-arrow">Read →</div>
+    </div>
   </a></section>
   </main>
   <footer>
