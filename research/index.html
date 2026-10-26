@@ -69,6 +69,34 @@
     .card .card-cover { aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid var(--border); background: var(--paper); }
     .card .card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
     @media (max-width: 760px) { .card.has-cover { grid-template-columns: 1fr; gap: 16px; } }
+    .card[hidden] { display: none !important; }
+    .rs-bar { max-width: 960px; margin: 8px auto 0; padding: 0 40px; display: grid; grid-template-columns: 1fr 300px; gap: 16px 24px; align-items: center; }
+    .rs-bar[hidden] { display: none; }
+    .rs-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rs-chip { font: inherit; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--black); background: transparent; border: 1px solid var(--border); padding: 7px 12px; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+    .rs-chip:hover { border-color: var(--black); }
+    .rs-chip .rs-n { color: var(--gray); margin-left: 4px; }
+    .rs-chip.is-active { background: var(--black); color: var(--white); border-color: var(--black); }
+    .rs-chip.is-active .rs-n { color: #bdbdb5; }
+    .rs-chip:focus-visible, .rs-reset:focus-visible, .rs-clear:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+    .rs-search { position: relative; display: flex; align-items: center; border-bottom: 1px solid var(--black); }
+    .rs-search svg { color: var(--gray); flex-shrink: 0; }
+    .rs-search input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--black); background: transparent; border: 0; padding: 10px 28px 10px 10px; outline: none; -webkit-appearance: none; appearance: none; }
+    .rs-search input::-webkit-search-cancel-button { display: none; }
+    .rs-search input::placeholder { color: var(--gray-soft); }
+    .rs-search:focus-within { border-bottom-color: var(--green); box-shadow: 0 1px 0 var(--green); }
+    .rs-clear { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; font: inherit; font-size: 18px; line-height: 1; color: var(--gray); background: none; border: 0; cursor: pointer; }
+    .rs-clear:hover { color: var(--black); }
+    .rs-clear[hidden] { display: none; }
+    .rs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .rs-count { grid-column: 1 / -1; font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; }
+    .rs-bar + .cards { margin-top: 16px; }
+    .rs-empty { max-width: 960px; margin: -60px auto 100px; padding: 40px; text-align: center; color: var(--gray); }
+    .rs-empty[hidden] { display: none; }
+    .rs-empty p { margin-bottom: 16px; font-size: 15px; }
+    .rs-reset { font: inherit; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; background: var(--black); color: var(--white); border: 1px solid var(--black); padding: 10px 18px; cursor: pointer; }
+    @media (max-width: 860px) { .rs-bar { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { .rs-bar { padding: 0 20px; } .rs-empty { padding: 20px; } }
     .empty { padding: 80px 40px; text-align: center; color: var(--gray); font-size: 14px; max-width: 720px; margin: 0 auto; }
     @media (max-width: 700px) { .index-hero { padding: 40px 20px 30px; } .cards { padding: 0 20px; margin-bottom: 60px; } .card:hover { padding-left: 0; padding-right: 0; margin-left: 0; margin-right: 0; } }
   </style>
@@ -93,7 +121,24 @@
       <h1>Research</h1>
       <p class="lead">Independent Belfed Analytics reports on sectors, single-name themes, and macro cycles.</p>
     </section>
-    <section class="cards"><a href="/research/2026-10-26-positioning-wipeout/" class="card has-cover">
+    <div class="rs-bar" id="rsBar" hidden>
+      <div class="rs-chips" role="group" aria-label="Asset class">
+        <button type="button" class="rs-chip is-active" data-class="" aria-pressed="true">All <span class="rs-n">9</span></button>
+        <button type="button" class="rs-chip" data-class="equities" aria-pressed="false">Equities <span class="rs-n">7</span></button>
+        <button type="button" class="rs-chip" data-class="crypto" aria-pressed="false">Crypto <span class="rs-n">2</span></button>
+        <button type="button" class="rs-chip" data-class="macro" aria-pressed="false">Macro <span class="rs-n">5</span></button>
+        <button type="button" class="rs-chip" data-class="rates" aria-pressed="false">Rates &amp; credit <span class="rs-n">3</span></button>
+        <button type="button" class="rs-chip" data-class="commodities" aria-pressed="false">Commodities <span class="rs-n">1</span></button>
+        <button type="button" class="rs-chip" data-class="fx" aria-pressed="false">FX <span class="rs-n">1</span></button>
+      </div>
+      <div class="rs-search" role="search">
+        <label for="rsQ" class="rs-sr">Search reports</label>
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" id="rsQ" placeholder="Search: Nvidia, bitcoin, Fed" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="rs-clear" id="rsClear" aria-label="Clear search" hidden>×</button>
+      </div>
+      <div class="rs-count" id="rsCount" aria-live="polite">9 reports</div>
+    </div><section class="cards"><a href="/research/2026-10-26-positioning-wipeout/" class="card has-cover" data-classes="equities rates commodities fx" data-search="positioning wipeout indexes barely moved, but under the surface hedge funds got flushed out. positioning that was a minefield two weeks ago is now mostly cleared. inside: the worst week for hedge fund books since 2011, leverage back at 2022 and 2025 bottom levels, the ndx and sox scenarios, what falling long yields are telling us, and positioning extremes in vix and rates. october 26, 2026 equities rates commodities fx technology semiconductors software homebuilders positioning hedge funds leverage ndx vix yields gold silver equities rates &amp; credit commodities fx">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-10/1793011695033-97390010a144a59c.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -107,7 +152,7 @@ Inside: the worst week for hedge fund books since 2011, leverage back at 2022 an
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-09-24-1/" class="card has-cover">
+<a href="/research/2026-09-24-1/" class="card has-cover" data-classes="equities rates" data-search="markets reprice toward fed hikes: echoes of late 1999 financial markets are rapidly repricing for potential fed rate hikes as underlying core inflation threatens to reignite, driven by energy costs and persistent services price pressures. in our view, this aggressive tightening narrows the remaining window for the current equity bull run. the market setup looks eerily similar to late 1999: mega-cap tech stocks continue to propel headline indices higher, while high-yield credit, transports, and small caps already reveal deep internal deterioration. below is our weekly breakdown of key charts tracking this divergence. september 24, 2026 equities bonds macro equities rates &amp; credit">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-09/1790252164720-4964a0afb352a878.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -123,7 +168,7 @@ The market setup looks eerily similar to late 1999: mega-cap tech stocks continu
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-09-14-obzor-kriptorynka-nashi-ozhidaniya-na-blizhayshuyu-nedelyu/" class="card has-cover">
+<a href="/research/2026-09-14-obzor-kriptorynka-nashi-ozhidaniya-na-blizhayshuyu-nedelyu/" class="card has-cover" data-classes="crypto" data-search="crypto market outlook: what we expect in the coming week the crypto market enters a pivotal week. technically, bitcoin has triggered a 200-day golden cross, pointing toward strength into q4. fundamentally, the upcoming senate vote on the clarity act could unlock long-awaited regulatory clarity for institutional capital. at the same time, on-chain metrics show short-term holders actively locking in profits, signaling local overheating and the potential for a brief pause before trend continuation. in this report, we evaluate the overall picture and break down key price levels for major assets: btc, eth, sol, hype, xrp, and zec. september 14, 2026 crypto crypto bitcoin crypto">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-09/1789385766343-43d50f7b8fef61a9.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -139,7 +184,7 @@ In this report, we evaluate the overall picture and break down key price levels 
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-09-01-1/" class="card has-cover">
+<a href="/research/2026-09-01-1/" class="card has-cover" data-classes="equities" data-search="ai meets nuclear: uncovering the real supply bottlenecks the link between artificial intelligence and energy is already obvious to the market. data centers demand enormous volumes of reliable baseload power, grids are overloaded, and nuclear has become the main answer to the shortfall. we walk through the entire chain from uranium to finished plants, show where the real bottleneck in the value chain lies, and take a short look at the trend structure of the sector&#39;s most interesting assets. september 1, 2026 equities uranium energy uranium energy smr investing equities">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-09/1788285713750-09be107a2fc80d6a.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -155,7 +200,7 @@ We walk through the entire chain from uranium to finished plants, show where the
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-08-28-istoricheskiy-otchet-nvidia-i-novyy-orientir-dlya-ii-infrastruktury/" class="card has-cover">
+<a href="/research/2026-08-28-istoricheskiy-otchet-nvidia-i-novyy-orientir-dlya-ii-infrastruktury/" class="card has-cover" data-classes="equities macro" data-search="nvidia&#39;s historic print and the multi-trillion ai runway it pays to be nvidia&#39;s cfo, quite literally. colette kress joined the company in 2013, back when annual revenue barely reached 4 billion dollars. thirteen years, plus a pile of shares and options later, forbes puts her fortune at 1.2 billion. last night she earned her keep. nvidia walked into the print on a seven day losing streak, and the stock had also fallen after each of its four previous earnings beats. the quarter was good and the guide was solid, but a soft gross margin outlook looked set to repeat the pattern. then kress delivered the number that changed the conversation. nvidia expects revenue to grow roughly 70 percent next year, against the 44 percent the street had penciled in. customer forecasts point to growth above 100 percent if supply were not the limit. for a 5 trillion dollar company, the biggest problem is still not having enough product to sell. we collected the most important things from the report, and also updated our read on the structure of the trend, the key levels and expectations for the coming weeks. august 28, 2026 equities macro information technology semiconductors nvda nvidia ai earnings capex semiconductors equities macro">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-08/1787912187440-b697a58d835f367a.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -173,7 +218,7 @@ We collected the most important things from the report, and also updated our rea
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-08-17-kitayskiy-ii-kompleks-ot-tsenovogo-dempinga-k-fundamentalnoy-pereotsenke/" class="card has-cover">
+<a href="/research/2026-08-17-kitayskiy-ii-kompleks-ot-tsenovogo-dempinga-k-fundamentalnoy-pereotsenke/" class="card has-cover" data-classes="equities macro" data-search="the silent shift: why china’s ai compute complex is poised for a structural re-rating while us investors debate massive big tech capital expenditures and rising bubble risks, an alternative ai expansion playbook has unfolded in china. chinese models already generate 85% of global token volume in complex tasks, domestic chip self-sufficiency is expanding rapidly, and abundant power grid reserves provide china with a strategic infrastructure edge over the us. yet, key chinese data center operators and cloud giants trade at a fraction of us multiples amid historically depressed institutional positioning. this report outlines the core thesis behind the structural re-rating of china&#39;s compute ecosystem, along with the primary assets positioned to capture this trade. august 17, 2026 equities macro technology semiconductors communication services utilities &amp; energy china ai equities macro">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-08/1786999839151-ae07d99c81e6bfbc.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -187,7 +232,7 @@ Yet, key Chinese data center operators and cloud giants trade at a fraction of U
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-08-10-naskolko-silna-ekonomika-ssha/" class="card has-cover">
+<a href="/research/2026-08-10-naskolko-silna-ekonomika-ssha/" class="card has-cover" data-classes="equities macro rates" data-search="how strong is the us economy? ai or die the us economy looks solid, but almost all of the strength comes from one place. ai related investment hit a record 1.5 trillion dollars a year, while the other 92% of the economy grows at barely 1%. consumer spending holds up thanks to record stock wealth, not rising incomes. in eleven charts we show how a handful of companies became the main engine of american growth, and why that engine now works like a closed loop that is very hard to switch off. august 10, 2026 equities macro credit s&amp;p 500 ai infrastructure semiconductors ai capex hyperscalers equities macro rates &amp; credit">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-08/1786357873499-df32a376622a9b51.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -203,7 +248,7 @@ In eleven charts we show how a handful of companies became the main engine of Am
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/the-silver-curse-on-chips-2026-07-10/" class="card has-cover">
+<a href="/research/the-silver-curse-on-chips-2026-07-10/" class="card has-cover" data-classes="crypto macro" data-search="bitcoin: hope returns, carefully markets rarely signal a bottom clearly enough for everyone to hear. fear usually fades slowly, while scattered signs of change begin to form a broader picture. in this weekly report, we examine whether improving capital flows, deep oversold readings, and favorable seasonality could provide the foundation for a bitcoin recovery and also outline the key price levels and trend structure behind our primary and alternative scenarios for the weeks ahead. july 10, 2026 crypto macro bitcoin altcoins bitcoin sentiment seasonality crypto crypto macro">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-07/1783756574456-a8943f42f394d44a.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -217,7 +262,7 @@ In this weekly report, we examine whether improving capital flows, deep oversold
     <div class="card-arrow">Read →</div>
     </div>
   </a>
-<a href="/research/2026-04-10-perezagruzka-pozitsiy/" class="card has-cover">
+<a href="/research/2026-04-10-perezagruzka-pozitsiy/" class="card has-cover" data-classes="equities macro" data-search="position reset the market has staged a sharp recovery. what&#39;s next? april 10, 2026 equities macro positioning cta short-squeeze gamma equities macro">
     <div class="card-cover"><img src="https://obujqvqqmyfcfflhqvud.supabase.co/storage/v1/object/public/analytics-charts/2026-05/1777753775594-7b1b5a6be813fe9c.png" alt="" loading="lazy" decoding="async" width="1672" height="941" /></div>
     <div class="card-body">
     <div class="card-meta">
@@ -229,6 +274,7 @@ In this weekly report, we examine whether improving capital flows, deep oversold
     <div class="card-arrow">Read →</div>
     </div>
   </a></section>
+    <div class="rs-empty" id="rsEmpty" hidden><p>No reports match.</p><button type="button" id="rsReset" class="rs-reset">Reset filters</button></div>
   </main>
   <footer>
     <span>© 2025–2026 Belfed Analytics. All rights reserved.</span>
@@ -241,6 +287,36 @@ In this weekly report, we examine whether improving capital flows, deep oversold
       <span>Not financial advice.</span>
     </div>
   </footer>
+  <script>
+(function(){
+  var bar=document.getElementById('rsBar'); if(!bar) return; bar.hidden=false;
+  var cards=[].slice.call(document.querySelectorAll('.cards .card'));
+  var chips=[].slice.call(bar.querySelectorAll('.rs-chip'));
+  var q=document.getElementById('rsQ'), clr=document.getElementById('rsClear'), cnt=document.getElementById('rsCount'), empty=document.getElementById('rsEmpty');
+  var fmt=function(n,t){return n===t?t+' reports':n+' of '+t+' reports';};
+  var cls='';
+  function norm(s){return (s||'').toLowerCase().replace(/ё/g,'е').trim();}
+  function apply(push){
+    var terms=norm(q.value).split(/\s+/).filter(Boolean), shown=0;
+    cards.forEach(function(c){
+      var okC=!cls||(' '+c.getAttribute('data-classes')+' ').indexOf(' '+cls+' ')>-1;
+      var hay=c.getAttribute('data-search')||'';
+      var okQ=terms.every(function(w){return hay.indexOf(w)>-1;});
+      var ok=okC&&okQ; c.hidden=!ok; if(ok) shown++;
+    });
+    chips.forEach(function(b){var a=b.getAttribute('data-class')===cls; b.classList.toggle('is-active',a); b.setAttribute('aria-pressed',a);});
+    clr.hidden=!q.value; cnt.textContent=fmt(shown,cards.length); empty.hidden=shown>0;
+    if(push){try{var u=new URL(location.href); cls?u.searchParams.set('class',cls):u.searchParams.delete('class'); q.value.trim()?u.searchParams.set('q',q.value.trim()):u.searchParams.delete('q'); history.replaceState(null,'',u.pathname+u.search+u.hash);}catch(e){}}
+  }
+  chips.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-class'); cls=(cls===k&&k)?'':k; apply(true);});});
+  var tm; q.addEventListener('input',function(){clearTimeout(tm); tm=setTimeout(function(){apply(true);},120);});
+  q.addEventListener('keydown',function(e){if(e.key==='Escape'&&q.value){q.value='';apply(true);}});
+  clr.addEventListener('click',function(){q.value='';apply(true);q.focus();});
+  document.getElementById('rsReset').addEventListener('click',function(){q.value='';cls='';apply(true);});
+  try{var p=new URLSearchParams(location.search); var pc=p.get('class')||''; if(chips.some(function(b){return b.getAttribute('data-class')===pc;})) cls=pc; q.value=p.get('q')||'';}catch(e){}
+  apply(false);
+})();
+</script>
   <script src="/belfed-analytics.js"></script>
 </body>
 </html>
