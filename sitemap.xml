@@ -51,7 +51,11 @@
   <!-- research:start (managed by scripts/prerender-research.mjs) -->
   <url>
     <loc>https://belfed.com/research/</loc>
-    <lastmod>2026-08-18</lastmod>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://belfed.com/research/2026-10-26-positioning-wipeout/</loc>
+    <lastmod>2026-10-26</lastmod>
   </url>
   <url>
     <loc>https://belfed.com/research/2026-08-17-kitayskiy-ii-kompleks-ot-tsenovogo-dempinga-k-fundamentalnoy-pereotsenke/</loc>
