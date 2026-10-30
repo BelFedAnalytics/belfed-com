@@ -83,6 +83,9 @@ body{background:#f5f2eb;font-family:'Courier New',Courier,monospace;color:#000;p
 
 .card-footer{padding:12px 20px;border-top:1px dashed #ccc;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .hashtags{display:flex;gap:8px;flex-wrap:wrap}
+.related-posts{margin-top:10px;font-size:12px;line-height:1.7}
+.related-posts .rp-label{letter-spacing:1px;opacity:0.6;font-size:10px}
+.related-posts a{color:inherit;text-decoration:underline}
 .hashtag{font-size:11px;color:#666;letter-spacing:1px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .action-btn{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;padding:6px 12px;border:1px solid #000;background:#fff;color:#000;cursor:pointer;text-decoration:none;text-transform:uppercase}
@@ -461,6 +464,21 @@ function permalinkUrl(post) {
   return location.origin + '/analysis/' + encodeURIComponent(ticker) + '/' + encodeURIComponent(slug);
 }
 
+// Related post links (http/https only), titled per site language.
+function relatedHtml(p) {
+  var list = Array.isArray(p.related_links) ? p.related_links : [];
+  var out = [];
+  for (var i = 0; i < list.length && out.length < 10; i++) {
+    var r = list[i] || {};
+    var u = String(r.url || '').trim();
+    if (!/^https?:\/\/\S+$/i.test(u)) continue;
+    var t = String((r.title_en) || '').trim() || 'Post ' + (out.length + 1);
+    out.push('<a href="' + escapeHtml(u) + '" target="_blank" rel="noopener">' + escapeHtml(t) + '</a>');
+  }
+  if (!out.length) return '';
+  return '<div class="related-posts"><span class="rp-label">RELATED POSTS:</span> ' + out.join(' &middot; ') + '</div>';
+}
+
 function renderCard(p) {
   // Each published post renders as its own card. Thread chain is exposed via
   // back-reference (↑ PREVIOUS) and forward-reference (↓ NEWER) pills in the head.
@@ -499,6 +517,7 @@ function renderCard(p) {
 
   var greeting = (p.greeting_en || p.greeting_ru) ? '<div class="greeting">' + escapeHtml(p.greeting_en || p.greeting_ru) + '</div>' : '';
   var body = (p.body_en || p.body_ru) ? '<div class="body-text">' + bodyToHtml(p.body_en || p.body_ru) + '</div>' : '';
+  body += relatedHtml(p);
 
   var tagHtml = '';
   if (p.hashtags) {
@@ -737,7 +756,7 @@ async function loadPosts() {
   errorBox.style.display = 'none';
   try {
     var res = await supaClient.from('analysis_posts')
-      .select('id,ticker,company_name,asset_class,post_type,reply_name,reply_text,greeting_ru,greeting_en,body_ru,body_en,tradingview_url,hashtags,image_paths,published_at,created_at,message_id_ru,message_id_en,parent_post_id,slug')
+      .select('id,ticker,company_name,asset_class,post_type,reply_name,reply_text,greeting_ru,greeting_en,body_ru,body_en,tradingview_url,hashtags,image_paths,related_links,published_at,created_at,message_id_ru,message_id_en,parent_post_id,slug')
       .eq('status', 'published')
       .eq('destination', 'asset')
       .order('published_at', { ascending: false, nullsLast: true })
