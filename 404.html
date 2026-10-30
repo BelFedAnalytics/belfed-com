@@ -15,6 +15,21 @@
     a{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;color:#fff;background:#0a0a0a;padding:14px 28px;border:1px solid #0a0a0a}
     a:hover{background:transparent;color:#0a0a0a}
   </style>
+<script>
+// Instant /research/<slug>/: the static prerender runs on a GitHub cron that can lag
+// for hours, so a freshly published report may not exist as a file yet. Render it
+// straight from the research-render edge function; fall back to the normal 404.
+(function(){
+  var m=(location.pathname||'').match(/^\/research\/([a-z0-9-]+)\/?$/);
+  if(!m) return;
+  var de=document.documentElement; de.style.visibility='hidden';
+  var show=function(){de.style.visibility='';}; var t=setTimeout(show,5000);
+  fetch('https://obujqvqqmyfcfflhqvud.supabase.co/functions/v1/research-render?lang=en&slug='+encodeURIComponent(m[1]),{cache:'no-store'})
+    .then(function(r){return r.ok?r.text():null;})
+    .then(function(h){clearTimeout(t); if(h&&h.indexOf('<html')>-1){document.open();document.write(h);document.close();}else show();})
+    .catch(function(){clearTimeout(t);show();});
+})();
+</script>
 <script src="/belfed-site-header.js" data-lang="en" defer></script>
 <script src="/belfed-site-footer.js" data-lang="en" defer></script>
 </head>
