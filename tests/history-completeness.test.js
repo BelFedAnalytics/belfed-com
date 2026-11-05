@@ -114,4 +114,21 @@ test('schedule runs every 15 minutes and refreshed EN artifacts are deployed by 
   assert.match(yml, /7,22,37,52 \* \* \* \*/);
   assert.match(yml, /actions\/deploy-pages@v4/);
 });
+test('final fill does not repeat the close comment and bot event tokens stay hidden', () => {
+  const close = ev(21, 'closed', '2026-11-05T16:06:49Z', null);
+  const t2 = ev(20, 'target_2_hit', '2026-11-04T15:06:29Z', 132.34);
+  const p = { ...position, exit_price: 121.45, closed_at: close.triggered_at,
+    close_comment_en: 'Closing full position.', close_comment_ru: 'Закрываем всю позицию.',
+    events: [opening, t2, close], partial_closes: [
+      pc(30, '2026-11-04T15:06:12Z', 132.34, { comment_en: 'target_2_hit (pre-market touch)', comment_ru: 'target_2_hit (pre-market touch)' }),
+      pc(31, '2026-11-05T16:06:48Z', 121.45, { pct_closed: 5, comment_en: 'Closing full position.', comment_ru: 'Закрываем всю позицию.' }),
+    ] };
+  for (const lang of ['en', 'ru']) {
+    const steps = B.buildSteps(p, lang);
+    const last = steps[steps.length - 1].body;
+    const phrase = lang === 'en' ? 'Closing full position.' : 'Закрываем всю позицию.';
+    assert.equal(last.split(phrase).length - 1, 1);
+    assert.ok(steps.every(s => !/target_2_hit/.test(s.body)));
+  }
+});
 process.exitCode = failures ? 1 : 0;

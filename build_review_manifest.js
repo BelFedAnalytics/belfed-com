@@ -152,7 +152,11 @@ const SVG_LOCK = '<svg viewBox="0 0 10 12" width="8" height="9" fill="none" stro
 
 // A machine-written system note, not a verbatim subscriber message.
 function isSystemComment(c) {
-  return /^(auto |corrected |backfilled )/i.test(trim(c)) || /\(per sheet recap\)/i.test(trim(c));
+  const v = trim(c);
+  return /^(auto |corrected |backfilled )/i.test(v) || /\(per sheet recap\)/i.test(v) ||
+    // Bot event tokens written straight into the ledger, e.g.
+    // "target_2_hit (pre-market touch)": internal notes, never public copy.
+    /^(target_[123]_hit|partial_stop_[12]_hit|stop_hit|partial_closed|closed)\b/i.test(v);
 }
 
 const EXIT_EVENTS = new Set(['partial_closed', 'closed', 'stop_hit',
@@ -193,10 +197,13 @@ function matchPartials(events, partials, pos) {
   }
   return { matches, used };
 }
-function partialBody(pc, lang) {
+// `already` is text the step already shows (e.g. the position's close
+// comment); a ledger comment identical to it is not repeated.
+function partialBody(pc, lang, already) {
   const c = trim(pc['comment_' + lang]);
   const summary = L[lang].sPartial(fmtNum(pc.pct_closed), fmtNum(pc.exit_price));
-  return summary + (c && !isSystemComment(c) && c !== summary ? '\n\n' + c : '');
+  const dup = already && trim(already).indexOf(c) !== -1;
+  return summary + (c && !isSystemComment(c) && c !== summary && !dup ? '\n\n' + c : '');
 }
 
 // Snapshot image for a TradingView /x/ link (same rule as trade-review.js).
@@ -271,7 +278,7 @@ function buildSteps(pos, lang) {
         if (!chart) chart = httpsOnly(pc.chart_url);
         if (!image) image = httpsOnly(pc.chart_image_url);
         if (!['partial_closed', 'partial_stop_1_hit', 'partial_stop_2_hit'].includes(e.event_type))
-          body += '\n\n' + partialBody(pc, lang);
+          body += '\n\n' + partialBody(pc, lang, body);
       }
       steps.push({ lbl, ts, body, mid, chart, image, at: timestamp(e.triggered_at) });
     }
