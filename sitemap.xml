@@ -51,7 +51,15 @@
   <!-- research:start (managed by scripts/prerender-research.mjs) -->
   <url>
     <loc>https://belfed.com/research/</loc>
-    <lastmod>2026-11-09</lastmod>
+    <lastmod>2026-11-12</lastmod>
+  </url>
+  <url>
+    <loc>https://belfed.com/research/2026-11-12-serebro/</loc>
+    <lastmod>2026-11-12</lastmod>
+  </url>
+  <url>
+    <loc>https://belfed.com/research/2026-11-12-nvda/</loc>
+    <lastmod>2026-11-12</lastmod>
   </url>
   <url>
     <loc>https://belfed.com/research/2026-11-09-1/</loc>
