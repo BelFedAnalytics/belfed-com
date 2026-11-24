@@ -30,6 +30,8 @@ function makeEl(props) {
     style: {},
     setAttribute(k, v) { this._attrs[k] = v; },
     getAttribute(k) { return this._attrs[k]; },
+    removeAttribute(k) { delete this._attrs[k]; },
+    focus() {},
     classList: { add() {}, remove() {}, contains() { return false; } }
   }, props || {});
   return el;
@@ -212,6 +214,16 @@ function load(opts) {
     const session = { user: { id: 'u9', user_metadata: {} } };
     await ctx.backfillConsentFromMetadata(session, { privacy_consent_at: null, terms_consent_at: null });
     assert(captures.update.length === 0, 'backfill is a no-op when no consent metadata exists');
+  }
+
+  // 7) Required consent gates the signup (compliance: no service without consent).
+  {
+    const { ctx, els, captures } = load({ consent: false });
+    await ctx.handleSignUp();
+    assert(/agree to the Privacy Policy/i.test(els.loginError.textContent), 'unchecked consent is rejected with the consent error');
+    assert(els.suConsent.getAttribute('aria-invalid') === 'true', 'consent checkbox is marked aria-invalid when missing');
+    assert(captures.signup.length === 0, 'signUp is not called when consent is missing');
+    assert(captures.rpc.length === 0, 'no trial is activated when consent is missing');
   }
 
   console.log(failures === 0 ? '\nAll signup tests passed.' : '\n' + failures + ' assertion(s) failed.');
