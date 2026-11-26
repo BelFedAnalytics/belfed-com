@@ -131,4 +131,16 @@ test('final fill does not repeat the close comment and bot event tokens stay hid
     assert.ok(steps.every(s => !/target_2_hit/.test(s.body)));
   }
 });
+test('ledger bookkeeping notes about backfilled records never reach public cards', () => {
+  const p = { ...position, partial_closes: [
+    pc(40, '2026-08-20T15:00:00Z', 83, { comment_en: 'Final remainder close (backfilled record)', comment_ru: 'Закрытие остатка позиции (восстановление пропущенной записи)' }),
+    pc(41, '2026-10-12T08:00:00.100Z', 80, { pct_closed: 50, comment_en: 'Remainder closed at the final exit price (backfilled record, 2026-08-03).',
+      comment_ru: 'Закрытие остатка позиции по итоговой цене выхода (восстановление пропущенной записи, 2026-08-03).' }),
+  ] };
+  for (const lang of ['en', 'ru']) {
+    const text = B.buildSteps(p, lang).map(s => s.body).join('\n');
+    assert.ok(!/backfilled|восстановлени/i.test(text), lang + ': ' + text);
+  }
+  assert.equal(B.isSystemComment('We are closing the remainder of our position.'), false);
+});
 process.exitCode = failures ? 1 : 0;
