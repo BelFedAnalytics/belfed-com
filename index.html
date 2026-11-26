@@ -495,6 +495,13 @@
     .price-amount { display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px; }
     .price-amount .num { font-family: var(--font-mono); font-size: 52px; font-weight: 700; color: var(--black); letter-spacing: -0.02em; line-height: 1; }
     .price-amount .per { font-family: var(--font-mono); font-size: 13px; color: var(--gray-soft); }
+    .price-periods-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gray-soft); margin: 0 0 6px; }
+    .price-periods { list-style: none; margin: 0 0 10px; border-top: 1px solid var(--rule); }
+    .price-periods li { display: grid; grid-template-columns: 1fr auto 46px; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--rule); font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
+    .price-periods .pp-sum { font-weight: 700; white-space: nowrap; }
+    .price-periods .pp-save { color: var(--green-strong); font-weight: 700; text-align: right; white-space: nowrap; }
+    .price-periods-note { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2); margin: 14px 0 24px; padding: 10px 12px; border-left: 2px solid var(--green-strong); background: var(--rule); line-height: 1.6; }
+    .price-periods-note b { color: var(--ink); font-weight: 700; }
     .price-desc { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); margin-bottom: 24px; line-height: 1.7; max-width: 44ch; letter-spacing: 0.005em; }
     .price-feats { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
     .pf { display: flex; align-items: flex-start; gap: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
@@ -1168,7 +1175,7 @@
     <div class="tour-row flip">
       <div class="tour-text r">
         <span class="label">Telegram and Email delivery</span>
-        <h3>Instant trade alerts — plus a place to talk to other members.</h3>
+        <h3>Instant alerts on trades and analytics, plus a place to talk to other members.</h3>
         <p>Entry, stop, and targets pushed the moment a setup triggers. Inside the community channel, a dedicated <b>discussion topic</b> lets subscribers share ideas, post their own setups, ask questions, and interact directly — so it&rsquo;s a conversation, not a one-way feed.</p>
         <div class="tour-meta">
           <span>Push within seconds</span>
@@ -1311,7 +1318,7 @@
     <div class="sec-head" style="text-align:center;margin-inline:auto;">
       <span class="label">Pricing</span>
       <h2>Two tiers. No surprises.</h2>
-      <p style="margin-inline:auto;">We share the majority of our work publicly. Subscribers get everything — analytics, asset requests, and the trades we take.</p>
+      <p style="margin-inline:auto;">We share the majority of our work publicly. Subscribers get everything: the trades we take, analytics and asset requests.</p>
     </div>
     <div class="price-grid">
       <div class="price-card r">
@@ -1320,8 +1327,8 @@
         <p class="price-desc">Follow our public work across TradingView and Telegram channels in English and Russian.</p>
         <ul class="price-feats">
           <li class="pf"><span class="ck">✓</span> Public TradingView track record</li>
-          <li class="pf"><span class="ck">✓</span> Telegram channel — English</li>
-          <li class="pf"><span class="ck">✓</span> Telegram channel — Russian</li>
+          <li class="pf"><span class="ck">✓</span> Telegram channel in English</li>
+          <li class="pf"><span class="ck">✓</span> Telegram channel in Russian</li>
           <li class="pf"><span class="ck">✓</span> Weekly public market review</li>
           <li class="pf"><span class="ck">✓</span> X / Twitter market commentary</li>
         </ul>
@@ -1331,15 +1338,22 @@
         <span class="price-tag">★ Launch pricing</span>
         <p class="price-plan">Subscriber</p>
         <div class="price-amount"><span class="num">$15</span><span class="per">/ month</span></div>
-        <p class="price-desc">The full Belfed members experience. Great value for the depth of research — pricing reflects our launch phase.</p>
+        <p class="price-desc">Full access to all of the Belfed team's work.</p>
+        <p class="price-periods-label">Prepay and save</p>
+        <ul class="price-periods">
+          <li><span>3 months</span><span class="pp-sum">$40.50</span><span class="pp-save">−10%</span></li>
+          <li><span>6 months</span><span class="pp-sum">$76.50</span><span class="pp-save">−15%</span></li>
+          <li><span>12 months</span><span class="pp-sum">$135</span><span class="pp-save">−25%</span></li>
+        </ul>
+        <p class="price-periods-note"><b>Please note:</b> you choose the subscription period on the Tribute checkout page. The 12-month option is preselected there, so pick the period you want before paying.</p>
         <ul class="price-feats">
+          <li class="pf"><span class="ck">✓</span> All our trades, long &amp; short</li>
           <li class="pf"><span class="ck">✓</span> Daily &amp; weekly market analytics</li>
           <li class="pf"><span class="ck">✓</span> Subscribers' asset requests</li>
-          <li class="pf"><span class="ck">✓</span> All our trades — long &amp; short</li>
           <li class="pf"><span class="ck">✓</span> Members web area (dashboard, reports, asset deep-dives)</li>
-          <li class="pf"><span class="ck">✓</span> Instant Telegram trade delivery</li>
+          <li class="pf"><span class="ck">✓</span> Instant Telegram alerts for trades and all analytics</li>
         </ul>
-        <a href="/members.html#signup" class="btn btn-primary">Start 14-day free access — no card</a>
+        <a href="/members.html#signup" class="btn btn-primary">Start 14-day free access, no card</a>
       </div>
     </div>
     <p class="price-foot">14-day free access · Cancel any time · No hidden fees · Payments secured by <span class="tribute">Tribute ↗</span></p>
