@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, follow">
   <link rel="icon" type="image/png" href="/logo-belfed-512.png">
-  <title>Account Settings — Belfed Analytics</title>
+  <title>Account Settings | Belfed Analytics</title>
   <link rel="canonical" href="https://belfed.com/settings.html" />
-  <meta name="description" content="Manage your Belfed account — password, email, Telegram, language, and sign-out." />
+  <meta name="description" content="Manage your Belfed account: password, email, Telegram, language, and sign-out." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -288,8 +288,8 @@
         <h3>Interface language</h3>
         <p class="card-lead">Belfed has separate EN and RU sites. Pick where you want to be.</p>
         <div class="lang-links">
-          <a href="https://belfed.com/settings.html" class="btn active">English &mdash; belfed.com</a>
-          <a href="https://belfed.ru/settings.html" class="btn">Russian &mdash; belfed.ru</a>
+          <a href="https://belfed.com/settings.html" class="btn active">English &middot; belfed.com</a>
+          <a href="https://belfed.ru/settings.html" class="btn">Russian &middot; belfed.ru</a>
         </div>
       </div>
 
@@ -304,7 +304,7 @@
     </div>
 
     <footer>
-      <span>&copy; 2025&ndash;2026 Belfed Analytics. All rights reserved.</span>
+      <span>&copy; 2025-2026 Belfed Analytics. All rights reserved.</span>
       <div class="footer-links">
         <a href="/disclaimer.html">Disclaimer</a>
         <a href="/privacy.html">Privacy</a>
@@ -356,7 +356,7 @@
           var tgBtn = document.getElementById('tgConnectBtn');
           if (profile.telegram_id || profile.telegram_username) {
             var handle = profile.telegram_username ? ('@' + String(profile.telegram_username).replace(/^@/, '')) : ('id ' + profile.telegram_id);
-            tgEl.textContent = 'Connected — ' + handle;
+            tgEl.textContent = 'Connected: ' + handle;
             if (tgBtn) { tgBtn.textContent = 'Reconnect Telegram \u2192'; }
           }
         }

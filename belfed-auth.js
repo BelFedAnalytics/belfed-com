@@ -253,8 +253,8 @@ async function handleSignUp() {
     // button stuck on "Creating account..." with no success or error shown.
     msgEl.innerHTML = ''
       + '<div class="signup-success">'
-      + '  <h3>Account created — your trial is active</h3>'
-      + '  <p>Your member area is open for 14 days. We sent a confirmation email to <b>' + email + '</b> — please verify your address to receive notifications.</p>'
+      + '  <h3>Account created, your trial is active</h3>'
+      + '  <p>Your member area is open for 14 days. We sent a confirmation email to <b>' + email + '</b>. Please verify your address to receive notifications.</p>'
       + '  <p style="margin-top:12px"><b>No email?</b> Check your spam folder or <a href="#" onclick="resendConfirmation(\'' + email.replace(/'/g, "\\'") + '\');return false;">resend it</a>.</p>'
       + '  <a class="cta-tg" href="' + deepLink + '" target="_blank" rel="noopener">Connect Telegram alerts (optional)</a>'
       + '  <div class="signup-success-note">Telegram delivers live trade alerts. Your member area works without it. Link is single-use and valid for 15 minutes.</div>'
