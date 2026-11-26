@@ -495,6 +495,12 @@
     .price-amount { display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px; }
     .price-amount .num { font-family: var(--font-mono); font-size: 52px; font-weight: 700; color: var(--black); letter-spacing: -0.02em; line-height: 1; }
     .price-amount .per { font-family: var(--font-mono); font-size: 13px; color: var(--gray-soft); }
+    .price-periods-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gray-soft); margin: 0 0 6px; }
+    .price-periods { list-style: none; margin: 0 0 10px; border-top: 1px solid var(--rule); }
+    .price-periods li { display: grid; grid-template-columns: 1fr auto 46px; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--rule); font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
+    .price-periods .pp-sum { font-weight: 700; white-space: nowrap; }
+    .price-periods .pp-save { color: var(--green-strong); font-weight: 700; text-align: right; white-space: nowrap; }
+    .price-periods-note { font-family: var(--font-mono); font-size: 11px; color: var(--gray-soft); margin: 0 0 24px; line-height: 1.6; }
     .price-desc { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); margin-bottom: 24px; line-height: 1.7; max-width: 44ch; letter-spacing: 0.005em; }
     .price-feats { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
     .pf { display: flex; align-items: flex-start; gap: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
@@ -1332,6 +1338,13 @@
         <p class="price-plan">Subscriber</p>
         <div class="price-amount"><span class="num">$15</span><span class="per">/ month</span></div>
         <p class="price-desc">The full Belfed members experience. Great value for the depth of research — pricing reflects our launch phase.</p>
+        <p class="price-periods-label">Prepay and save</p>
+        <ul class="price-periods">
+          <li><span>3 months</span><span class="pp-sum">$40.50</span><span class="pp-save">−10%</span></li>
+          <li><span>6 months</span><span class="pp-sum">$76.50</span><span class="pp-save">−15%</span></li>
+          <li><span>12 months</span><span class="pp-sum">$135</span><span class="pp-save">−25%</span></li>
+        </ul>
+        <p class="price-periods-note">Choose the period on the Tribute checkout page.</p>
         <ul class="price-feats">
           <li class="pf"><span class="ck">✓</span> Daily &amp; weekly market analytics</li>
           <li class="pf"><span class="ck">✓</span> Subscribers' asset requests</li>
