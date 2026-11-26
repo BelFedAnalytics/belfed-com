@@ -55,6 +55,15 @@ function esc(s) {
 }
 function trim(v) { return (v == null ? '' : String(v)).trim(); }
 
+// Ledger recalculation notes ("[Пересчёт 03.08.2026] ...") are appended to a
+// comment as their own paragraph. They explain internal R corrections and are
+// not public copy: drop those paragraphs, keep the rest of the comment verbatim.
+function stripLedgerNotes(v) {
+  return trim(v).split(/\n[ \t]*\n/)
+    .filter(par => !/^\s*\[(?:Пересч[её]т|Recalculat\w*)[^\]]*\]/i.test(par))
+    .join('\n\n').trim();
+}
+
 // DD.MM.YYYY (or ISO) -> YYYY-MM-DD, matching trade-review.js toISO().
 function toISO(d) {
   d = trim(d);
@@ -203,7 +212,7 @@ function matchPartials(events, partials, pos) {
 // `already` is text the step already shows (e.g. the position's close
 // comment); a ledger comment identical to it is not repeated.
 function partialBody(pc, lang, already) {
-  const c = trim(pc['comment_' + lang]);
+  const c = stripLedgerNotes(pc['comment_' + lang]);
   const summary = L[lang].sPartial(fmtNum(pc.pct_closed), fmtNum(pc.exit_price));
   const dup = already && trim(already).indexOf(c) !== -1;
   return summary + (c && !isSystemComment(c) && c !== summary && !dup ? '\n\n' + c : '');
@@ -228,7 +237,7 @@ function httpsOnly(u) {
 function buildSteps(pos, lang) {
   const t = L[lang];
   const midKey = TG[lang].midKey;
-  const comment = k => trim(pos[k + '_' + lang]);
+  const comment = k => stripLedgerNotes(pos[k + '_' + lang]);
   const events = (pos.events || []).filter(e => e.event_type !== 'edited');
   const partials = pos.partial_closes || [];
   const { matches, used } = matchPartials(events, partials, pos);
@@ -253,7 +262,7 @@ function buildSteps(pos, lang) {
           break;
         case 'stop_moved':
           lbl = t.stopMoved;
-          body = trim(pl['comment_' + lang]) ||
+          body = stripLedgerNotes(pl['comment_' + lang]) ||
             t.sStopMoved(fmtNum(pl.old_stop), fmtNum(pl.new_stop));
           break;
         case 'stop_hit':
@@ -371,13 +380,13 @@ function renderBotCard(pos, sheet, lang) {
 // ---------------------------------------------------------------------------
 function hasEnHistory(pos) {
   if (!pos) return false;
-  if (trim(pos.comment_en) || trim(pos.close_comment_en)) return true;
+  if (stripLedgerNotes(pos.comment_en) || stripLedgerNotes(pos.close_comment_en)) return true;
   for (const e of (pos.events || [])) {
     if (e.event_type === 'edited') continue;
-    if (e.message_id_en || trim((e.payload || {}).comment_en)) return true;
+    if (e.message_id_en || stripLedgerNotes((e.payload || {}).comment_en)) return true;
   }
   for (const pc of (pos.partial_closes || [])) {
-    if (trim(pc.comment_en) && !isSystemComment(pc.comment_en)) return true;
+    if (stripLedgerNotes(pc.comment_en) && !isSystemComment(pc.comment_en)) return true;
   }
   return false;
 }
@@ -571,7 +580,7 @@ function main() {
 
 if (require.main === module) main();
 module.exports = {
-  toISO, fromISO, fmtNum, fmtR, isSystemComment, buildSteps, renderBotCard,
+  toISO, fromISO, fmtNum, fmtR, isSystemComment, stripLedgerNotes, buildSteps, renderBotCard,
   reconcile, hasEnHistory, isGap, loadSources, MS_IDX, YES,
   keySafe, keyFull, keyPair, pruneAmbiguousPairs, fill,
 };
