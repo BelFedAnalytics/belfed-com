@@ -154,6 +154,9 @@ const SVG_LOCK = '<svg viewBox="0 0 10 12" width="8" height="9" fill="none" stro
 function isSystemComment(c) {
   const v = trim(c);
   return /^(auto |corrected |backfilled )/i.test(v) || /\(per sheet recap\)/i.test(v) ||
+    // Ledger bookkeeping that must never read as public copy, e.g.
+    // "Remainder closed at the final exit price (backfilled record, 2026-08-03)".
+    /backfilled record|восстановлени\S* пропущенн/i.test(v) ||
     // Bot event tokens written straight into the ledger, e.g.
     // "target_2_hit (pre-market touch)": internal notes, never public copy.
     /^(target_[123]_hit|partial_stop_[12]_hit|stop_hit|partial_closed|closed)\b/i.test(v);
