@@ -143,4 +143,18 @@ test('ledger bookkeeping notes about backfilled records never reach public cards
   }
   assert.equal(B.isSystemComment('We are closing the remainder of our position.'), false);
 });
+test('ledger recalculation notes are hidden while the rest of the comment stays verbatim', () => {
+  const note = '[Пересчёт 03.08.2026] Итоговый R пересчитан по фактическим частичным фиксациям: +0,88R вместо +0,42R.';
+  const p = { ...position, comment_en: 'Adding to the position.\n\n' + note, comment_ru: 'Добавляем к позиции.\n\n' + note,
+    close_comment_en: note, close_comment_ru: note,
+    partial_closes: [pc(50, '2026-08-20T15:00:00Z', 83, { comment_en: 'Taking profit.\n\n' + note, comment_ru: 'Фиксируем часть.\n\n' + note })] };
+  for (const lang of ['en', 'ru']) {
+    const text = B.buildSteps(p, lang).map(s => s.body).join('\n');
+    assert.ok(!/Пересч[её]т|пересчитан/i.test(text), lang + ': ' + text);
+    assert.ok(text.includes(lang === 'en' ? 'Adding to the position.' : 'Добавляем к позиции.'), lang + ': ' + text);
+    assert.ok(text.includes(lang === 'en' ? 'Taking profit.' : 'Фиксируем часть.'), lang + ': ' + text);
+  }
+  assert.equal(B.stripLedgerNotes(note), '');
+  assert.equal(B.stripLedgerNotes('Plain comment.'), 'Plain comment.');
+});
 process.exitCode = failures ? 1 : 0;
